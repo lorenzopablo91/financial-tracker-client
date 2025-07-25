@@ -1,0 +1,12 @@
+<mat-toolbar color="primary" class="menu-toolbar">
+    <span class="app-title">Gestor de Finanzas</span>
+
+    <div class="menu-items">
+        @for (item of menuItems(); track item.path) {
+        <button mat-button [routerLink]="item.path" routerLinkActive="active-link" class="menu-button">
+            <mat-icon>{{ item.icon }}</mat-icon>
+            {{ item.label }}
+        </button>
+        }
+    </div>
+</mat-toolbar>

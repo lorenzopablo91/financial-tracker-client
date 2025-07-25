@@ -1,0 +1,51 @@
+.menu-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.app-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.menu-items {
+    display: flex;
+    gap: 8px;
+}
+
+.menu-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.active-link {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+@media (max-width: 768px) {
+    .menu-toolbar {
+        flex-direction: column;
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .menu-items {
+        width: 100%;
+        justify-content: center;
+    }
+}
