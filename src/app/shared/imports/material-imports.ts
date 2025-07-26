@@ -5,6 +5,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
 
 export const MaterialImports = [
   MatFormFieldModule,
@@ -13,5 +15,7 @@ export const MaterialImports = [
   MatNativeDateModule,
   MatIconModule,
   MatButtonModule,
-  MatToolbarModule
+  MatToolbarModule,
+  MatCardModule,
+  MatDialogModule
 ];

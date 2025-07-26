@@ -1,0 +1,31 @@
+<div class="balance-container">
+    <mat-form-field class="month-picker-field">
+        <mat-label>Mes y año</mat-label>
+        <input matInput [matDatepicker]="picker" [formControl]="monthYearControl">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker startView="multi-year" (monthSelected)="chosenMonthHandler($event, picker)"
+            (yearSelected)="chosenYearHandler($event)" panelClass="month-picker">
+        </mat-datepicker>
+    </mat-form-field>
+
+    @if (currentMonthData(); as data) {
+    <app-balance-card [monthlyData]="data"></app-balance-card>
+    } @else if (!monthYearConfirmed()) {
+    <div class="no-data-message">
+        <mat-card>
+            <mat-card-content>
+                <p>Selecciona un mes y año para ver la información financiera</p>
+            </mat-card-content>
+        </mat-card>
+    </div>
+    } @else {
+    <div class="no-data-message">
+        <mat-card>
+            <mat-card-content>
+                <p>No hay datos disponibles para {{ selectedMonthName() }} {{ selectedYear() }}</p>
+                <p>Selecciona otro mes para ver la información financiera.</p>
+            </mat-card-content>
+        </mat-card>
+    </div>
+    }
+</div>

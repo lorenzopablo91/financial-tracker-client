@@ -1,0 +1,35 @@
+.balance-container {
+  display: grid;
+  padding: 20px;
+}
+
+.month-picker-field {
+  width: 180px;
+}
+
+.month-picker .mat-calendar-period-button {
+  pointer-events: none;
+}
+
+.month-picker .mat-calendar-arrow {
+  display: none;
+}
+
+::ng-deep .mat-calendar-body-cell-content {
+  font-size: 10px;
+}
+
+.no-data-message {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.no-data-message mat-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.no-data-message p {
+  margin: 8px 0;
+  color: #666;
+}
