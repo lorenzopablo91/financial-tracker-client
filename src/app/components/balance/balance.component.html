@@ -1,7 +1,7 @@
-<div class="balance-container">
+<section class="balance-container">
     <mat-form-field class="month-picker-field">
         <mat-label>Mes y año</mat-label>
-        <input matInput [matDatepicker]="picker" [formControl]="monthYearControl">
+        <input matInput readonly [matDatepicker]="picker" [formControl]="monthYearControl">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker startView="multi-year" (monthSelected)="chosenMonthHandler($event, picker)"
             (yearSelected)="chosenYearHandler($event)" panelClass="month-picker">
@@ -10,6 +10,7 @@
 
     @if (currentMonthData(); as data) {
     <app-balance-card [monthlyData]="data"></app-balance-card>
+    <app-balance-grid [monthlyData]="data" (toggleSelection)="onToggleSelection($event)"></app-balance-grid>
     } @else if (!monthYearConfirmed()) {
     <div class="no-data-message">
         <mat-card>
@@ -28,4 +29,5 @@
         </mat-card>
     </div>
     }
-</div>
+
+</section>

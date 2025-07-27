@@ -30,8 +30,8 @@ export class BalanceCardComponent implements OnChanges {
 
     // Constantes para los porcentajes de gastos y ahorros
     readonly FIXED_EXPENSES_PERCENT = 0.50;
-    readonly VARIABLE_EXPENSES_PERCENT = 0.20;
-    readonly SAVINGS_PERCENT = 0.30;
+    readonly VARIABLE_EXPENSES_PERCENT = 0.30;
+    readonly SAVINGS_PERCENT = 0.20;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['monthlyData'] && changes['monthlyData'].currentValue) {

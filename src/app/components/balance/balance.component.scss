@@ -1,10 +1,11 @@
 .balance-container {
   display: grid;
   padding: 20px;
+  gap: 15px
 }
 
 .month-picker-field {
-  width: 180px;
+  width: 200px;
 }
 
 .month-picker .mat-calendar-period-button {

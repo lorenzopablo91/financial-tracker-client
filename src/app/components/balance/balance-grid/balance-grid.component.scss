@@ -1,0 +1,119 @@
+.expense-table {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mat-mdc-header-cell {
+    font-weight: 500 !important;
+    color: #212121 !important;
+}
+
+.mat-mdc-cell,
+.mat-mdc-footer-cell {
+    color: #212121;
+}
+
+.mat-mdc-row:hover {
+    background-color: #f5f5f5;
+}
+
+.mat-mdc-row.selected {
+    background-color: #e3f2fd !important;
+}
+
+.totals-row {
+    border-top: 1px solid #e0e0e0;
+    font-weight: 600 !important;
+}
+
+.totals-row .mat-mdc-footer-cell {
+    font-weight: 600 !important;
+}
+
+.income {
+    color: #4caf50 !important;
+}
+
+.expense {
+    color: #f44336 !important;
+}
+
+.total-amount {
+    font-weight: 600 !important;
+}
+
+.total-label {
+    font-weight: 600 !important;
+}
+
+mat-card-header {
+    padding: 10px 10px 0px 10px;
+}
+
+mat-card-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+mat-card-content {
+    padding: 16px;
+}
+
+/* Ajustar el ancho de las columnas */
+.mat-column-selected {
+    width: 60px !important;
+    max-width: 60px !important;
+    flex: 0 0 60px !important;
+    text-align: center;
+}
+
+.mat-column-concept {
+    width: 35% !important;
+    max-width: 35% !important;
+    flex: 0 0 35% !important;
+}
+
+.mat-column-fee {
+    width: 15% !important;
+    max-width: 15% !important;
+    flex: 0 0 15% !important;
+}
+
+.mat-column-amountARS {
+    width: 25% !important;
+    max-width: 25% !important;
+    flex: 0 0 25% !important;
+}
+
+.mat-column-amountUSD {
+    width: 25% !important;
+    max-width: 25% !important;
+    flex: 0 0 25% !important;
+}
+
+/* Forzar layout de tabla */
+.expense-table {
+    table-layout: fixed !important;
+}
+
+/* Asegurar que las celdas respeten el ancho */
+.mat-mdc-cell,
+.mat-mdc-header-cell,
+.mat-mdc-footer-cell {
+    padding-right: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mat-mdc-cell:first-child,
+.mat-mdc-header-cell:first-child,
+.mat-mdc-footer-cell:first-child {
+    padding-left: 16px;
+}
+
+.title-card {
+    color: #3f51b5;
+}

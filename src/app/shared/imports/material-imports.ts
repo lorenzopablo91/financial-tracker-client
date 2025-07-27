@@ -7,6 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 export const MaterialImports = [
   MatFormFieldModule,
@@ -17,5 +19,7 @@ export const MaterialImports = [
   MatButtonModule,
   MatToolbarModule,
   MatCardModule,
-  MatDialogModule
+  MatDialogModule,
+  MatCheckboxModule,
+  MatTableModule
 ];

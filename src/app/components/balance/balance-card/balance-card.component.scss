@@ -21,8 +21,8 @@
     border: 1px solid #42a5f5;
 }
 
-.aguinaldo-title {
-    color: #1565c0;
+.title-card {
+    color: #3f51b5;
 }
 
 .content-spacing {
@@ -79,4 +79,8 @@
 
 .blue-text {
     color: #1976d2;
+}
+
+mat-card-header {
+    padding: 10px ;
 }

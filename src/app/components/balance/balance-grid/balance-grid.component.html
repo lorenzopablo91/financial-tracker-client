@@ -1,0 +1,74 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title class="title-card">Gastos fijos mensuales</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <mat-table [dataSource]="tableDataSource" class="expense-table">
+
+            <!-- Checkbox Column -->
+            <ng-container matColumnDef="selected">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let element; let i = index">
+                    <mat-checkbox [checked]="element.selected" [disabled]="true"
+                        (change)="onToggleSelection(i)"></mat-checkbox>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
+            <!-- Concepto Column -->
+            <ng-container matColumnDef="concept">
+                <mat-header-cell *matHeaderCellDef>CONCEPTO</mat-header-cell>
+                <mat-cell *matCellDef="let element">{{ element.concept }}</mat-cell>
+                <mat-footer-cell *matFooterCellDef class="total-label">TOTAL</mat-footer-cell>
+            </ng-container>
+
+            <!-- Cuota Column -->
+            <ng-container matColumnDef="fee">
+                <mat-header-cell *matHeaderCellDef>CUOTA</mat-header-cell>
+                <mat-cell *matCellDef="let element">
+                    @if (element.fee) {
+                    {{ element.fee.current }}/{{ element.fee.total }}
+                    }
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
+            <!-- Monto ARS Column -->
+            <ng-container matColumnDef="amountARS">
+                <mat-header-cell *matHeaderCellDef>CONSUMO (ARS)</mat-header-cell>
+                <mat-cell *matCellDef="let element" [class.income]="element.type === 'income'"
+                    [class.expense]="element.type === 'expense'">
+                    {{ element.amountARS | currencyFormat:'ARS'}}
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef class="total-amount" [class.income]="totalARS >= 0"
+                    [class.expense]="totalARS < 0">
+                    {{ getTotalARSAbsolute() | currencyFormat:'ARS' }}
+                </mat-footer-cell>
+            </ng-container>
+
+            <!-- Consumo USD Column -->
+            <ng-container matColumnDef="amountUSD">
+                <mat-header-cell *matHeaderCellDef>CONSUMO (USD)</mat-header-cell>
+                <mat-cell *matCellDef="let element" class="expense">
+                    @if (element.amountUSD) {
+                    {{ element.amountUSD | currencyFormat:'USD' }}
+                    }
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef class="expense">
+                    {{ totalUSD | currencyFormat:'USD' }}
+                </mat-footer-cell>
+            </ng-container>
+
+            <!-- Header Row -->
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+            <!-- Data Rows -->
+            <mat-row *matRowDef="let row; columns: displayedColumns;" [class.selected]="row.selected">
+            </mat-row>
+
+            <!-- Footer Row -->
+            <mat-footer-row *matFooterRowDef="displayedColumns" class="totals-row"></mat-footer-row>
+
+        </mat-table>
+    </mat-card-content>
+</mat-card>

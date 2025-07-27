@@ -10,6 +10,7 @@ import { DATE_FORMATS } from '../../data/date-formats';
 import { MONTHS_ES } from '../../data/months';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { BalanceCardComponent } from './balance-card/balance-card.component';
+import { BalanceGridComponent } from './balance-grid/balance-grid.component';
 
 @Component({
   selector: 'app-balance',
@@ -18,7 +19,8 @@ import { BalanceCardComponent } from './balance-card/balance-card.component';
     ...MaterialImports,
     CommonModule,
     ReactiveFormsModule,
-    BalanceCardComponent
+    BalanceCardComponent,
+    BalanceGridComponent
   ],
   templateUrl: './balance.component.html',
   styleUrls: ['./balance.component.scss'],
@@ -30,6 +32,9 @@ import { BalanceCardComponent } from './balance-card/balance-card.component';
 
 export class BalanceComponent implements OnInit {
   monthYearControl = new FormControl();
+
+  // Signal writable que contiene los datos (en lugar de usar la constante directamente)
+  private _balanceData = signal<Array<FinancialData>>([...BALANCE_DATA]);
 
   // Signals para manejar el estado
   private _selectedMonth = signal<number | null>(null);
@@ -95,12 +100,47 @@ export class BalanceComponent implements OnInit {
 
   private getDataForMonthYear(month: number, year: number): FinancialData | null {
     const monthName = MONTHS_ES[month];
-    const data = BALANCE_DATA.find(
+    const data = this._balanceData().find(
       (d) =>
         d.year === year.toString() &&
         d.month.toLowerCase() === monthName.toLowerCase()
     );
 
     return data || null;
+  }
+
+  onToggleSelection(index: number): void {
+    const month = this._selectedMonth();
+    const year = this._selectedYear();
+    const confirmed = this._monthYearConfirmed();
+
+    if (month === null || year === null || !confirmed) return;
+
+    const monthName = MONTHS_ES[month];
+    const currentData = this._balanceData();
+    
+    // Encontrar el índice del mes/año actual en el array
+    const dataIndex = currentData.findIndex(
+      (d) => d.year === year.toString() && 
+             d.month.toLowerCase() === monthName.toLowerCase()
+    );
+
+    if (dataIndex === -1) return;
+
+    // Crear una copia del array con los datos actualizados
+    const updatedData = currentData.map((data, i) => {
+      if (i === dataIndex) {
+        return {
+          ...data,
+          expenseDetails: data.expenseDetails.map((item, expenseIndex) =>
+            expenseIndex === index ? { ...item, selected: !item.selected } : item
+          )
+        };
+      }
+      return data;
+    });
+
+    // Actualizar el signal con los nuevos datos
+    this._balanceData.set(updatedData);
   }
 }
