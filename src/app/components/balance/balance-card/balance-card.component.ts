@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { FinancialData } from '../../../models/balance.interface';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { MaterialImports } from '../../../shared/imports/material-imports';
+import { SavingsSplitData, SavingsSplitDialogComponent } from './savings-split-dialog/savings-split-dialog.component';
 
 @Component({
     selector: 'app-balance-card',
@@ -32,6 +33,8 @@ export class BalanceCardComponent implements OnChanges {
     readonly FIXED_EXPENSES_PERCENT = 0.50;
     readonly VARIABLE_EXPENSES_PERCENT = 0.30;
     readonly SAVINGS_PERCENT = 0.20;
+
+    constructor(private dialog: MatDialog) { }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['monthlyData'] && changes['monthlyData'].currentValue) {
@@ -112,6 +115,20 @@ export class BalanceCardComponent implements OnChanges {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }).format(amount);
+    }
+
+    openSavingsEditor() {
+        const dialogData: SavingsSplitData = {
+            savings: this.savings(),
+            currency: 'ARS'
+        };
+
+        const dialogRef = this.dialog.open(SavingsSplitDialogComponent, {
+            width: '450px',
+            data: dialogData,
+            disableClose: false,
+            autoFocus: true
+        });
     }
 
 }
