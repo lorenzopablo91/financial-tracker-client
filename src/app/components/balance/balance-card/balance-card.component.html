@@ -1,78 +1,72 @@
 <div class="grid-container">
     <!-- Tarjeta de Salario -->
-    <mat-card class="salary-card">
-        <mat-card-header>
-            <mat-card-title class="title-card">Salario mensual</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <div class="content-spacing">
-                <div class="info-row border-bottom">
-                    <span class="label">Bruto (ARS):</span>
-                    <span class="value bold">{{ monthlyData.grossSalary | currencyFormat:'ARS' }}</span>
-                </div>
-                <div class="info-row border-bottom">
-                    <span class="label">Neto (ARS):</span>
-                    <span class="value bold">{{ netSalaryARS() | currencyFormat:'ARS' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Neto (USD):</span>
-                    <span class="value bold green-text">{{ netSalaryUSD() | currencyFormat:'USD'}}</span>
-                </div>
+    <div class="info-card salary-card">
+        <div class="card-header">
+            <span class="title">Salario mensual</span>
+        </div>
+        <div class="content-spacing">
+            <div class="info-row border-bottom">
+                <span class="label">Bruto (ARS):</span>
+                <span class="value bold">{{ monthlyData.grossSalary | currencyFormat:'ARS' }}</span>
             </div>
-        </mat-card-content>
-    </mat-card>
+            <div class="info-row border-bottom">
+                <span class="label">Neto (ARS):</span>
+                <span class="value bold">{{ netSalaryARS() | currencyFormat:'ARS' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Neto (USD):</span>
+                <span class="value bold green-text">{{ netSalaryUSD() | currencyFormat:'USD'}}</span>
+            </div>
+        </div>
+    </div>
 
     <!-- Tarjeta de Gastos -->
-    <mat-card class="expenses-card">
-        <mat-card-header>
-            <mat-card-title class="title-card">Porcentajes sugeridos</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <div class="content-spacing">
-                <div class="info-row border-bottom">
-                    <div class="label-container">
-                        <span class="label">Gastos Fijos:</span>
-                        <span class="percentage">{{ (FIXED_EXPENSES_PERCENT * 100).toFixed(0) }}%</span>
-                    </div>
-                    <span class="value bold red-text">{{fixedExpenses() | currencyFormat:'ARS' }}</span>
+    <div class="info-card expenses-card">
+        <div class="card-header">
+            <span class="title">Porcentajes sugeridos</span>
+        </div>
+        <div class="content-spacing">
+            <div class="info-row border-bottom">
+                <div class="label-container">
+                    <span class="label">Gastos Fijos:</span>
+                    <span class="percentage">{{ (FIXED_EXPENSES_PERCENT * 100).toFixed(0) }}%</span>
                 </div>
-                <div class="info-row border-bottom">
-                    <div class="label-container">
-                        <span class="label">Gastos Variables:</span>
-                        <span class="percentage">{{ (VARIABLE_EXPENSES_PERCENT * 100).toFixed(0) }}%</span>
-                    </div>
-                    <span class="value bold orange-text">{{ variableExpenses() | currencyFormat:'ARS' }}</span>
-                </div>
-                <div class="info-row">
-                    <div class="label-container">
-                        <span class="label">Ahorros:</span>
-                        <span class="percentage">{{ (SAVINGS_PERCENT * 100).toFixed(0) }}%</span>
-                        <button mat-icon-button (click)="openSavingsEditor()" matTooltip="Distribuir ahorros">
-                            <mat-icon class="title-icon">pie_chart</mat-icon>
-                        </button>
-                    </div>
-                    <span class="value bold blue-text">{{ savings() | currencyFormat:'ARS' }}</span>
-                </div>
+                <span class="value bold red-text">{{fixedExpenses() | currencyFormat:'ARS' }}</span>
             </div>
-        </mat-card-content>
-    </mat-card>
+            <div class="info-row border-bottom">
+                <div class="label-container">
+                    <span class="label">Gastos Variables:</span>
+                    <span class="percentage">{{ (VARIABLE_EXPENSES_PERCENT * 100).toFixed(0) }}%</span>
+                </div>
+                <span class="value bold orange-text">{{ variableExpenses() | currencyFormat:'ARS' }}</span>
+            </div>
+            <div class="info-row">
+                <div class="label-container">
+                    <span class="label">Ahorros:</span>
+                    <span class="percentage">{{ (SAVINGS_PERCENT * 100).toFixed(0) }}%</span>
+                    <button mat-icon-button (click)="openSavingsEditor()" matTooltip="Distribuir ahorros">
+                        <mat-icon class="title-icon">pie_chart</mat-icon>
+                    </button>
+                </div>
+                <span class="value bold blue-text">{{ savings() | currencyFormat:'ARS' }}</span>
+            </div>
+        </div>
+    </div>
 
-    <!-- Tarjeta de Aguinaldo (solo visible en julio y diciembre) -->
-    <mat-card *ngIf="showAguinaldo()" class="aguinaldo-card">
-        <mat-card-header>
-            <mat-card-title class="title-card">Aguinaldo (SAC)</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <div class="content-spacing">
-                <div class="info-row border-bottom">
-                    <span class="label">Aguinaldo (ARS):</span>
-                    <span class="value bold">{{ aguinaldo() | currencyFormat:'ARS' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Aguinaldo (USD):</span>
-                    <span class="value bold green-text">{{ aguinaldoUSD() | currencyFormat:'USD' }}</span>
-                </div>
+    <!-- Tarjeta de Aguinaldo -->
+    <div *ngIf="showAguinaldo()" class="info-card aguinaldo-card">
+        <div class="card-header">
+            <span class="title">Aguinaldo (SAC)</span>
+        </div>
+        <div class="content-spacing">
+            <div class="info-row border-bottom">
+                <span class="label">Aguinaldo (ARS):</span>
+                <span class="value bold">{{ aguinaldo() | currencyFormat:'ARS' }}</span>
             </div>
-        </mat-card-content>
-    </mat-card>
+            <div class="info-row">
+                <span class="label">Aguinaldo (USD):</span>
+                <span class="value bold green-text">{{ aguinaldoUSD() | currencyFormat:'USD' }}</span>
+            </div>
+        </div>
+    </div>
 </div>

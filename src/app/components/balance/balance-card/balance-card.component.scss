@@ -10,81 +10,116 @@
     }
 }
 
-.salary-card,
-.expenses-card {
-    grid-column: span 1;
-}
-
-.aguinaldo-card {
-    grid-column: span 1;
-    background: linear-gradient(to right, #e3f2fd, #e8f5e8);
-    border: 1px solid #42a5f5;
-}
-
-.title-card {
-    color: #3f51b5;
-}
-
-.content-spacing {
+// Estilos base para cards
+.info-card {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    border: 1px solid;
+    background: white;
+    transition: all 0.2s ease;
+    min-width: 0;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--neutral-200);
+
+        .title {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--neutral-800);
+        }
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-xs) 0;
+
+        &.border-bottom {
+            border-bottom: 1px solid var(--neutral-200);
+            margin-bottom: var(--spacing-xs);
+            padding-bottom: var(--spacing-xs);
+        }
+
+        .label-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .label {
+            font-weight: 500;
+            color: var(--neutral-700);
+        }
+
+        .value {
+            font-size: 14px;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 600;
+
+            &.bold {
+                font-weight: 700;
+            }
+        }
+
+        .percentage {
+            font-size: 12px;
+            color: var(--neutral-600);
+        }
+
+        .title-icon {
+            color: var(--primary-500);
+        }
+    }
+
+    // Variantes de color
+    &.salary-card {
+        border-color: var(--success-color);
+        background: linear-gradient(135deg, var(--success-light), #ffffff);
+
+        .card-header .title {
+            color: var(--success-color);
+        }
+    }
+
+    &.expenses-card {
+        border-color: var(--warning-color);
+        background: linear-gradient(135deg, var(--warning-light), #ffffff);
+
+        .card-header .title {
+            color: var(--warning-color);
+        }
+    }
+
+    &.aguinaldo-card {
+        border-color: var(--info-color);
+        background: linear-gradient(135deg, var(--info-light), #ffffff);
+
+        .card-header .title {
+            color: var(--info-color);
+        }
+    }
 }
 
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.border-bottom {
-    padding-bottom: 8px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.label-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.label {
-    font-weight: 500;
-}
-
-.percentage {
-    font-size: 12px;
-    color: #757575;
-}
-
-.value {
-    font-weight: bold;
-}
-
-.bold {
-    font-weight: bold;
-}
-
-.green-text {
-    color: #2e7d32;
-}
-
-.red-text {
-    color: #d32f2f;
-}
-
-.orange-text {
-    color: #f57c00;
-}
-
-.blue-text {
-    color: #1976d2;
-}
-
-mat-card-header {
-    padding: 10px;
-}
-
-.title-icon {
-    color: #3b82f6;
-}
+// Colores de texto
+.text-success { color: var(--success-color); }
+.text-warning { color: var(--warning-color); }
+.text-info { color: var(--info-color); }
+.text-error { color: var(--error-color); }
+.green-text { color: var(--success-color); }
+.red-text { color: var(--error-color); }
+.orange-text { color: var(--warning-color); }
+.blue-text { color: var(--info-color); }

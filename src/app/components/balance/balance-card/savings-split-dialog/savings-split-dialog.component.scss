@@ -1,44 +1,76 @@
 @use '@angular/material' as mat;
 
 .savings-editor-dialog {
-  min-width: 400px;
-  max-width: 500px;
+  min-width: min-content;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
 
   .dialog-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 0;
-    color: mat.get-color-from-palette(mat.$indigo-palette, 700);
-    font-weight: 600;
+    margin: 0;
+    padding: 0 16px;
+    height: 56px;
+    flex-shrink: 0;
 
-    .title-icon {
-      color: mat.get-color-from-palette(mat.$light-blue-palette, 500);
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
+    .title-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 100%;
+
+      mat-icon {
+        color: var(--primary-500);
+        margin-right: 4px;
+      }
     }
   }
 
   .dialog-content {
     padding: 24px;
-    min-height: 200px;
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+
+    &.mat-mdc-dialog-content {
+      max-height: none;
+    }
   }
 
-  // ==========================================
-  // VISTA DE EDICIÓN
-  // ==========================================
+  mat-dialog-actions {
+    padding: 16px 24px;
+    margin: 0;
+    gap: 8px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--neutral-200);
+  }
+
+  .editing-view {
+    .description {
+      width: 400px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--neutral-800);
+    }
+
+    .input-group {
+      display: flex;
+      align-items: start;
+      gap: 16px;
+      margin-bottom: 24px;
+
+      .amount-input {
+        flex: 1;
+      }
+    }
+  }
+
   .editing-view {
     .description {
       margin-bottom: 24px;
-      color: mat.get-color-from-palette(mat.$grey-palette, 700);
       font-size: 14px;
       line-height: 1.5;
-    }
-
-    .formatted-hint {
-      font-weight: 500;
-      color: mat.get-color-from-palette(mat.$indigo-palette, 600) !important;
+      color: var(--primary-color);
     }
 
     .button-container {
@@ -46,399 +78,148 @@
       gap: 12px;
       justify-content: flex-end;
       margin-top: 32px;
+    }
+  }
 
-      .continue-btn {
-        min-width: 120px;
-        font-weight: 500;
-        
-        &:disabled {
-          opacity: 0.6;
-        }
+  // Estilos para el contenedor de distribution cards
+  .distribution-list {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+
+  // Estilos para las distribution cards
+  .distribution-item {
+    flex: 1 1 0;
+    width: calc(33.333% - var(--spacing-md));
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    border: 1px solid;
+    background: white;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      white-space: nowrap; // Agregamos esto para evitar el salto de línea
+
+      .item-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        flex-shrink: 0; // Evita que el icono se encoja
       }
 
-      .reset-btn {
-        color: mat.get-color-from-palette(mat.$grey-palette, 600);
-        
-        &:hover {
-          background-color: mat.get-color-from-palette(mat.$grey-palette, 100);
-        }
+      .label {
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap; // Aseguramos que el texto no se rompa
+        overflow: hidden; // Por si acaso el texto es muy largo
+        text-overflow: ellipsis; // Muestra ... si el texto es muy largo
+      }
+
+      .percentage {
+        font-size: 12px;
+        opacity: 0.7;
+        font-weight: 500;
+        flex-shrink: 0; // Evita que el porcentaje se encoja
+      }
+    }
+
+    .value {
+      font-weight: 700;
+      font-size: 16px;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    // Variantes de color
+    &.crypto {
+      border-color: #f39c12;
+      background: linear-gradient(135deg, #fff8e1, #ffffff);
+
+      .item-icon,
+      .label,
+      .crypto-value {
+        color: #f39c12;
+      }
+    }
+
+    &.stocks {
+      border-color: #27ae60;
+      background: linear-gradient(135deg, #e8f5e8, #ffffff);
+
+      .item-icon,
+      .label,
+      .stocks-value {
+        color: #27ae60;
+      }
+    }
+
+    &.dollar {
+      border-color: #3498db;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+
+      .item-icon,
+      .label,
+      .dollar-value {
+        color: #3498db;
       }
     }
   }
 
-  // ==========================================
-  // VISTA DE DISTRIBUCIÓN
-  // ==========================================
-  .distribution-view {
-    .distribution-summary {
-      background: linear-gradient(135deg, 
-        mat.get-color-from-palette(mat.$indigo-palette, 50), 
-        mat.get-color-from-palette(mat.$light-blue-palette, 50));
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 24px;
-      border: 1px solid mat.get-color-from-palette(mat.$indigo-palette, 100);
+  // Estilos para la distribución de criptos
+  .crypto-distribution {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--neutral-200);
 
-      .total-amount {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .total-label {
-          font-weight: 500;
-          color: mat.get-color-from-palette(mat.$indigo-palette, 700);
-        }
-
-        .total-value {
-          font-size: 18px;
-          font-weight: 600;
-          color: mat.get-color-from-palette(mat.$indigo-palette, 800);
-        }
-      }
-    }
-
-    .distribution-list {
+    .sub-item {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .distribution-item {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid;
-      background: white;
-      transition: all 0.2s ease;
+      justify-content: space-between;
+      padding: var(--spacing-xs) 0;
 
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .item-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-
-        .item-icon {
-          width: 24px;
-          height: 24px;
-          font-size: 24px;
-        }
-
-        .label {
-          font-weight: 600;
-          font-size: 14px;
-        }
-
-        .percentage {
-          font-size: 12px;
-          opacity: 0.7;
-          font-weight: 500;
-        }
+      .label {
+        font-weight: 500;
+        color: var(--neutral-700);
       }
 
       .value {
-        font-weight: 700;
-        font-size: 16px;
-        font-family: 'Roboto Mono', monospace;
+        font-size: 14px;
+        color: var(--neutral-800);
       }
 
-      // Estilos específicos por categoría
-      &.crypto {
-        border-color: #f39c12;
-        background: linear-gradient(135deg, #fff8e1, #ffffff);
-
-        .item-icon {
-          color: #f39c12;
-        }
-
-        .label {
-          color: #e67e22;
-        }
-
-        .crypto-value {
-          color: #d35400;
-        }
-      }
-
-      &.stocks {
-        border-color: #27ae60;
-        background: linear-gradient(135deg, #e8f5e8, #ffffff);
-
-        .item-icon {
-          color: #27ae60;
-        }
-
-        .label {
-          color: #229954;
-        }
-
-        .stocks-value {
-          color: #1e8449;
-        }
-      }
-
-      &.dollar {
-        border-color: #3498db;
-        background: linear-gradient(135deg, #e3f2fd, #ffffff);
-
-        .item-icon {
-          color: #3498db;
-        }
-
-        .label {
-          color: #2980b9;
-        }
-
-        .dollar-value {
-          color: #1f618d;
-        }
-      }
-    }
-
-    .edit-button-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 24px;
-
-      .edit-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: mat.get-color-from-palette(mat.$indigo-palette, 600);
-        font-weight: 500;
-
-        &:hover {
-          background-color: mat.get-color-from-palette(mat.$indigo-palette, 50);
-        }
-
-        mat-icon {
-          font-size: 18px;
-          width: 18px;
-          height: 18px;
-        }
+      .percentage {
+        font-size: 12px;
+        color: var(--neutral-600);
       }
     }
   }
-}
 
-// Estilos para el input de precio con selector de moneda
-.input-with-label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-
-  &.extra-compact {
-    gap: 4px;
-    margin-bottom: 12px;
-  }
-}
-
-.input-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
-  margin-bottom: 4px;
-}
-
-.input-group {
-  display: flex;
-  align-items: stretch;
-  position: relative;
-
-  &.extra-compact {
-    gap: 0;
-  }
-
-  &.keep-horizontal {
-    flex-direction: row;
-  }
-}
-
-// Estilos para el mat-form-field
-.financial-input {
-  flex: 1;
-  
-  &.currency {
-    // Ajustar el input para que se integre con el selector
-    ::ng-deep .mat-mdc-form-field-outline-end {
-      border-top-right-radius: 0 !important;
-      border-bottom-right-radius: 0 !important;
-      border-right: none !important;
-    }
-    
-    ::ng-deep .mat-mdc-text-field-wrapper {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  }
-
-  &.extra-compact {
-    ::ng-deep .mat-mdc-form-field-infix {
-      min-height: 32px;
-      padding: 4px 8px;
-    }
-    
-    ::ng-deep .mat-mdc-form-field-outline {
-      border-radius: 6px 0 0 6px;
-    }
-
-    ::ng-deep .mat-mdc-form-field-wrapper {
-      padding-bottom: 0;
-    }
-
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-  }
-
-  // Input styles
-  ::ng-deep input {
-    font-size: 14px;
-    font-weight: 500;
-    text-align: right;
-    padding-right: 6px;
-    height: 32px;
-    
-    &::placeholder {
-      color: rgba(0, 0, 0, 0.38);
-      font-weight: 400;
-    }
-  }
-}
-
-// Hint formateado
-.formatted-hint {
-  color: #3f51b5 !important; // Indigo 500
-  font-weight: 500;
-  font-size: 11px;
-  margin-top: 2px;
-}
-
-// Selector de moneda
-.currency-selector {
-  display: flex;
-  border: 1px solid rgba(0, 0, 0, 0.38);
-  border-left: none;
-  border-radius: 0 6px 6px 0;
-  overflow: hidden;
-  background: white;
-  min-height: 42px; // Altura reducida
-
-  .currency-toggle {
-    background: white;
-    border: none;
-    padding: 0 12px;
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(0, 0, 0, 0.6);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 40px;
+  // Estilos para el título de distribución
+  .distribution-title {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    position: relative;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--neutral-200);
+    font-size: 18px;
+    color: var(--neutral-800);
 
-    &:not(:last-child) {
-      border-right: 1px solid rgba(0, 0, 0, 0.12);
-    }
-
-    &:hover {
-      background: rgba(63, 81, 181, 0.08); // Indigo 50 equivalente
-      color: #303f9f; // Indigo 700
-    }
-
-    &:focus {
-      outline: none;
-      background: rgba(63, 81, 181, 0.12);
-    }
-
-    &.active {
-      background: #3f51b5; // Indigo 500
-      color: white;
+    .value {
       font-weight: 600;
-      
-      &:hover {
-        background: #303f9f; // Indigo 600
-      }
-    }
-
-    // Efecto de ripple simulado
-    &:active {
-      transform: scale(0.98);
+      color: var(--primary-color);
     }
   }
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .input-group {
-    &.keep-horizontal {
-      flex-direction: column;
-      gap: 8px;
-    }
-  }
-
-  .financial-input {
-    &.currency {
-      ::ng-deep .mat-mdc-form-field-outline-end {
-        border-top-right-radius: 8px !important;
-        border-bottom-right-radius: 8px !important;
-        border-right: 1px solid rgba(0, 0, 0, 0.38) !important;
-      }
-    }
-  }
-
-  .currency-selector {
-    border-left: 1px solid rgba(0, 0, 0, 0.38);
-    border-radius: 8px;
-    justify-content: center;
-
-    .currency-toggle {
-      flex: 1;
-      padding: 12px 16px;
-    }
-  }
-}
-
-// Estados de validación
-.input-group {
-  // Error state
-  &.ng-invalid.ng-touched {
-    .currency-selector {
-      border-color: #f44336; // Red 500
-    }
-  }
-
-  // Focus state
-  &:focus-within {
-    .currency-selector {
-      border-color: #3f51b5; // Indigo 500
-      border-width: 2px;
-    }
-  }
-}
-
-// Animaciones
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.formatted-hint {
-  animation: fadeIn 0.2s ease-out;
 }

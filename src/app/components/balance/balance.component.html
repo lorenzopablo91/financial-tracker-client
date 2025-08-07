@@ -1,10 +1,11 @@
 <section class="balance-container">
     <mat-form-field class="month-picker-field">
         <mat-label>Mes y año</mat-label>
-        <input matInput readonly [matDatepicker]="picker" [formControl]="monthYearControl">
+        <input matInput readonly [matDatepicker]="picker" [formControl]="monthYearControl" class="month-picker"
+            placeholder="Selecciona un mes y año">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker startView="multi-year" (monthSelected)="chosenMonthHandler($event, picker)"
-            (yearSelected)="chosenYearHandler($event)" panelClass="month-picker">
+            (yearSelected)="chosenYearHandler($event)" panelClass="custom-datepicker">
         </mat-datepicker>
     </mat-form-field>
 
@@ -13,21 +14,27 @@
     <app-balance-grid [monthlyData]="data" (toggleSelection)="onToggleSelection($event)"></app-balance-grid>
     } @else if (!monthYearConfirmed()) {
     <div class="no-data-message">
-        <mat-card>
-            <mat-card-content>
-                <p>Selecciona un mes y año para ver la información financiera</p>
-            </mat-card-content>
-        </mat-card>
+        <div class="app-card warning">
+            <div class="app-card-content">
+                <div class="flex align-center">
+                    <mat-icon class="text-warning mr-md">warning</mat-icon>
+                    <p class="app-badge app-badge-warning">Selecciona un mes y año para ver la información financiera
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
     } @else {
     <div class="no-data-message">
-        <mat-card>
-            <mat-card-content>
-                <p>No hay datos disponibles para {{ selectedMonthName() }} {{ selectedYear() }}</p>
-                <p>Selecciona otro mes para ver la información financiera.</p>
-            </mat-card-content>
-        </mat-card>
+        <div class="app-card info">
+            <div class="app-card-content">
+                <div class="flex align-center">
+                    <mat-icon class="text-info mr-md">info</mat-icon>
+                    <p class="app-badge app-badge-info">No hay datos disponibles para {{ selectedMonthName() }} {{
+                        selectedYear() }}</p>
+                </div>
+            </div>
+        </div>
     </div>
     }
-
 </section>

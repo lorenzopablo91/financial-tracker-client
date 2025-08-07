@@ -124,7 +124,7 @@ export class BalanceCardComponent implements OnChanges {
         };
 
         const dialogRef = this.dialog.open(SavingsSplitDialogComponent, {
-            width: '450px',
+            width: 'min-content',
             data: dialogData,
             disableClose: false,
             autoFocus: true

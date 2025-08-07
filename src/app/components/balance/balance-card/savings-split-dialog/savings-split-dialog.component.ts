@@ -67,14 +67,6 @@ export class SavingsSplitDialogComponent implements OnInit {
     this.inputControl.setValue(value);
   }
 
-  setCurrency(currency: 'ARS' | 'USD'): void {
-    if (this.selectedCurrency !== currency) {
-      this.selectedCurrency = currency;
-      // Opcional: convertir el valor actual a la nueva moneda
-      // this.convertCurrency(currency);
-    }
-  }
-
   handleSave(): void {
     const numValue = this.getNumericValue();
     if (numValue > 0) {

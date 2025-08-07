@@ -1,8 +1,8 @@
-<mat-card>
-    <mat-card-header>
-        <mat-card-title class="title-card">Gastos fijos mensuales</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+<div class="gastos-card expenses-table-card">
+    <div class="card-header">
+        <span class="title">Gastos fijos mensuales</span>
+    </div>
+    <div class="content-spacing">
         <mat-table [dataSource]="tableDataSource" class="expense-table">
 
             <!-- Checkbox Column -->
@@ -70,5 +70,5 @@
             <mat-footer-row *matFooterRowDef="displayedColumns" class="totals-row"></mat-footer-row>
 
         </mat-table>
-    </mat-card-content>
-</mat-card>
+    </div>
+</div>

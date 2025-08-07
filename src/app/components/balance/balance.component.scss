@@ -1,7 +1,29 @@
 .balance-container {
   display: grid;
   padding: 20px;
-  gap: 15px
+  gap: 15px;
+}
+
+::ng-deep {
+  .month-picker-field {
+    &.mat-mdc-form-field {
+      .mat-mdc-text-field-wrapper {
+        background-color: var(--accent-500);
+
+        .mdc-text-field--disabled {
+          background-color: var(--accent-500);
+        }
+
+        .mat-mdc-form-field-focus-overlay {
+          background-color: var(--accent-500);
+        }
+      }
+    }
+
+    .mat-datepicker-toggle {
+      color: var(--primary-500);
+    }
+  }
 }
 
 .month-picker-field {
@@ -21,16 +43,56 @@
 }
 
 .no-data-message {
-  margin-top: 24px;
-  text-align: center;
-}
+  margin-top: var(--spacing-lg);
 
-.no-data-message mat-card {
-  max-width: 400px;
-  margin: 0 auto;
-}
+  .app-card {
+    max-width: 400px;
+    margin: 0 auto;
 
-.no-data-message p {
-  margin: 8px 0;
-  color: #666;
+    &.warning {
+      background-color: var(--warning-light);
+      border-color: var(--warning-color);
+
+      .app-badge-warning {
+        color: var(--warning-color);
+      }
+    }
+
+    &.info {
+      background-color: var(--info-light);
+      border-color: var(--info-color);
+
+      .app-badge-info {
+        color: var(--info-color);
+      }
+    }
+  }
+
+  .flex {
+    display: flex;
+  }
+
+  .align-center {
+    align-items: center;
+  }
+
+  .mr-md {
+    margin-right: var(--spacing-md);
+  }
+
+  .mb-sm {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .text-warning {
+    color: var(--warning-color);
+  }
+
+  .text-info {
+    color: var(--info-color);
+  }
+
+  .text-neutral-600 {
+    color: var(--neutral-600);
+  }
 }
