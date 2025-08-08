@@ -4,6 +4,16 @@
   gap: 15px;
 }
 
+.month-picker-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+
+  mat-icon {
+    color: var(--primary-500);
+  }
+}
+
 ::ng-deep {
   .month-picker-field {
     &.mat-mdc-form-field {

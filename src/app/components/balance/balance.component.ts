@@ -118,11 +118,11 @@ export class BalanceComponent implements OnInit {
 
     const monthName = MONTHS_ES[month];
     const currentData = this._balanceData();
-    
+
     // Encontrar el índice del mes/año actual en el array
     const dataIndex = currentData.findIndex(
-      (d) => d.year === year.toString() && 
-             d.month.toLowerCase() === monthName.toLowerCase()
+      (d) => d.year === year.toString() &&
+        d.month.toLowerCase() === monthName.toLowerCase()
     );
 
     if (dataIndex === -1) return;
@@ -143,4 +143,31 @@ export class BalanceComponent implements OnInit {
     // Actualizar el signal con los nuevos datos
     this._balanceData.set(updatedData);
   }
+
+  previousMonth() {
+    const currentDate = this.monthYearControl.value;
+    if (!currentDate) return;
+
+    const previousMonth = new Date(currentDate);
+    previousMonth.setMonth(previousMonth.getMonth() - 1);
+
+    this.monthYearControl.setValue(previousMonth);
+    this._selectedMonth.set(previousMonth.getMonth());
+    this._selectedYear.set(previousMonth.getFullYear());
+    this._monthYearConfirmed.set(true);
+  }
+
+  nextMonth() {
+    const currentDate = this.monthYearControl.value;
+    if (!currentDate) return;
+
+    const nextMonth = new Date(currentDate);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    this.monthYearControl.setValue(nextMonth);
+    this._selectedMonth.set(nextMonth.getMonth());
+    this._selectedYear.set(nextMonth.getFullYear());
+    this._monthYearConfirmed.set(true);
+  }
+  
 }

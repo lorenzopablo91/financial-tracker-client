@@ -9,6 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export const MaterialImports = [
   MatFormFieldModule,
@@ -21,5 +22,6 @@ export const MaterialImports = [
   MatCardModule,
   MatDialogModule,
   MatCheckboxModule,
-  MatTableModule
+  MatTableModule,
+  MatTooltipModule
 ];
