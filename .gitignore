@@ -43,3 +43,4 @@ Thumbs.db
 
 # Others
 /src/app/data/balance.data.ts
+/src/app/data/wallet.data.ts

@@ -18,14 +18,17 @@
   .month-picker-field {
     &.mat-mdc-form-field {
       .mat-mdc-text-field-wrapper {
-        background-color: var(--accent-500);
+        border-color: var(--accent-500);
+        background: linear-gradient(135deg, var(--accent-500), #ffffff);
 
         .mdc-text-field--disabled {
-          background-color: var(--accent-500);
+          border-color: var(--accent-500);
+          background: linear-gradient(135deg, var(--accent-500), #ffffff);
         }
 
         .mat-mdc-form-field-focus-overlay {
-          background-color: var(--accent-500);
+          border-color: var(--accent-500);
+          background: linear-gradient(135deg, var(--accent-500), #ffffff);
         }
       }
     }

@@ -21,6 +21,11 @@ export class MenuComponent {
       path: '/balance',
       label: 'Balance',
       icon: 'account_balance'
+    },
+    {
+      path: '/wallet',
+      label: 'Billetera',
+      icon: 'wallet'
     }
   ]);
 

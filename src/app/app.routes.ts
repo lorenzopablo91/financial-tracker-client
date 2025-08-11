@@ -5,5 +5,9 @@ export const routes: Routes = [
     {
         path: 'balance',
         loadComponent: () => import('./components/balance/balance.component').then(m => m.BalanceComponent)
+    },
+    {
+        path: 'wallet',
+        loadComponent: () => import('./components/wallet/wallet.component').then(m => m.WalletComponent)
     }
 ];

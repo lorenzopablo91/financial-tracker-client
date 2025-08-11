@@ -1,8 +1,7 @@
 .gastos-card.expenses-table-card {
-    border-color: var(--error-color);
-    background: linear-gradient(135deg, var(--error-light), #ffffff) !important;
+    background: linear-gradient(135deg, var(--accent-500), #ffffff);
+    border: 1px solid var(--accent-500);
     border-radius: var(--border-radius-md);
-    border: 1px solid var(--error-color);
     padding: var(--spacing-md);
     position: relative;
     transform: translate3d(0, 0, 0);
@@ -14,18 +13,15 @@
         box-shadow: var(--shadow-lg);
     }
 
-
     .card-header {
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
         margin-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--neutral-200);
 
         .title {
             font-size: 16px;
             font-weight: 600;
-            color: var(--error-color);
         }
     }
 
@@ -41,19 +37,12 @@
             }
 
             .mat-mdc-header-cell {
-                color: var(--error-color) !important;
-                font-size: 12px !important;
-                font-weight: 600 !important;
-                letter-spacing: 0.5px;
                 padding: var(--spacing-sm) var(--spacing-md) !important;
                 white-space: nowrap;
-                border-bottom: 1px solid var(--error-color);
             }
 
             .mat-mdc-footer-row {
                 background-color: transparent;
-
-                border-top: 1px solid var(--error-color);
             }
         }
     }
@@ -61,8 +50,6 @@
 
 // Estilos del encabezado
 .mat-mdc-header-cell {
-    font-weight: 500 !important;
-    color: var(--neutral-800) !important;
     background-color: transparent;
     padding: var(--spacing-sm) var(--spacing-md) !important;
     font-size: 12px !important;
@@ -74,11 +61,11 @@
 .mat-mdc-cell,
 .mat-mdc-header-cell,
 .mat-mdc-footer-cell {
-    color: var(--neutral-700);
     padding-right: var(--spacing-md);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: 'Roboto Mono', monospace;
 
     &:first-child {
         padding-left: var(--spacing-md);
@@ -87,7 +74,6 @@
 
 // Fila de totales
 .totals-row {
-    border-top: 1px solid var(--neutral-200);
     background-color: transparent;
 
     .mat-mdc-footer-cell {
@@ -104,11 +90,6 @@
     color: var(--error-color) !important;
 }
 
-// Totales
-.total-amount,
-.total-label {
-    font-weight: 600 !important;
-}
 
 // Espaciado del contenido
 .content-spacing {
