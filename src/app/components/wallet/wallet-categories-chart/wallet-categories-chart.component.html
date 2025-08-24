@@ -1,0 +1,25 @@
+<div class="chart-container">
+  <!-- Gráfico Doughnut centrado -->
+  <div class="chart-wrapper" *ngIf="categories && categories.length > 0">
+    <canvas #chartCanvas></canvas>
+  </div>
+
+  <!-- Leyenda personalizada horizontal -->
+  <div class="custom-legend" *ngIf="categories && categories.length > 0">
+    <div *ngFor="let category of categories; let i = index" class="legend-item">
+      <div class="legend-indicator" [style.background-color]="colors[i]"></div>
+      <div class="category-container">
+        <span class="category-name">{{ category.name }}</span>
+        <div class="category-amount" [class.hidden-amount]="hideAmounts">
+          {{ hideAmounts ? '••••••' : (category.amount | currencyFormat:'USD') }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sin datos -->
+<div class="no-data" *ngIf="!categories || categories.length === 0">
+  <mat-icon>pie_chart</mat-icon>
+  <p>No hay datos de categorías disponibles</p>
+</div>

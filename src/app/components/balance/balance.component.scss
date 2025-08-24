@@ -1,6 +1,5 @@
 .balance-container {
   display: grid;
-  padding: 20px;
   gap: 15px;
 }
 
@@ -8,6 +7,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  justify-content: center;
 
   mat-icon {
     color: var(--primary-500);
@@ -19,16 +19,16 @@
     &.mat-mdc-form-field {
       .mat-mdc-text-field-wrapper {
         border-color: var(--accent-500);
-        background: linear-gradient(135deg, var(--accent-500), #ffffff);
+        background: var(--accent-500);
 
         .mdc-text-field--disabled {
           border-color: var(--accent-500);
-          background: linear-gradient(135deg, var(--accent-500), #ffffff);
+          background: var(--accent-500);
         }
 
         .mat-mdc-form-field-focus-overlay {
           border-color: var(--accent-500);
-          background: linear-gradient(135deg, var(--accent-500), #ffffff);
+          background: var(--accent-500);
         }
       }
     }

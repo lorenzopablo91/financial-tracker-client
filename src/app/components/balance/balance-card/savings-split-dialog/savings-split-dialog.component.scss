@@ -90,7 +90,7 @@
 
   // Estilos para las distribution cards
   .distribution-item {
-    background: linear-gradient(135deg, var(--accent-500), #ffffff);
+    background: var(--accent-500);
     border: 1px solid var(--accent-500);
     flex: 1 1 0;
     width: calc(33.333% - var(--spacing-md));
@@ -144,29 +144,26 @@
 
     // Variantes de color
     &.crypto {
-
       .item-icon,
       .label,
       .crypto-value {
-        color: #f39c12;
+        color: #FF9F40;
       }
     }
 
     &.stocks {
-
       .item-icon,
       .label,
       .stocks-value {
-        color: #27ae60;
+        color: #9966FF;
       }
     }
 
     &.dollar {
-
       .item-icon,
       .label,
       .dollar-value {
-        color: #3498db;
+        color: #4BC0C0;
       }
     }
   }

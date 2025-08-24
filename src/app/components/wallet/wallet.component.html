@@ -1,1 +1,142 @@
-wallet!
+<!-- Header superior -->
+<div class="dashboard-header">
+  <div class="dashboard-controls">
+    <button mat-icon-button (click)="toggleAmountVisibility()"
+      [matTooltip]="hideAmounts ? 'Mostrar montos' : 'Ocultar montos'" class="visibility-btn">
+      <mat-icon>{{ hideAmounts ? 'visibility' : 'visibility_off' }}</mat-icon>
+    </button>
+
+    <div class="refresh-section">
+      <span class="text-muted">Última actualización: {{ lastUpdated | date:'M/d/yy, h:mm a' }}</span>
+      <button mat-icon-button (click)="refreshData()" matTooltip="Actualizar datos" [disabled]="loading">
+        <mat-icon [class.spinning]="loading">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-layout">
+  <!-- Columna izquierda - Billetera -->
+  <div class="wallet-section">
+    <mat-card class="total-card">
+      <!-- Contenido principal centrado -->
+      <div class="summary-content">
+        <!-- Título de la card arriba del monto -->
+        <div class="card-title">
+          <span class="summary-title">💰 TOTAL BILLETERA</span>
+        </div>
+
+        <!-- Total Amount centrado -->
+        <div class="total-amount-container">
+          <div class="total-amount" [class.hidden-amount]="hideAmounts">
+            {{ hideAmounts ? '••••••••' : (totalWallet | currencyFormat:'USD') }}
+          </div>
+        </div>
+
+        <!-- Gráfico de categorías centrado -->
+        <div class="categories-chart-section" *ngIf="categories && categories.length > 0">
+          <app-wallet-categories-chart [categories]="categories" [hideAmounts]="hideAmounts">
+          </app-wallet-categories-chart>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Columna derecha - Cards de rendimiento -->
+  <div class="performance-section">
+    <!-- Cards de rendimiento -->
+    <div class="performance-cards">
+      <!-- Rendimiento Total -->
+      <mat-card class="performance-card total-performance" [ngClass]="getTotalPerformanceClass()">
+        <div class="performance-header">
+          <span class="performance-title">💰 RENDIMIENTO TOTAL</span>
+          <div class="performance-indicators">
+            <span class="performance-percentage" [ngClass]="getTotalPerformanceClass()">
+              {{ getTotalPercentageGain() >= 0 ? '+' : '' }}{{ getTotalPercentageGain() }}%
+            </span>
+          </div>
+        </div>
+        <div class="performance-amount" [ngClass]="getTotalPerformanceClass()">
+          <span [class.hidden-amount]="hideAmounts">
+            {{ hideAmounts
+            ? '••••••'
+            : (getTotalPercentageGain() >= 0 ? '+' : '')
+            }} {{ hideAmounts ? '' : (totalDifference | currencyFormat:'USD')}}
+          </span>
+          <mat-icon class="trend-icon" [ngClass]="getTotalPerformanceClass()">
+            {{ getTotalPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
+          </mat-icon>
+        </div>
+      </mat-card>
+
+      <!-- Rendimiento Dólares -->
+      <mat-card class="performance-card dollars-performance" [ngClass]="getDollarPerformanceClass()">
+        <div class="performance-header">
+          <mat-icon class="performance-icon">attach_money</mat-icon>
+          <span class="performance-title">RENDIMIENTO DÓLARES</span>
+          <div class="performance-indicators">
+            <span class="performance-percentage" [ngClass]="getDollarPerformanceClass()">
+              {{ getDollarPercentageGain() >= 0 ? '+' : '' }}{{ getDollarPercentageGain() }}%
+            </span>
+          </div>
+        </div>
+        <div class="performance-amount" [ngClass]="getDollarPerformanceClass()">
+          <span [class.hidden-amount]="hideAmounts">
+            {{ hideAmounts
+            ? '••••••'
+            : (getDollarPercentageGain() >= 0 ? '+' : '')
+            }} {{ hideAmounts ? '' : (dollarDifference | currencyFormat:'USD')}}
+          </span>
+          <mat-icon class="trend-icon" [ngClass]="getDollarPerformanceClass()">
+            {{ getDollarPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
+          </mat-icon>
+        </div>
+      </mat-card>
+
+      <!-- Rendimiento Acciones -->
+      <mat-card class="performance-card stocks-performance" [ngClass]="getStockPerformanceClass()">
+        <div class="performance-header">
+          <mat-icon class="performance-icon">bar_chart</mat-icon>
+          <span class="performance-title ">RENDIMIENTO ACCIONES</span>
+          <div class="performance-indicators">
+            <span class="performance-percentage" [ngClass]="getStockPerformanceClass()">
+              {{ getStockPercentageGain() >= 0 ? '+' : '' }}{{ getStockPercentageGain() }}%
+            </span>
+          </div>
+        </div>
+        <div class="performance-amount" [ngClass]="getStockPerformanceClass()">
+          <span [class.hidden-amount]="hideAmounts">
+            {{ hideAmounts ? '••••••' : stockDifference | currencyFormat:'USD' }}
+          </span>
+          <mat-icon class="trend-icon" [ngClass]="getStockPerformanceClass()">
+            {{ getStockPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
+          </mat-icon>
+        </div>
+      </mat-card>
+
+      <!-- Rendimiento Criptomonedas -->
+      <mat-card class="performance-card crypto-performance" [ngClass]="getCryptoPerformanceClass()">
+        <div class="performance-header">
+          <mat-icon class="performance-icon">currency_bitcoin</mat-icon>
+          <span class="performance-title">RENDIMIENTO CRYPTOMONEDAS</span>
+          <div class="performance-indicators">
+            <span class="performance-percentage" [ngClass]="getCryptoPerformanceClass()">
+              {{ getCryptoPercentageGain() >= 0 ? '+' : '' }}{{ getCryptoPercentageGain() }}%
+            </span>
+          </div>
+        </div>
+        <div class="performance-amount" [ngClass]="getCryptoPerformanceClass()">
+          <span [class.hidden-amount]="hideAmounts">
+            {{ hideAmounts
+            ? '••••••'
+            : (getCryptoPercentageGain() >= 0 ? '+' : '')
+            }} {{ hideAmounts ? '' : (cryptoDifference | currencyFormat:'USD')}}
+          </span>
+          <mat-icon class="trend-icon" [ngClass]="getCryptoPerformanceClass()">
+            {{ getCryptoPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
+          </mat-icon>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>

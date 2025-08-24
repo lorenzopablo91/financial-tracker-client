@@ -10,6 +10,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export const MaterialImports = [
   MatFormFieldModule,
@@ -23,5 +24,6 @@ export const MaterialImports = [
   MatDialogModule,
   MatCheckboxModule,
   MatTableModule,
-  MatTooltipModule
+  MatTooltipModule,
+  MatProgressSpinnerModule  
 ];

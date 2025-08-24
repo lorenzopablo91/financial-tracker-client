@@ -1,0 +1,295 @@
+@use "sass:color";
+
+.dashboard-header {
+  display: flex;
+  margin-bottom: 8px;
+  padding: 0 32px;
+  justify-self: self-end;
+
+  .dashboard-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .visibility-btn {
+      mat-icon {
+        color: var(--primary-500);
+      }
+    }
+
+    .refresh-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .text-muted {
+        font-size: 0.85rem;
+        font-weight: 400;
+        white-space: nowrap;
+        color: var(--text-secondary, #666);
+      }
+
+      mat-icon {
+        color: var(--primary-500);
+
+        &.spinning {
+          animation: spin 1s linear infinite;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+}
+
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  width: 100%;
+  align-items: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.wallet-section {
+  .total-card {
+    background: var(--accent-500);
+    border-radius: 12px;
+    border: 1px solid var(--accent-500);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+
+      .card-title {
+        margin-bottom: 16px;
+
+        .summary-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+      }
+
+      .total-amount-container {
+        margin-bottom: 32px;
+
+        .total-amount {
+          font-size: 4rem;
+          font-weight: 800;
+          line-height: 1;
+
+          @media (max-width: 768px) {
+            font-size: 3rem;
+          }
+        }
+      }
+
+      .categories-chart-section {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.performance-section {
+  display: flex;
+  flex-direction: column;
+
+  .performance-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.performance-card {
+  background: var(--accent-500);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  &.total-performance {
+    font-weight: 800;
+  }
+
+  &.dollars-performance {
+    color: #4BC0C0 !important;
+    background: color.scale(#4BC0C0, $lightness: 80%);
+  }
+
+  &.stocks-performance {
+    color: #9966FF !important;
+    background: color.scale(#9966FF, $lightness: 80%);
+  }
+
+  &.crypto-performance {
+    color: #FF9F40 !important;
+    background: color.scale(#FF9F40, $lightness: 80%);
+  }
+
+  .performance-header {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 12px;
+
+    .performance-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    .performance-title {
+      font-size: 1rem;
+      flex: 1;
+      color: var(--text-primary);
+
+    }
+
+    .performance-indicators {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      .trend-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+
+        &.positive {
+          color: #4caf50;
+        }
+
+        &.negative {
+          color: #f44336;
+        }
+      }
+
+      .performance-percentage {
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+
+        &.positive {
+          color: #4caf50;
+          background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        &.negative {
+          color: #f44336;
+          background-color: rgba(244, 67, 54, 0.1);
+        }
+      }
+    }
+  }
+
+  .performance-amount {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+
+    &.positive {
+      color: #4caf50;
+    }
+
+    &.negative {
+      color: #f44336;
+    }
+  }
+}
+
+.total-card,
+.info-card {
+  .summary-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 24px;
+
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .summary-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .visibility-btn {
+        mat-icon {
+          color: var(--primary-500);
+
+          &.spinning {
+            animation: spin 1s linear infinite;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+}
+
+.hidden-amount {
+  font-family: monospace;
+  letter-spacing: 2px;
+  filter: blur(4px);
+  user-select: none;
+}
+
+// Animaciones
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

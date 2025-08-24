@@ -12,7 +12,7 @@
 
 // Estilos base para cards
 .info-card {
-    background: linear-gradient(135deg, var(--accent-500), #ffffff);
+    background: var(--accent-500);
     border-radius: var(--border-radius-md);
     border: 1px solid var(--accent-500);
     flex: 1;

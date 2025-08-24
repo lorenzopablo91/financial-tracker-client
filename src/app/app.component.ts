@@ -15,7 +15,7 @@ import { MenuComponent } from './shared/components/menu/menu.component';
   styles: [`
     .main-content {
       padding: 20px;
-      min-height: calc(100vh - 64px);
+      height: min-content;
     }
   `]
 })
