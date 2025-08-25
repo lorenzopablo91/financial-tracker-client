@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialImports } from '../../shared/imports/material-imports';
-import { Subject } from 'rxjs';
+import { Subject, interval, catchError, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CryptoService } from '../../services/binance.service';
 import { CryptoData } from '../../models/binance.interface';
@@ -20,40 +20,149 @@ import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
         CurrencyFormatPipe
     ],
     templateUrl: './wallet.component.html',
-    styleUrls: ['./wallet.component.scss'],
-    providers: [CryptoService]
+    styleUrls: ['./wallet.component.scss']
 })
 export class WalletComponent implements OnInit, OnDestroy {
-    // Propiedades del componente
-    amounts: WalletData[] = amounts;
-    cryptoData: CryptoData[] = [];
-    dollarTotal: number = 0;
-    stockTotal: number = 0;
-    cryptoTotal: number = 0;
-    totalWallet: number = 0;
-    dollarDifference: number = 0;
-    stockDifference: number = 0;
-    cryptoDifference: number = 0;
-    totalDifference: number = 0;
-    categories: Category[] = [];
-    loading = false;
-    error: string | null = null;
-    lastUpdated: Date | null = null;
-    hideAmounts = false;
+    // Inyección de dependencias usando inject()
+    private readonly cryptoService = inject(CryptoService);
+    private readonly destroy$ = new Subject<void>();
 
-    // Subject para manejar la destrucción del componente
-    private destroy$ = new Subject<void>();
+    // Signals para estado reactivo
+    readonly amounts = signal<WalletData[]>(amounts);
+    readonly cryptoData = signal<CryptoData[]>([]);
+    readonly loading = signal(false);
+    readonly error = signal<string | null>(null);
+    readonly lastUpdated = signal<Date | null>(null);
+    readonly hideAmounts = signal(false);
 
-    constructor(private cryptoService: CryptoService) { }
+    // Computed signals para cálculos derivados
+    readonly dollarTotal = computed(() => {
+        const data = this.amounts()[0];
+        if (!data) return 0;
+        return data.dollarAmount.dollarsBanked +
+            data.dollarAmount.dollarCashed +
+            data.dollarAmount.dollarInvested;
+    });
+
+    readonly stockTotal = computed(() => {
+        const data = this.amounts()[0];
+        if (!data) return 0;
+        const totalStockPesos = data.stockMarketAmount.cedearsPesos +
+            data.stockMarketAmount.stockMarketPesos +
+            data.stockMarketAmount.cashPesos;
+        return totalStockPesos / data.dollarQuote;
+    });
+
+    readonly cryptoTotal = computed(() =>
+        this.cryptoData().reduce((total, crypto) => total + crypto.valueUSD, 0)
+    );
+
+    readonly totalWallet = computed(() =>
+        this.dollarTotal() + this.stockTotal() + this.cryptoTotal()
+    );
+
+    readonly dollarDifference = computed(() => {
+        const data = this.amounts()[0];
+        return data ? this.dollarTotal() - data.dollarUninvested : 0;
+    });
+
+    readonly stockDifference = computed(() => {
+        const data = this.amounts()[0];
+        return data ? this.stockTotal() - data.stockMarketUninvested : 0;
+    });
+
+    readonly cryptoDifference = computed(() => {
+        const data = this.amounts()[0];
+        return data ? this.cryptoTotal() - data.cryptoUninvested : 0;
+    });
+
+    readonly totalDifference = computed(() => {
+        const data = this.amounts()[0];
+        if (!data) return 0;
+        const totalUninvested = data.dollarUninvested +
+            data.stockMarketUninvested +
+            data.cryptoUninvested;
+        return this.totalWallet() - totalUninvested;
+    });
+
+    readonly categories = computed<Category[]>(() => [
+        {
+            name: 'DÓLARES',
+            amount: this.dollarTotal(),
+            color: '#10b981',
+            percentage: this.getPercentage(this.dollarTotal()),
+            difference: this.dollarDifference(),
+            percentageGain: this.dollarPercentageGain()
+        },
+        {
+            name: 'ACCIONES',
+            amount: this.stockTotal(),
+            color: '#3b82f6',
+            percentage: this.getPercentage(this.stockTotal()),
+            difference: this.stockDifference(),
+            percentageGain: this.stockPercentageGain()
+        },
+        {
+            name: 'CRYPTOMONEDAS',
+            amount: this.cryptoTotal(),
+            color: '#f97316',
+            percentage: this.getPercentage(this.cryptoTotal()),
+            difference: this.cryptoDifference(),
+            percentageGain: this.cryptoPercentageGain()
+        }
+    ]);
+
+    // Computed para porcentajes de ganancia
+    readonly dollarPercentageGain = computed(() => {
+        const data = this.amounts()[0];
+        return data ? this.getPercentageGain(this.dollarTotal(), data.dollarUninvested) : 0;
+    });
+
+    readonly stockPercentageGain = computed(() => {
+        const data = this.amounts()[0];
+        return data ? this.getPercentageGain(this.stockTotal(), data.stockMarketUninvested) : 0;
+    });
+
+    readonly cryptoPercentageGain = computed(() => {
+        const data = this.amounts()[0];
+        return data ? this.getPercentageGain(this.cryptoTotal(), data.cryptoUninvested) : 0;
+    });
+
+    readonly totalPercentageGain = computed(() => {
+        const data = this.amounts()[0];
+        if (!data) return 0;
+        const totalUninvested = data.dollarUninvested +
+            data.stockMarketUninvested +
+            data.cryptoUninvested;
+        return this.getPercentageGain(this.totalWallet(), totalUninvested);
+    });
+
+    // Computed para clases CSS de rendimiento
+    readonly totalPerformanceClass = computed(() =>
+        this.totalPercentageGain() >= 0 ? 'positive' : 'negative'
+    );
+
+    readonly dollarPerformanceClass = computed(() =>
+        this.dollarPercentageGain() >= 0 ? 'positive' : 'negative'
+    );
+
+    readonly stockPerformanceClass = computed(() =>
+        this.stockPercentageGain() >= 0 ? 'positive' : 'negative'
+    );
+
+    readonly cryptoPerformanceClass = computed(() =>
+        this.cryptoPercentageGain() >= 0 ? 'positive' : 'negative'
+    );
+
+    constructor() {
+        this.lastUpdated.set(new Date());
+    }
 
     ngOnInit(): void {
-        this.calculateHardcodedTotals();
+        // Carga inicial
         this.loadCryptoData();
-
-        // Auto-refresh cada 5 minutos
-        setInterval(() => {
-            this.refreshData();
-        }, 5 * 60 * 1000);
+        // Inicializar auto-refresh después de la carga inicial
+        this.initializeAutoRefresh();
     }
 
     ngOnDestroy(): void {
@@ -61,229 +170,133 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    private calculateHardcodedTotals(): void {
-        if (this.amounts.length > 0) {
-            const data = this.amounts[0];
-
-            // Calcular total en dólares
-            this.dollarTotal = data.dollarAmount.dollarsBanked +
-                data.dollarAmount.dollarCashed +
-                data.dollarAmount.dollarInvested;
-
-            // Calcular total en acciones (convertir pesos a dólares)
-            const totalStockPesos = data.stockMarketAmount.cedearsPesos +
-                data.stockMarketAmount.stockMarketPesos +
-                data.stockMarketAmount.cashPesos;
-            this.stockTotal = totalStockPesos / data.dollarQuote;
-
-            // Calcular diferencias
-            this.dollarDifference = this.dollarTotal - data.dollarUninvested;
-            this.stockDifference = this.stockTotal - data.stockMarketUninvested;
-            // cryptoDifference se calcula después cuando tengamos los datos de crypto
-
-            // Calcular total inicial (sin crypto aún)
-            this.totalWallet = this.dollarTotal + this.stockTotal;
-            this.updateCategories();
-        }
-    }
-
-    /**
-     * Carga los datos de criptomonedas y calcula totales
-     */
-    loadCryptoData(): void {
-        this.loading = true;
-        this.error = null;
-
-        this.cryptoService.getCryptoData()
+    private initializeAutoRefresh(): void {
+        // Auto-refresh cada 5 minutos
+        interval(5 * 60 * 1000)
             .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (data) => {
-                    this.cryptoData = data;
-                    this.calculateTotals();
-                    this.updateCategories();
-                    this.lastUpdated = new Date();
-                    this.loading = false;
-                },
-                error: (error) => {
-                    this.error = error.message || 'Error loading crypto data';
-                    this.loading = false;
-                    this.cryptoTotal = 0;
-                    this.calculateTotals();
-                    this.updateCategories();
-                    console.error('Error loading crypto data:', error);
+            .subscribe(() => {
+                // Solo hacer auto-refresh si no hay errores pendientes
+                if (!this.error()) {
+                    this.loadCryptoData();
                 }
             });
     }
 
-    /**
-     * Calcula el total de crypto y el total general
-     */
-    private calculateTotals(): void {
-        this.cryptoTotal = this.cryptoData.reduce(
-            (total, crypto) => total + crypto.valueUSD,
-            0
-        );
-
-        this.totalWallet = this.dollarTotal + this.stockTotal + this.cryptoTotal;
-
-        // Calcular diferencia de crypto y total
-        if (this.amounts.length > 0) {
-            const data = this.amounts[0];
-            this.cryptoDifference = this.cryptoTotal - data.cryptoUninvested;
-
-            const totalUninvested = data.dollarUninvested + data.stockMarketUninvested + data.cryptoUninvested;
-            this.totalDifference = this.totalWallet - totalUninvested;
-        }
-    }
-
-    /**
-     * Actualiza las categorías con los datos actuales
-     */
-    private updateCategories(): void {
-        const data = this.amounts.length > 0 ? this.amounts[0] : null;
-
-        // Calcular diferencias
-        if (data) {
-            this.dollarDifference = this.dollarTotal - data.dollarUninvested;
-            this.stockDifference = this.stockTotal - data.stockMarketUninvested;
-            this.cryptoDifference = this.cryptoTotal - data.cryptoUninvested;
-
-            const totalUninvested = data.dollarUninvested + data.stockMarketUninvested + data.cryptoUninvested;
-            this.totalDifference = this.totalWallet - totalUninvested;
+    private loadCryptoData(): void {
+        if (this.loading()) {
+            return;
         }
 
-        this.categories = [
-            {
-                name: 'DÓLARES',
-                amount: this.dollarTotal,
-                color: '#10b981',
-                percentage: this.getPercentage(this.dollarTotal),
-                difference: this.dollarDifference,
-                percentageGain: data ? this.getPercentageGain(this.dollarTotal, data.dollarUninvested) : 0
-            },
-            {
-                name: 'ACCIONES',
-                amount: this.stockTotal,
-                color: '#3b82f6',
-                percentage: this.getPercentage(this.stockTotal),
-                difference: this.stockDifference,
-                percentageGain: data ? this.getPercentageGain(this.stockTotal, data.stockMarketUninvested) : 0
-            },
-            {
-                name: 'CRYPTOMONEDAS',
-                amount: this.cryptoTotal,
-                color: '#f97316',
-                percentage: this.getPercentage(this.cryptoTotal),
-                difference: this.cryptoDifference,
-                percentageGain: data ? this.getPercentageGain(this.cryptoTotal, data.cryptoUninvested) : 0
-            }
-        ];
+        this.loading.set(true);
+        this.error.set(null);
+
+        this.cryptoService.getCryptoData()
+            .pipe(
+                takeUntil(this.destroy$),
+                catchError(error => {
+                    console.error('Error loading crypto data:', error);
+
+                    // Manejar diferentes tipos de errores
+                    let errorMessage = 'Error desconocido al cargar los datos';
+
+                    if (error.status === 0) {
+                        errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
+                    } else if (error.status >= 500) {
+                        errorMessage = 'Error del servidor. Intenta más tarde.';
+                    } else if (error.status === 429) {
+                        errorMessage = 'Demasiadas solicitudes. Espera un momento.';
+                    } else if (error.message) {
+                        errorMessage = error.message;
+                    }
+
+                    this.error.set(errorMessage);
+                    this.loading.set(false);
+                    return of([]);
+                })
+            )
+            .subscribe({
+                next: (data) => {
+                    this.cryptoData.set(data);
+                    this.lastUpdated.set(new Date());
+                    this.loading.set(false);
+                },
+                error: (error) => {
+                    console.error('Subscription error:', error);
+                    this.error.set('Error inesperado en la suscripción');
+                    this.loading.set(false);
+                }
+            });
     }
 
     /**
      * Calcula el porcentaje de ganancia
      */
     private getPercentageGain(currentAmount: number, originalAmount: number): number {
-        if (originalAmount === 0) return 0;
-        return Math.round(((currentAmount - originalAmount) / originalAmount) * 100 * 10) / 10;
-    }
-
-    /**
-     * Obtiene el porcentaje de ganancia total
-     */
-    getTotalPercentageGain(): number {
-        if (this.amounts.length === 0) return 0;
-        const data = this.amounts[0];
-        const totalUninvested = data.dollarUninvested + data.stockMarketUninvested + data.cryptoUninvested;
-        return this.getPercentageGain(this.totalWallet, totalUninvested);
+        if (originalAmount === 0 || !isFinite(originalAmount)) return 0;
+        const gain = ((currentAmount - originalAmount) / originalAmount) * 100;
+        return Math.round(gain * 10) / 10;
     }
 
     /**
      * Calcula el porcentaje de una categoría
      */
     private getPercentage(amount: number): number {
-        if (this.totalWallet === 0) return 0;
-        return Math.round((amount / this.totalWallet) * 100 * 10) / 10;
+        const total = this.totalWallet();
+        if (total === 0 || !isFinite(total)) return 0;
+        const percentage = (amount / total) * 100;
+        return Math.round(percentage * 10) / 10;
     }
 
     /**
      * Refresca los datos manualmente
      */
     refreshData(): void {
-        if (!this.loading) {
-            this.calculateHardcodedTotals();
-            this.loadCryptoData();
-        }
+        this.error.set(null); // Limpiar errores al hacer refresh manual
+        this.loadCryptoData();
     }
 
     /**
      * Reintenta cargar datos en caso de error
      */
     retryLoading(): void {
-        this.error = null;
+        this.error.set(null);
         this.loadCryptoData();
     }
 
     /**
-    * Toggle para mostrar/ocultar saldos
-    */
+     * Toggle para mostrar/ocultar saldos
+     */
     toggleAmountVisibility(): void {
-        this.hideAmounts = !this.hideAmounts;
+        // Solo permitir toggle si no está cargando
+        if (!this.loading()) {
+            this.hideAmounts.update(value => !value);
+        }
     }
 
     /**
-     * Obtiene el porcentaje de ganancia de dólares
+     * Verifica si hay datos válidos para mostrar
      */
-    getDollarPercentageGain(): number {
-        if (this.amounts.length === 0) return 0;
-        const data = this.amounts[0];
-        return this.getPercentageGain(this.dollarTotal, data.dollarUninvested);
+    hasValidData(): boolean {
+        return this.categories().some(category => category.amount > 0);
     }
 
     /**
-     * Obtiene el porcentaje de ganancia de acciones
+     * Obtiene el estado actual del dashboard
      */
-    getStockPercentageGain(): number {
-        if (this.amounts.length === 0) return 0;
-        const data = this.amounts[0];
-        return this.getPercentageGain(this.stockTotal, data.stockMarketUninvested);
+    getDashboardState(): 'loading' | 'error' | 'success' | 'empty' {
+        if (this.loading()) return 'loading';
+        if (this.error()) return 'error';
+        if (!this.hasValidData()) return 'empty';
+        return 'success';
     }
 
-    /**
-     * Obtiene el porcentaje de ganancia de criptomonedas
-     */
-    getCryptoPercentageGain(): number {
-        if (this.amounts.length === 0) return 0;
-        const data = this.amounts[0];
-        return this.getPercentageGain(this.cryptoTotal, data.cryptoUninvested);
-    }
-
-    /**
-     * Obtiene la clase CSS para el rendimiento total
-     */
-    getTotalPerformanceClass(): string {
-        return this.getTotalPercentageGain() >= 0 ? 'positive' : 'negative';
-    }
-
-    /**
-     * Obtiene la clase CSS para el rendimiento de dólares
-     */
-    getDollarPerformanceClass(): string {
-        return this.getDollarPercentageGain() >= 0 ? 'positive' : 'negative';
-    }
-
-    /**
-     * Obtiene la clase CSS para el rendimiento de acciones
-     */
-    getStockPerformanceClass(): string {
-        return this.getStockPercentageGain() >= 0 ? 'positive' : 'negative';
-    }
-
-    /**
-     * Obtiene la clase CSS para el rendimiento de criptomonedas
-     */
-    getCryptoPerformanceClass(): string {
-        return this.getCryptoPercentageGain() >= 0 ? 'positive' : 'negative';
-    }
-
+    // Métodos de conveniencia que delegan a computed signals (para backward compatibility)
+    getDollarPercentageGain = () => this.dollarPercentageGain();
+    getStockPercentageGain = () => this.stockPercentageGain();
+    getCryptoPercentageGain = () => this.cryptoPercentageGain();
+    getTotalPercentageGain = () => this.totalPercentageGain();
+    getTotalPerformanceClass = () => this.totalPerformanceClass();
+    getDollarPerformanceClass = () => this.dollarPerformanceClass();
+    getStockPerformanceClass = () => this.stockPerformanceClass();
+    getCryptoPerformanceClass = () => this.cryptoPerformanceClass();
 }

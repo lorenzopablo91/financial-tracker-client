@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, ViewChild, ElementRef, OnChanges, SimpleChanges, AfterViewInit } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effect, signal, computed, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -13,6 +13,7 @@ export interface CategoryData {
   percentage: number;
   difference: number;
   percentageGain: number;
+  color?: string;
 }
 
 @Component({
@@ -26,83 +27,87 @@ export interface CategoryData {
   templateUrl: './wallet-categories-chart.component.html',
   styleUrls: ['./wallet-categories-chart.component.scss']
 })
-export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy, OnChanges {
-  @Input() categories: CategoryData[] = [];
-  @Input() hideAmounts: boolean = false;
+export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy {
+  private readonly destroyRef = inject(DestroyRef);
+
+  // Signals para inputs
+  readonly categoriesSignal = signal<CategoryData[]>([]);
+  readonly hideAmountsSignal = signal(false);
+  private readonly chartInitialized = signal(false);
+
+  @Input()
+  set categories(value: CategoryData[]) {
+    this.categoriesSignal.set(value || []);
+  }
+  get categories() {
+    return this.categoriesSignal();
+  }
+
+  @Input()
+  set hideAmounts(value: boolean) {
+    this.hideAmountsSignal.set(value);
+  }
+  get hideAmounts() {
+    return this.hideAmountsSignal();
+  }
+
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
 
   private chart: Chart<'doughnut'> | null = null;
 
   // Colores predefinidos para las categorías
-  colors = [
-    '#4BC0C0', '#9966FF', '#FF9F40',
-  ];
+  readonly colors = computed(() => [
+    '#10b981', '#3b82f6', '#f97316',
+    '#8b5cf6', '#f59e0b', '#ef4444'
+  ]);
 
-  ngAfterViewInit(): void {
-    console.log('WalletCategoriesChart - ngAfterViewInit', { 
-      canvasElement: this.chartCanvas?.nativeElement,
-      categories: this.categories 
-    });
-    
-    // Si tenemos datos pero no canvas, intentamos crear el chart después
-    if (this.categories && this.categories.length > 0) {
-      if (this.chartCanvas?.nativeElement) {
-        this.createChart();
-      } else {
-        // Intentar de nuevo después de que Angular termine el ciclo de detección
-        setTimeout(() => {
-          console.log('Retry after timeout - Canvas element:', this.chartCanvas?.nativeElement);
-          if (this.chartCanvas?.nativeElement) {
-            this.createChart();
-          }
-        }, 100);
+  // Computed para datos del chart
+  readonly chartData = computed(() => ({
+    data: this.categoriesSignal().map(cat => cat.amount),
+    labels: this.categoriesSignal().map(cat => cat.name),
+    colors: this.categoriesSignal().map((cat, index) =>
+      cat.color || this.colors()[index % this.colors().length]
+    )
+  }));
+
+  // Computed para determinar si hay datos
+  readonly hasData = computed(() =>
+    this.categoriesSignal().length > 0 &&
+    this.categoriesSignal().some(cat => cat.amount > 0)
+  );
+
+  constructor() {
+    effect(() => {
+      // Solo actualizar si el chart ya existe y está inicializado
+      if (this.chart && this.chartInitialized()) {
+        this.updateExistingChart();
       }
-    }
+    });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges triggered', { 
-      changes, 
-      canvasElement: this.chartCanvas?.nativeElement,
-      categories: this.categories 
-    });
-    
-    if ((changes['categories'] || changes['hideAmounts'])) {
-      if (this.chartCanvas?.nativeElement && this.categories && this.categories.length > 0) {
-        this.updateChart();
-      } else if (changes['categories'] && this.categories && this.categories.length > 0) {
-        // Si las categorías cambiaron pero no tenemos canvas, intentar crear el chart
-        setTimeout(() => {
-          console.log('Creating chart from ngOnChanges after timeout');
-          if (this.chartCanvas?.nativeElement) {
-            this.createChart();
-          }
-        }, 100);
-      }
+  ngAfterViewInit(): void {
+    if (this.hasData()) {
+      this.createChart();
     }
   }
 
   ngOnDestroy(): void {
-    if (this.chart) {
-      this.chart.destroy();
-    }
+    this.destroyChart();
   }
 
   private createChart(): void {
-    console.log('Creating chart...', { 
-      canvasElement: this.chartCanvas?.nativeElement,
-      categories: this.categories 
-    });
-
     if (!this.chartCanvas?.nativeElement) {
-      console.error('Canvas element not found');
+      console.warn('Canvas element not available');
       return;
     }
 
-    if (!this.categories || this.categories.length === 0) {
-      console.warn('No categories data provided');
+    if (!this.hasData()) {
+      console.warn('No chart data available');
       return;
     }
+
+    // Destruir chart anterior si existe
+    this.destroyChart();
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
@@ -110,26 +115,18 @@ export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy,
       return;
     }
 
-    // Destruir chart anterior si existe
-    if (this.chart) {
-      this.chart.destroy();
-    }
-
-    const chartData = this.categories.map(cat => cat.amount);
-    const chartLabels = this.categories.map(cat => cat.name);
-
-    console.log('Chart data:', { chartData, chartLabels });
-
+    const data = this.chartData();
     const config: ChartConfiguration<'doughnut'> = {
       type: 'doughnut',
       data: {
-        labels: chartLabels,
+        labels: data.labels,
         datasets: [{
-          data: chartData,
-          backgroundColor: this.colors.slice(0, this.categories.length),
-          borderColor: this.colors.slice(0, this.categories.length),
+          data: data.data,
+          backgroundColor: data.colors,
+          borderColor: data.colors,
           borderWidth: 2,
-          hoverBorderWidth: 3
+          hoverBorderWidth: 3,
+          hoverBackgroundColor: data.colors.map(color => color + 'CC'),
         }]
       },
       options: {
@@ -137,53 +134,105 @@ export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy,
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false // Deshabilitamos la leyenda por defecto
+            display: false
           },
           tooltip: {
-            enabled: !this.hideAmounts,
+            enabled: !this.hideAmountsSignal(),
             callbacks: {
+              title: () => '',
               label: (context) => {
-                const category = this.categories[context.dataIndex];
-                const value = this.hideAmounts ? '••••••' : `${category.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                const percentage = this.hideAmounts ? '••••' : `${category.percentage.toFixed(1)}%`;
+                const category = this.categoriesSignal()[context.dataIndex];
+                if (!category) return '';
+
+                const value = this.hideAmountsSignal()
+                  ? '••••••'
+                  : `${category.amount.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })}`;
+                const percentage = this.hideAmountsSignal()
+                  ? '••••'
+                  : `${category.percentage.toFixed(1)}%`;
+
                 return `${context.label}: ${value} (${percentage})`;
               }
-            }
+            },
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+            borderWidth: 1,
+            displayColors: true,
+            bodySpacing: 4,
+            titleSpacing: 2,
+            cornerRadius: 6,
+            caretSize: 8
           }
         },
-        cutout: '60%', // Hace el círculo más grueso
+        cutout: '60%',
         animation: {
           animateRotate: true,
-          animateScale: true
+          animateScale: true,
+          duration: 800
+        },
+        interaction: {
+          intersect: false,
+          mode: 'nearest'
         }
       }
     };
 
     try {
       this.chart = new Chart(ctx, config);
-      console.log('Chart created successfully:', this.chart);
+      this.chartInitialized.set(true);
     } catch (error) {
       console.error('Error creating chart:', error);
+      this.chartInitialized.set(false);
     }
   }
 
-  private updateChart(): void {
-    if (!this.chart) {
-      this.createChart();
+  private updateExistingChart(): void {
+    if (!this.chart || !this.chartInitialized()) {
       return;
     }
 
-    // Actualizar datos
-    this.chart.data.labels = this.categories.map(cat => cat.name);
-    this.chart.data.datasets[0].data = this.categories.map(cat => cat.amount);
-    this.chart.data.datasets[0].backgroundColor = this.colors.slice(0, this.categories.length);
-    this.chart.data.datasets[0].borderColor = this.colors.slice(0, this.categories.length);
+    const data = this.chartData();
 
-    // Actualizar tooltips según hideAmounts
+    // Actualizar datos del chart
+    this.chart.data.labels = data.labels;
+    this.chart.data.datasets[0].data = data.data;
+    this.chart.data.datasets[0].backgroundColor = data.colors;
+    this.chart.data.datasets[0].borderColor = data.colors;
+    this.chart.data.datasets[0].hoverBackgroundColor = data.colors.map(color => color + 'CC');
+
+    // Actualizar opciones de tooltip
     if (this.chart.options.plugins?.tooltip) {
-      this.chart.options.plugins.tooltip.enabled = !this.hideAmounts;
+      this.chart.options.plugins.tooltip.enabled = !this.hideAmountsSignal();
     }
 
-    this.chart.update();
+    // Usar 'none' para evitar animaciones en updates
+    this.chart.update('none');
+  }
+
+  private destroyChart(): void {
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+      this.chartInitialized.set(false);
+    }
+  }
+
+  // Método público para recrear el chart completamente
+  public refreshChart(): void {
+    if (this.hasData()) {
+      this.createChart();
+    } else {
+      this.destroyChart();
+    }
+  }
+
+  // Método público para actualizar datos sin recrear
+  public updateChart(): void {
+    this.updateExistingChart();
   }
 }

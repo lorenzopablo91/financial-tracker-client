@@ -111,8 +111,6 @@ export class CryptoService {
      * Obtiene precios de múltiples criptomonedas
      */
     getCryptoPrices(symbols: string[]): Observable<Record<string, number>> {
-        console.log('Fetching prices for symbols:', symbols);
-
         const priceObservables: Observable<CryptoPrice | null>[] = symbols.map(symbol =>
             this.fetchCryptoPrice(symbol)
         );
@@ -136,7 +134,6 @@ export class CryptoService {
                     throw new Error('No cryptocurrency prices could be fetched');
                 }
 
-                console.log('Successfully fetched prices:', result);
                 return result;
             }),
             catchError(error => {
