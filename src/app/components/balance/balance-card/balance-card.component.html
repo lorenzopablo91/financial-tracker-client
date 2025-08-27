@@ -2,7 +2,7 @@
     <!-- Tarjeta de Salario -->
     <div class="info-card salary-card">
         <div class="card-header">
-            <span class="title">Salario mensual</span>
+            <span class="title">SALARIO MENSUAL</span>
         </div>
         <div class="content-spacing">
             <div class="info-row border-bottom">
@@ -23,26 +23,26 @@
     <!-- Tarjeta de Gastos -->
     <div class="info-card expenses-card">
         <div class="card-header">
-            <span class="title">Porcentajes sugeridos (ARS)</span>
+            <span class="title">PORCENTAJES SUGERIDOS</span>
         </div>
         <div class="content-spacing">
             <div class="info-row border-bottom">
                 <div class="label-container">
-                    <span class="label">Gastos Fijos:</span>
+                    <span class="label">Gastos Fijos (ARS):</span>
                     <span class="percentage">{{ (FIXED_EXPENSES_PERCENT * 100).toFixed(0) }}%</span>
                 </div>
                 <span class="value bold red-text">{{fixedExpenses() | currencyFormat:'ARS' }}</span>
             </div>
             <div class="info-row border-bottom">
                 <div class="label-container">
-                    <span class="label">Gastos Variables:</span>
+                    <span class="label">Gastos Variables (ARS):</span>
                     <span class="percentage">{{ (VARIABLE_EXPENSES_PERCENT * 100).toFixed(0) }}%</span>
                 </div>
                 <span class="value bold orange-text">{{ variableExpenses() | currencyFormat:'ARS' }}</span>
             </div>
             <div class="info-row">
                 <div class="label-container">
-                    <span class="label">Ahorros:</span>
+                    <span class="label">Ahorros (ARS):</span>
                     <span class="percentage">{{ (SAVINGS_PERCENT * 100).toFixed(0) }}%</span>
                     <button mat-icon-button (click)="openSavingsEditor()" matTooltip="Distribuir ahorros">
                         <mat-icon class="title-icon">pie_chart</mat-icon>
@@ -56,15 +56,15 @@
     <!-- Tarjeta de Aguinaldo -->
     <div *ngIf="showAguinaldo()" class="info-card aguinaldo-card">
         <div class="card-header">
-            <span class="title">Aguinaldo (SAC)</span>
+            <span class="title">AGUINALDO (SAC)</span>
         </div>
         <div class="content-spacing">
             <div class="info-row border-bottom">
-                <span class="label">Aguinaldo (ARS):</span>
+                <span class="label">Neto (ARS):</span>
                 <span class="value bold">{{ aguinaldo() | currencyFormat:'ARS' }}</span>
             </div>
             <div class="info-row">
-                <span class="label">Aguinaldo (USD):</span>
+                <span class="label">Neto (USD):</span>
                 <span class="value bold green-text">{{ aguinaldoUSD() | currencyFormat:'USD' }}</span>
             </div>
         </div>

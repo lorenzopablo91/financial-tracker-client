@@ -55,19 +55,11 @@ export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy 
 
   private chart: Chart<'doughnut'> | null = null;
 
-  // Colores predefinidos para las categorías
-  readonly colors = computed(() => [
-    '#10b981', '#3b82f6', '#f97316',
-    '#8b5cf6', '#f59e0b', '#ef4444'
-  ]);
-
   // Computed para datos del chart
   readonly chartData = computed(() => ({
     data: this.categoriesSignal().map(cat => cat.amount),
     labels: this.categoriesSignal().map(cat => cat.name),
-    colors: this.categoriesSignal().map((cat, index) =>
-      cat.color || this.colors()[index % this.colors().length]
-    )
+    colors: this.categoriesSignal().map((cat) => cat.color)
   }));
 
   // Computed para determinar si hay datos

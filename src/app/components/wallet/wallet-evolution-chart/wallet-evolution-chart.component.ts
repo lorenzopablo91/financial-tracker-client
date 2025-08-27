@@ -1,0 +1,311 @@
+import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effect, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { MaterialImports } from '../../../shared/imports/material-imports';
+import { formatWalletHistoryForChart } from '../../../shared/controllers/evolution-chart.controller';
+import { WalletHistoryData } from '../../../models/wallet.interface';
+import { walletHistoryData } from '../../../data/wallet.data';
+
+// Registrar todos los componentes de Chart.js
+Chart.register(...registerables);
+
+@Component({
+    selector: 'app-wallet-evolution-chart',
+    standalone: true,
+    imports: [
+        CommonModule,
+        MaterialImports
+    ],
+    templateUrl: './wallet-evolution-chart.component.html',
+    styleUrls: ['./wallet-evolution-chart.component.scss']
+})
+export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
+    // Signals para inputs
+    readonly hideAmountsSignal = signal(false);
+    readonly selectedPeriodSignal = signal<'3M' | '6M' | '1A' | 'TODO'>('TODO');
+    readonly chartDataSignal = signal<WalletHistoryData[]>(walletHistoryData);
+    private readonly chartInitialized = signal(false);
+    readonly loading = signal(false);
+    readonly error = signal<string | null>(null);
+
+    @Input()
+    set hideAmounts(value: boolean) {
+        this.hideAmountsSignal.set(value);
+    }
+    get hideAmounts() {
+        return this.hideAmountsSignal();
+    }
+
+    // Input para recibir señal de actualización desde el componente padre
+    @Input()
+    set refreshTrigger(value: any) {
+        if (value) {
+            this.refreshChart();
+        }
+    }
+
+    @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
+
+    private chart: Chart | null = null;
+
+    // Computed values
+    readonly filteredData = computed(() => {
+        const data = this.chartDataSignal();
+        const period = this.selectedPeriodSignal();
+
+        if (period === 'TODO' || data.length === 0) {
+            return data;
+        }
+
+        // Usar la fecha más reciente de los datos como referencia
+        const latestDataDate = data.length > 0 ?
+            new Date(Math.max(...data.map(item => {
+                const itemDate = item.date instanceof Date ? item.date : new Date(item.date);
+                return itemDate.getTime();
+            }))) : new Date();
+
+        let cutoffDate: Date;
+
+        switch (period) {
+            case '3M':
+                cutoffDate = new Date(latestDataDate.getFullYear(), latestDataDate.getMonth() - 3, latestDataDate.getDate());
+                break;
+            case '6M':
+                cutoffDate = new Date(latestDataDate.getFullYear(), latestDataDate.getMonth() - 6, latestDataDate.getDate());
+                break;
+            case '1A':
+                cutoffDate = new Date(latestDataDate.getFullYear() - 1, latestDataDate.getMonth(), latestDataDate.getDate());
+                break;
+            default:
+                return data;
+        }
+
+        return data.filter(item => {
+            const itemDate = item.date instanceof Date ? item.date : new Date(item.date);
+            return itemDate >= cutoffDate;
+        });
+    });
+
+    readonly hasData = computed(() =>
+        this.filteredData().length > 0
+    );
+
+    // Getters públicos para el template
+    selectedPeriod() {
+        return this.selectedPeriodSignal();
+    }
+
+    constructor() {
+        effect(() => {
+            // Solo actualizar si el chart ya existe y está inicializado
+            if (this.chart && this.chartInitialized()) {
+                this.updateExistingChart();
+            }
+        });
+    }
+
+    ngAfterViewInit(): void {
+        if (this.hasData()) {
+            this.createChart();
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.destroyChart();
+    }
+
+    private createChart(): void {
+        if (!this.chartCanvas?.nativeElement) {
+            console.warn('Canvas element not available');
+            this.error.set('Canvas no disponible para el gráfico');
+            return;
+        }
+
+        if (!this.hasData()) {
+            console.warn('No chart data available');
+            this.error.set('No hay datos disponibles para mostrar');
+            return;
+        }
+
+        // Destruir chart anterior si existe
+        this.destroyChart();
+
+        const ctx = this.chartCanvas.nativeElement.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get 2D context from canvas');
+            this.error.set('No se pudo obtener el contexto 2D del canvas');
+            return;
+        }
+
+        try {
+            const chartData = formatWalletHistoryForChart(this.filteredData());
+
+            const config: ChartConfiguration = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#10b981',
+                            borderWidth: 1,
+                            enabled: !this.hideAmountsSignal(),
+                            callbacks: {
+                                label: (context) => {
+                                    if (this.hideAmountsSignal()) {
+                                        return 'Total Billetera: ••••••';
+                                    }
+                                    const value = new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(context.parsed.y);
+                                    return `Total Billetera: ${value}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.1)',
+                            },
+                            ticks: {
+                                color: '#6B7280',
+                                maxTicksLimit: 8
+                            }
+                        },
+                        y: {
+                            display: true,
+                            beginAtZero: false, // No forzar desde 0 para mejor visualización
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.1)',
+                            },
+                            ticks: {
+                                color: '#6B7280',
+                                callback: (value) => {
+                                    if (this.hideAmountsSignal()) {
+                                        return '••••••';
+                                    }
+                                    return new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD',
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    }).format(value as number);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    elements: {
+                        point: {
+                            radius: 3,
+                            hoverRadius: 5,
+                            backgroundColor: '#10b981',
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        },
+                        line: {
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: 'start',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: '#10b981'
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            };
+
+            this.chart = new Chart(ctx, config);
+            this.chartInitialized.set(true);
+            this.error.set(null);
+
+        } catch (error) {
+            console.error('Error creating chart:', error);
+            this.error.set(`Error al crear el gráfico: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+            this.chartInitialized.set(false);
+        }
+    }
+
+    private updateExistingChart(): void {
+        if (!this.chart || !this.chartInitialized()) {
+            return;
+        }
+
+        try {
+            const chartData = formatWalletHistoryForChart(this.filteredData());
+
+            // Actualizar datos del chart
+            this.chart.data = chartData;
+
+            // Actualizar opciones de tooltip
+            if (this.chart.options.plugins?.tooltip) {
+                this.chart.options.plugins.tooltip.enabled = !this.hideAmountsSignal();
+            }
+
+            // Usar 'none' para evitar animaciones en updates
+            this.chart.update('none');
+
+        } catch (error) {
+            console.error('Error updating chart:', error);
+            this.error.set(`Error al actualizar el gráfico: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+        }
+    }
+
+    private destroyChart(): void {
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+            this.chartInitialized.set(false);
+        }
+    }
+
+    // Métodos públicos
+    setPeriod(period: '3M' | '6M' | '1A' | 'TODO'): void {
+        this.selectedPeriodSignal.set(period);
+        // Recrear el chart cuando cambian los datos filtrados
+        if (this.hasData()) {
+            this.createChart();
+        } else {
+            this.destroyChart();
+        }
+    }
+
+    updateData(newData: WalletHistoryData[]): void {
+        this.chartDataSignal.set(newData);
+        if (this.hasData()) {
+            this.createChart();
+        } else {
+            this.destroyChart();
+        }
+    }
+
+    // Método para actualizar desde el componente padre
+    public refreshChart(): void {
+        this.error.set(null);
+        if (this.hasData()) {
+            this.createChart();
+        } else {
+            this.destroyChart();
+            this.error.set('No hay datos disponibles para mostrar');
+        }
+    }
+}

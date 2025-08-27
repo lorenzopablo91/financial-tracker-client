@@ -34,6 +34,7 @@
         margin-bottom: var(--spacing-md);
         padding-bottom: var(--spacing-sm);
         border-bottom: 1px solid var(--neutral-200);
+        font-family: 'Roboto Mono';
 
         .title {
             font-weight: 600;
@@ -61,16 +62,18 @@
         }
 
         .label {
+            font-family: 'Roboto Mono';
             font-weight: 500;
             color: var(--neutral-700);
         }
 
         .value {
             font-size: 14px;
-            font-family: 'Roboto Mono', monospace;
+            font-family: 'Roboto Mono';
             font-weight: 600;
 
             &.bold {
+                font-family: 'Roboto Mono';
                 font-weight: 700;
             }
         }

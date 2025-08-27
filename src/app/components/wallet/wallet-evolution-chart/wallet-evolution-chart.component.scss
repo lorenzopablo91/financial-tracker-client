@@ -1,0 +1,246 @@
+@use "sass:color";
+
+// Animaciones
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200px 0;
+    }
+
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+@mixin skeleton-base {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.1) 25%,
+            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0.1) 75%);
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+.evolution-chart-card {
+    background: var(--accent-500);
+    border-radius: 12px;
+    border: 1px solid var(--accent-500);
+    padding: 24px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    height: 512px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 768px) {
+        height: 360px;
+        padding: 20px;
+    }
+
+    // Estados de carga y error
+    .skeleton-chart-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        height: 100%;
+        justify-content: space-between;
+
+        .skeleton-chart-title {
+            @include skeleton-base;
+            width: 200px;
+            height: 24px;
+            align-self: flex-start;
+        }
+
+        .skeleton-chart {
+            @include skeleton-base;
+            flex: 1;
+            border-radius: 8px;
+            min-height: 250px;
+        }
+    }
+
+    .error-chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: 100%;
+        gap: 16px;
+        color: var(--text-secondary);
+
+        .error-icon {
+            color: #f44336;
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            max-width: 280px;
+            line-height: 1.4;
+        }
+
+        button {
+            margin-top: 8px;
+
+            mat-icon {
+                margin-right: 8px;
+            }
+        }
+    }
+
+    // Header del gráfico
+    .chart-header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 16px;
+
+
+        .chart-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Roboto Mono';
+
+            .chart-icon {
+                color: var(--primary-500);
+                font-size: 20px;
+            }
+        }
+    }
+
+    // Botones de período
+    .period-buttons {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+        padding: 4px;
+        background-color: rgba(255, 255, 255, 0.05);
+
+
+        button {
+            font-family: 'Roboto Mono';
+            min-width: 50px;
+            height: 32px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+
+            &:hover {
+                background-color: rgba(var(--primary-500-rgb), 0.1);
+                color: var(--primary-500);
+            }
+
+            &.active {
+                background-color: var(--primary-500);
+                color: white;
+                font-weight: 600;
+                font-family: 'Roboto Mono';
+
+                &:hover {
+                    background-color: var(--primary-600);
+                }
+            }
+        }
+    }
+
+    // Contenedor del gráfico
+    .chart-container {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+
+        .chart-wrapper {
+            flex: 1;
+            position: relative;
+            min-height: 0; // Permite que el canvas se redimensione
+
+            canvas {
+                width: 100% !important;
+                height: 100% !important;
+            }
+        }
+
+        .no-data {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 16px;
+            color: var(--text-secondary);
+            opacity: 0.7;
+
+            mat-icon {
+                font-size: 48px;
+                width: 48px;
+                height: 48px;
+                color: var(--text-secondary);
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.95rem;
+                text-align: center;
+            }
+        }
+    }
+}
+
+
+
+// Responsive adjustments
+@media (max-width: 480px) {
+    .evolution-chart-card {
+        height: 320px;
+        padding: 16px;
+
+        .chart-header {
+            margin-bottom: 12px;
+
+            .chart-title {
+                font-size: 1rem;
+            }
+        }
+
+        .period-buttons {
+            margin-bottom: 12px;
+
+            button {
+                min-width: 40px;
+                height: 28px;
+                font-size: 0.75rem;
+            }
+        }
+
+        .chart-container {
+            .chart-wrapper {
+                min-height: 180px;
+            }
+        }
+    }
+}

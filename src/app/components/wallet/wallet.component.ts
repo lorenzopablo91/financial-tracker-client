@@ -8,6 +8,7 @@ import { CryptoData } from '../../models/binance.interface';
 import { Category, WalletData } from '../../models/wallet.interface';
 import { amounts } from '../../data/wallet.data';
 import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
+import { WalletEvolutionChartComponent } from './wallet-evolution-chart/wallet-evolution-chart.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 
 @Component({
@@ -17,6 +18,7 @@ import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
         ...MaterialImports,
         CommonModule,
         WalletCategoriesChartComponent,
+        WalletEvolutionChartComponent, // Nuevo componente importado
         CurrencyFormatPipe
     ],
     templateUrl: './wallet.component.html',
@@ -89,7 +91,7 @@ export class WalletComponent implements OnInit, OnDestroy {
         {
             name: 'DÓLARES',
             amount: this.dollarTotal(),
-            color: '#10b981',
+            color: '#4BC0C0',
             percentage: this.getPercentage(this.dollarTotal()),
             difference: this.dollarDifference(),
             percentageGain: this.dollarPercentageGain()
@@ -97,7 +99,7 @@ export class WalletComponent implements OnInit, OnDestroy {
         {
             name: 'ACCIONES',
             amount: this.stockTotal(),
-            color: '#3b82f6',
+            color: '#9966FF',
             percentage: this.getPercentage(this.stockTotal()),
             difference: this.stockDifference(),
             percentageGain: this.stockPercentageGain()
@@ -105,7 +107,7 @@ export class WalletComponent implements OnInit, OnDestroy {
         {
             name: 'CRYPTOMONEDAS',
             amount: this.cryptoTotal(),
-            color: '#f97316',
+            color: '#FF9F40',
             percentage: this.getPercentage(this.cryptoTotal()),
             difference: this.cryptoDifference(),
             percentageGain: this.cryptoPercentageGain()

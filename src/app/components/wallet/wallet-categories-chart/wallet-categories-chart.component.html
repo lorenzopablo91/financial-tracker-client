@@ -9,7 +9,7 @@
   <div class="custom-legend">
     @for (category of categoriesSignal(); track category.name; let i = $index) {
     <div class="legend-item">
-      <div class="legend-indicator" [style.background-color]="category.color || colors()[i]">
+      <div class="legend-indicator" [style.background-color]="category.color">
       </div>
       <div class="category-container">
         <span class="category-name">{{ category.name }}</span>

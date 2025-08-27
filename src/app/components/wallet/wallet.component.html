@@ -1,3 +1,5 @@
+<!-- Template actualizado del dashboard principal -->
+
 <!-- Header superior -->
 <div class="dashboard-header">
   <div class="dashboard-controls">
@@ -16,59 +18,66 @@
 </div>
 
 <div class="dashboard-layout">
-  <!-- Columna izquierda - Billetera -->
+  <!-- Columna izquierda - Gráfico evolución + Billetera/Torta -->
   <div class="wallet-section">
-    <mat-card class="total-card">
-      @if (loading()) {
-      <!-- Estado de carga -->
-      <div class="skeleton-content">
-        <div class="skeleton-title"></div>
-        <div class="skeleton-amount"></div>
-        <div class="skeleton-chart"></div>
-      </div>
-      } @else if (error()) {
-      <!-- Estado de error -->
-      <div class="error-content">
-        <mat-icon class="error-icon">error_outline</mat-icon>
-        <h3>Error al cargar datos</h3>
-        <p>{{ error() }}</p>
-        <button mat-raised-button color="primary" (click)="refreshData()">
-          <mat-icon>refresh</mat-icon>
-          Reintentar
-        </button>
-      </div>
-      } @else {
-      <!-- Contenido normal -->
-      <div class="summary-content">
-        <!-- Título de la card arriba del monto -->
-        <div class="card-title">
-          <span class="summary-title">💰 TOTAL BILLETERA</span>
-        </div>
+    <!-- Gráfico de evolución - PRIMERA COLUMNA -->
+    <app-wallet-evolution-chart 
+      [hideAmounts]="hideAmounts()" 
+      class="evolution-chart">
+    </app-wallet-evolution-chart>
 
-        <!-- Total Amount centrado -->
-        <div class="total-amount-container">
-          <div class="total-amount" [class.hidden-amount]="hideAmounts()">
-            {{ hideAmounts() ? '••••••••' : (totalWallet() | currencyFormat:'USD') }}
+    <!-- Total de billetera + Gráfico categorías - SEGUNDA COLUMNA -->
+    <div class="wallet-summary-column">
+      <mat-card class="total-card">
+        @if (loading()) {
+        <!-- Estado de carga -->
+        <div class="skeleton-content">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-amount"></div>
+          <div class="skeleton-chart"></div>
+        </div>
+        } @else if (error()) {
+        <!-- Estado de error -->
+        <div class="error-content">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h3>Error al cargar datos</h3>
+          <p>{{ error() }}</p>
+          <button mat-raised-button color="primary" (click)="refreshData()">
+            <mat-icon>refresh</mat-icon>
+            Reintentar
+          </button>
+        </div>
+        } @else {
+        <!-- Contenido normal -->
+        <div class="summary-content">
+          <!-- Título de la card arriba del monto -->
+          <div class="card-title">
+            <span class="summary-title">💰 TOTAL BILLETERA</span>
           </div>
-        </div>
 
-        <!-- Gráfico de categorías centrado -->
-        @if (categories() && categories().length > 0) {
-        <div class="categories-chart-section">
-          <app-wallet-categories-chart [categories]="categories()" [hideAmounts]="hideAmounts()">
-          </app-wallet-categories-chart>
+          <!-- Total Amount centrado -->
+          <div class="total-amount-container">
+            <div class="total-amount" [class.hidden-amount]="hideAmounts()">
+              {{ hideAmounts() ? '••••••••' : (totalWallet() | currencyFormat:'USD') }}
+            </div>
+          </div>
+
+          <!-- Gráfico de categorías centrado -->
+          @if (categories() && categories().length > 0) {
+          <div class="categories-chart-section">
+            <app-wallet-categories-chart [categories]="categories()" [hideAmounts]="hideAmounts()">
+            </app-wallet-categories-chart>
+          </div>
+          }
         </div>
         }
-      </div>
-      }
-    </mat-card>
+      </mat-card>
+    </div>
   </div>
 
   <!-- Columna derecha - Cards de rendimiento -->
   <div class="performance-section">
-    <!-- Cards de rendimiento -->
     <div class="performance-cards">
-
       <!-- Rendimiento Total -->
       <mat-card class="performance-card total-performance">
         @if (loading()) {
@@ -86,7 +95,8 @@
         </div>
         } @else {
         <div class="performance-header">
-          <span class="performance-title">💰 RENDIMIENTO TOTAL</span>
+          <span>💰</span>
+          <span class="performance-title-total">RENDIMIENTO TOTAL</span>
           <div class="performance-indicators">
             <span class="performance-percentage" [ngClass]="totalPerformanceClass()">
               {{ totalPercentageGain() >= 0 ? '+' : '' }}{{ totalPercentageGain() }}%
