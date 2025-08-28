@@ -1,5 +1,3 @@
-<!-- Template actualizado del dashboard principal -->
-
 <!-- Header superior -->
 <div class="dashboard-header">
   <div class="dashboard-controls">
@@ -78,167 +76,24 @@
   <div class="performance-section">
     <div class="performance-cards">
       <!-- Rendimiento Total -->
-      <mat-card class="performance-card total-performance">
-        @if (loading()) {
-        <div class="skeleton-performance">
-          <div class="skeleton-performance-header">
-            <div class="skeleton-performance-title"></div>
-            <div class="skeleton-performance-percentage"></div>
-          </div>
-          <div class="skeleton-performance-amount"></div>
-        </div>
-        } @else if (error()) {
-        <div class="error-performance">
-          <mat-icon class="error-icon-small">error_outline</mat-icon>
-          <span>Error al cargar</span>
-        </div>
-        } @else {
-        <div class="performance-header">
-          <span>💰</span>
-          <span class="performance-title-total">RENDIMIENTO TOTAL</span>
-          <div class="performance-indicators">
-            <span class="performance-percentage" [ngClass]="totalPerformanceClass()">
-              {{ totalPercentageGain() >= 0 ? '+' : '' }}{{ totalPercentageGain() }}%
-            </span>
-          </div>
-        </div>
-        <div class="performance-amount" [ngClass]="totalPerformanceClass()">
-          <span [class.hidden-amount]="hideAmounts()">
-            @if (hideAmounts()) {
-            ••••••
-            } @else {
-            {{ totalPercentageGain() >= 0 ? '+' : '' }}{{ totalDifference() | currencyFormat:'USD' }}
-            }
-          </span>
-          <mat-icon class="trend-icon" [ngClass]="totalPerformanceClass()">
-            {{ totalPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
-          </mat-icon>
-        </div>
-        }
-      </mat-card>
+      <app-wallet-performance-card [data]="totalPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
+        [hasError]="hasErrorComputed">
+      </app-wallet-performance-card>
 
       <!-- Rendimiento Dólares -->
-      <mat-card class="performance-card dollars-performance">
-        @if (loading()) {
-        <div class="skeleton-performance">
-          <div class="skeleton-performance-header">
-            <div class="skeleton-icon"></div>
-            <div class="skeleton-performance-title"></div>
-            <div class="skeleton-performance-percentage"></div>
-          </div>
-          <div class="skeleton-performance-amount"></div>
-        </div>
-        } @else if (error()) {
-        <div class="error-performance">
-          <mat-icon class="error-icon-small">error_outline</mat-icon>
-          <span>Error al cargar</span>
-        </div>
-        } @else {
-        <div class="performance-header">
-          <mat-icon class="performance-icon">attach_money</mat-icon>
-          <span class="performance-title">RENDIMIENTO DÓLARES</span>
-          <div class="performance-indicators">
-            <span class="performance-percentage" [ngClass]="dollarPerformanceClass()">
-              {{ dollarPercentageGain() >= 0 ? '+' : '' }}{{ dollarPercentageGain() }}%
-            </span>
-          </div>
-        </div>
-        <div class="performance-amount" [ngClass]="dollarPerformanceClass()">
-          <span [class.hidden-amount]="hideAmounts()">
-            @if (hideAmounts()) {
-            ••••••
-            } @else {
-            {{ dollarPercentageGain() >= 0 ? '+' : '' }}{{ dollarDifference() | currencyFormat:'USD' }}
-            }
-          </span>
-          <mat-icon class="trend-icon" [ngClass]="dollarPerformanceClass()">
-            {{ dollarPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
-          </mat-icon>
-        </div>
-        }
-      </mat-card>
+      <app-wallet-performance-card [data]="dollarPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
+        [hasError]="hasErrorComputed">
+      </app-wallet-performance-card>
 
       <!-- Rendimiento Acciones -->
-      <mat-card class="performance-card stocks-performance">
-        @if (loading()) {
-        <div class="skeleton-performance">
-          <div class="skeleton-performance-header">
-            <div class="skeleton-icon"></div>
-            <div class="skeleton-performance-title"></div>
-            <div class="skeleton-performance-percentage"></div>
-          </div>
-          <div class="skeleton-performance-amount"></div>
-        </div>
-        } @else if (error()) {
-        <div class="error-performance">
-          <mat-icon class="error-icon-small">error_outline</mat-icon>
-          <span>Error al cargar</span>
-        </div>
-        } @else {
-        <div class="performance-header">
-          <mat-icon class="performance-icon">bar_chart</mat-icon>
-          <span class="performance-title">RENDIMIENTO ACCIONES</span>
-          <div class="performance-indicators">
-            <span class="performance-percentage" [ngClass]="stockPerformanceClass()">
-              {{ stockPercentageGain() >= 0 ? '+' : '' }}{{ stockPercentageGain() }}%
-            </span>
-          </div>
-        </div>
-        <div class="performance-amount" [ngClass]="stockPerformanceClass()">
-          <span [class.hidden-amount]="hideAmounts()">
-            @if (hideAmounts()) {
-            ••••••
-            } @else {
-            {{ stockPercentageGain() >= 0 ? '+' : '' }}{{ stockDifference() | currencyFormat:'USD' }}
-            }
-          </span>
-          <mat-icon class="trend-icon" [ngClass]="stockPerformanceClass()">
-            {{ stockPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
-          </mat-icon>
-        </div>
-        }
-      </mat-card>
+      <app-wallet-performance-card [data]="stockPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
+        [hasError]="hasErrorComputed">
+      </app-wallet-performance-card>
 
       <!-- Rendimiento Criptomonedas -->
-      <mat-card class="performance-card crypto-performance">
-        @if (loading()) {
-        <div class="skeleton-performance">
-          <div class="skeleton-performance-header">
-            <div class="skeleton-icon"></div>
-            <div class="skeleton-performance-title"></div>
-            <div class="skeleton-performance-percentage"></div>
-          </div>
-          <div class="skeleton-performance-amount"></div>
-        </div>
-        } @else if (error()) {
-        <div class="error-performance">
-          <mat-icon class="error-icon-small">error_outline</mat-icon>
-          <span>Error al cargar</span>
-        </div>
-        } @else {
-        <div class="performance-header">
-          <mat-icon class="performance-icon">currency_bitcoin</mat-icon>
-          <span class="performance-title">RENDIMIENTO CRYPTOMONEDAS</span>
-          <div class="performance-indicators">
-            <span class="performance-percentage" [ngClass]="cryptoPerformanceClass()">
-              {{ cryptoPercentageGain() >= 0 ? '+' : '' }}{{ cryptoPercentageGain() }}%
-            </span>
-          </div>
-        </div>
-        <div class="performance-amount" [ngClass]="cryptoPerformanceClass()">
-          <span [class.hidden-amount]="hideAmounts()">
-            @if (hideAmounts()) {
-            ••••••
-            } @else {
-            {{ cryptoPercentageGain() >= 0 ? '+' : '' }}{{ cryptoDifference() | currencyFormat:'USD' }}
-            }
-          </span>
-          <mat-icon class="trend-icon" [ngClass]="cryptoPerformanceClass()">
-            {{ cryptoPercentageGain() >= 0 ? 'trending_up' : 'trending_down' }}
-          </mat-icon>
-        </div>
-        }
-      </mat-card>
+      <app-wallet-performance-card [data]="cryptoPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
+        [hasError]="hasErrorComputed">
+      </app-wallet-performance-card>
     </div>
   </div>
 </div>

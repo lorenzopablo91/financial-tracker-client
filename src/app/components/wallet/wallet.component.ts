@@ -5,10 +5,11 @@ import { Subject, interval, catchError, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CryptoService } from '../../services/binance.service';
 import { CryptoData } from '../../models/binance.interface';
-import { Category, WalletData, WalletHistoryData } from '../../models/wallet.interface';
+import { Category, PerformanceData, WalletData, WalletHistoryData } from '../../models/wallet.interface';
 import { amounts, walletHistoryData } from '../../data/wallet.data';
 import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
 import { WalletEvolutionChartComponent } from './wallet-evolution-chart/wallet-evolution-chart.component';
+import { WalletPerformanceCardComponent } from './wallet-performance-card/wallet-performance-card.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 
 @Component({
@@ -19,6 +20,7 @@ import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
         CommonModule,
         WalletCategoriesChartComponent,
         WalletEvolutionChartComponent,
+        WalletPerformanceCardComponent,
         CurrencyFormatPipe
     ],
     templateUrl: './wallet.component.html',
@@ -140,24 +142,47 @@ export class WalletComponent implements OnInit, OnDestroy {
         return this.getPercentageGain(this.totalWallet(), totalUninvested);
     });
 
-    // Computed para clases CSS de rendimiento
-    readonly totalPerformanceClass = computed(() =>
-        this.totalPercentageGain() >= 0 ? 'positive' : 'negative'
-    );
+    // Computed signals para datos de rendimiento de las cards
+    readonly totalPerformanceData = computed<PerformanceData>(() => ({
+        title: 'RENDIMIENTO TOTAL',
+        icon: '',
+        amount: this.totalWallet(),
+        difference: this.totalDifference(),
+        percentageGain: this.totalPercentageGain(),
+        type: 'total'
+    }));
 
-    readonly dollarPerformanceClass = computed(() =>
-        this.dollarPercentageGain() >= 0 ? 'positive' : 'negative'
-    );
+    readonly dollarPerformanceData = computed<PerformanceData>(() => ({
+        title: 'RENDIMIENTO DÓLARES',
+        icon: 'attach_money',
+        amount: this.dollarTotal(),
+        difference: this.dollarDifference(),
+        percentageGain: this.dollarPercentageGain(),
+        type: 'dollars'
+    }));
 
-    readonly stockPerformanceClass = computed(() =>
-        this.stockPercentageGain() >= 0 ? 'positive' : 'negative'
-    );
+    readonly stockPerformanceData = computed<PerformanceData>(() => ({
+        title: 'RENDIMIENTO ACCIONES',
+        icon: 'bar_chart',
+        amount: this.stockTotal(),
+        difference: this.stockDifference(),
+        percentageGain: this.stockPercentageGain(),
+        type: 'stocks'
+    }));
 
-    readonly cryptoPerformanceClass = computed(() =>
-        this.cryptoPercentageGain() >= 0 ? 'positive' : 'negative'
-    );
+    readonly cryptoPerformanceData = computed<PerformanceData>(() => ({
+        title: 'RENDIMIENTO CRYPTOMONEDAS',
+        icon: 'currency_bitcoin',
+        amount: this.cryptoTotal(),
+        difference: this.cryptoDifference(),
+        percentageGain: this.cryptoPercentageGain(),
+        type: 'crypto'
+    }));
 
     readonly walletHistoryData = computed<WalletHistoryData[]>(() => walletHistoryData);
+
+    // Computed para el error boolean
+    readonly hasErrorComputed = computed(() => !!this.error());
 
     constructor() {
         this.lastUpdated.set(new Date());
@@ -295,14 +320,4 @@ export class WalletComponent implements OnInit, OnDestroy {
         if (!this.hasValidData()) return 'empty';
         return 'success';
     }
-
-    // Métodos de conveniencia que delegan a computed signals (para backward compatibility)
-    getDollarPercentageGain = () => this.dollarPercentageGain();
-    getStockPercentageGain = () => this.stockPercentageGain();
-    getCryptoPercentageGain = () => this.cryptoPercentageGain();
-    getTotalPercentageGain = () => this.totalPercentageGain();
-    getTotalPerformanceClass = () => this.totalPerformanceClass();
-    getDollarPerformanceClass = () => this.dollarPerformanceClass();
-    getStockPerformanceClass = () => this.stockPerformanceClass();
-    getCryptoPerformanceClass = () => this.cryptoPerformanceClass();
 }

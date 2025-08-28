@@ -1,0 +1,43 @@
+<mat-card class="performance-card" [ngClass]="cardTypeClass()">
+    @if (isLoading()) {
+    <div class="skeleton-performance">
+        <div class="skeleton-performance-header">
+            <div class="skeleton-icon"></div>
+            <div class="skeleton-performance-title"></div>
+            <div class="skeleton-performance-percentage"></div>
+        </div>
+        <div class="skeleton-performance-amount"></div>
+    </div>
+    } @else if (hasError()) {
+    <div class="error-performance">
+        <mat-icon class="error-icon-small">error_outline</mat-icon>
+        <span>Error al cargar</span>
+    </div>
+    } @else {
+    <div class="performance-header">
+        @if (data().type === 'total') {
+        <span>💰</span>
+        } @else {
+        <mat-icon class="performance-icon">{{ data().icon }}</mat-icon>
+        }
+        <span [class]="titleClass()">{{ data().title }}</span>
+        <div class="performance-indicators">
+            <span class="performance-percentage" [ngClass]="performanceClass()">
+                {{ data().percentageGain >= 0 ? '+' : '' }}{{ data().percentageGain }}%
+            </span>
+        </div>
+    </div>
+    <div class="performance-amount" [ngClass]="performanceClass()">
+        <span [class.hidden-amount]="hideAmounts()">
+            @if (hideAmounts()) {
+            ••••••
+            } @else {
+            {{ data().percentageGain >= 0 ? '+' : '' }}{{ data().difference | currencyFormat:'USD' }}
+            }
+        </span>
+        <mat-icon class="trend-icon" [ngClass]="performanceClass()">
+            {{ data().percentageGain >= 0 ? 'trending_up' : 'trending_down' }}
+        </mat-icon>
+    </div>
+    }
+</mat-card>

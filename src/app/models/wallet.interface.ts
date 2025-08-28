@@ -25,14 +25,19 @@ export interface Category {
     percentageGain: number;
 }
 
-// Interface para el dataset del line chart
 export interface WalletHistoryData {
     date: Date;
     totalWallet: number;
     dollarTotal: number;
     stockTotal: number;
     cryptoTotal: number;
-    // Boundaries (opcional para mostrar rangos)
-    minExpected?: number;
-    maxExpected?: number;
+}
+
+export interface PerformanceData {
+    title: string;
+    icon: string;
+    amount: number;
+    difference: number;
+    percentageGain: number;
+    type: 'total' | 'dollars' | 'stocks' | 'crypto';
 }
