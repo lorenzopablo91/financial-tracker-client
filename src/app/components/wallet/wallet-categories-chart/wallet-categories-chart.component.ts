@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effect, signal, computed, inject, DestroyRef } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effect, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -28,8 +28,6 @@ export interface CategoryData {
   styleUrls: ['./wallet-categories-chart.component.scss']
 })
 export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy {
-  private readonly destroyRef = inject(DestroyRef);
-
   // Signals para inputs
   readonly categoriesSignal = signal<CategoryData[]>([]);
   readonly hideAmountsSignal = signal(false);
@@ -202,7 +200,7 @@ export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy 
       this.chart.options.plugins.tooltip.enabled = !this.hideAmountsSignal();
     }
 
-    // Usar 'none' para evitar animaciones en updates
+    // Evitar animaciones en updates
     this.chart.update('none');
   }
 

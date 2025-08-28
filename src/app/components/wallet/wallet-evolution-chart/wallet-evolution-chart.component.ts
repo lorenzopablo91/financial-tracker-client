@@ -24,9 +24,36 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
     readonly hideAmountsSignal = signal(false);
     readonly selectedPeriodSignal = signal<'3M' | '6M' | '1A' | 'TODO'>('TODO');
     readonly chartDataSignal = signal<WalletHistoryData[]>(walletHistoryData);
-    private readonly chartInitialized = signal(false);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
+    private readonly chartInitialized = signal(false);
+
+    @Input()
+    set chartData(data: WalletHistoryData[]) {
+        if (data) {
+            this.chartDataSignal.set(data);
+        }
+    }
+
+    @Input()
+    set isLoading(value: boolean) {
+        const wasLoading = this.loading();
+        this.loading.set(value);
+
+        // Si cambió de loading=true a loading=false, intentar crear el gráfico
+        if (wasLoading && !value && this.chartCanvas?.nativeElement) {
+            setTimeout(() => {
+                if (this.hasData()) {
+                    this.createChart();
+                }
+            }, 0);
+        }
+
+        // Si cambió a loading=true, destruir el gráfico actual
+        if (!wasLoading && value) {
+            this.destroyChart();
+        }
+    }
 
     @Input()
     set hideAmounts(value: boolean) {
@@ -96,16 +123,38 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
     }
 
     constructor() {
+        // Effect para cambios en hideAmounts y período
         effect(() => {
-            // Solo actualizar si el chart ya existe y está inicializado
-            if (this.chart && this.chartInitialized()) {
+            const hideAmounts = this.hideAmountsSignal();
+            const period = this.selectedPeriodSignal();
+
+            // Solo actualizar si el chart ya existe, está inicializado y NO está en loading
+            if (this.chart && this.chartInitialized() && !this.loading()) {
                 this.updateExistingChart();
+            }
+        });
+
+        // Effect separado para cambios en los datos
+        effect(() => {
+            const data = this.chartDataSignal();
+            const hasDataValue = this.hasData();
+
+            // Solo proceder si no está en loading y el canvas está disponible
+            if (!this.loading() && this.chartCanvas?.nativeElement) {
+                if (hasDataValue) {
+                    // Si hay datos, recrear el gráfico
+                    setTimeout(() => this.createChart(), 0);
+                } else {
+                    // Si no hay datos, destruir el gráfico
+                    this.destroyChart();
+                }
             }
         });
     }
 
     ngAfterViewInit(): void {
-        if (this.hasData()) {
+        // Solo crear el gráfico si no está en loading y hay datos
+        if (!this.loading() && this.hasData()) {
             this.createChart();
         }
     }
@@ -115,6 +164,11 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
     }
 
     private createChart(): void {
+        // No crear el gráfico si está en loading
+        if (this.loading()) {
+            return;
+        }
+
         if (!this.chartCanvas?.nativeElement) {
             console.warn('Canvas element not available');
             this.error.set('Canvas no disponible para el gráfico');
@@ -159,18 +213,6 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
                             borderColor: '#10b981',
                             borderWidth: 1,
                             enabled: !this.hideAmountsSignal(),
-                            callbacks: {
-                                label: (context) => {
-                                    if (this.hideAmountsSignal()) {
-                                        return 'Total Billetera: ••••••';
-                                    }
-                                    const value = new Intl.NumberFormat('en-US', {
-                                        style: 'currency',
-                                        currency: 'USD'
-                                    }).format(context.parsed.y);
-                                    return `Total Billetera: ${value}`;
-                                }
-                            }
                         }
                     },
                     scales: {
@@ -186,7 +228,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
                         },
                         y: {
                             display: true,
-                            beginAtZero: false, // No forzar desde 0 para mejor visualización
+                            beginAtZero: false,
                             grid: {
                                 color: 'rgba(156, 163, 175, 0.1)',
                             },
@@ -194,7 +236,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
                                 color: '#6B7280',
                                 callback: (value) => {
                                     if (this.hideAmountsSignal()) {
-                                        return '••••••';
+                                        return '•••••••••';
                                     }
                                     return new Intl.NumberFormat('en-US', {
                                         style: 'currency',
@@ -246,7 +288,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
     }
 
     private updateExistingChart(): void {
-        if (!this.chart || !this.chartInitialized()) {
+        if (!this.chart || !this.chartInitialized() || this.loading()) {
             return;
         }
 
@@ -281,8 +323,8 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
     // Métodos públicos
     setPeriod(period: '3M' | '6M' | '1A' | 'TODO'): void {
         this.selectedPeriodSignal.set(period);
-        // Recrear el chart cuando cambian los datos filtrados
-        if (this.hasData()) {
+        // Recrear el chart cuando cambian los datos filtrados (solo si no está en loading)
+        if (!this.loading() && this.hasData()) {
             this.createChart();
         } else {
             this.destroyChart();
@@ -291,16 +333,18 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
 
     updateData(newData: WalletHistoryData[]): void {
         this.chartDataSignal.set(newData);
-        if (this.hasData()) {
-            this.createChart();
-        } else {
-            this.destroyChart();
-        }
+        // El effect se encargará de recrear el gráfico automáticamente
     }
 
     // Método para actualizar desde el componente padre
     public refreshChart(): void {
         this.error.set(null);
+
+        // No hacer nada si está en loading
+        if (this.loading()) {
+            return;
+        }
+
         if (this.hasData()) {
             this.createChart();
         } else {

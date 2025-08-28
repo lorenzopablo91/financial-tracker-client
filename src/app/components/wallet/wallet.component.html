@@ -21,9 +21,8 @@
   <!-- Columna izquierda - Gráfico evolución + Billetera/Torta -->
   <div class="wallet-section">
     <!-- Gráfico de evolución - PRIMERA COLUMNA -->
-    <app-wallet-evolution-chart 
-      [hideAmounts]="hideAmounts()" 
-      class="evolution-chart">
+    <app-wallet-evolution-chart [chartData]="walletHistoryData()" [hideAmounts]="hideAmounts()" [isLoading]="loading()"
+      [refreshTrigger]="refreshTrigger()" class="evolution-chart">
     </app-wallet-evolution-chart>
 
     <!-- Total de billetera + Gráfico categorías - SEGUNDA COLUMNA -->

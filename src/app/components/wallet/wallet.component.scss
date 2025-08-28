@@ -88,6 +88,7 @@
   }
 }
 
+// Layout principal del dashboard
 .dashboard-layout {
   display: grid;
   grid-template-columns: 1fr 352px;
@@ -105,6 +106,35 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  // En desktop: grid de 2 columnas
+  @media (min-width: 1201px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    // El gráfico de evolución ocupa toda la altura de la primera columna
+    .evolution-chart {
+      grid-row: 1 / -1;
+    }
+  }
+
+  // En tablet/mobile: stack vertical con orden específico
+  @media (max-width: 1200px) {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    // El gráfico de evolución va primero
+    .evolution-chart {
+      order: 1;
+    }
+
+    // La card total va después
+    .total-card {
+      order: 2;
+    }
+  }
 
   .total-card {
     background: var(--accent-500);
@@ -241,13 +271,9 @@
     }
   }
 
-  // Estilos para el nuevo componente de gráfico
+  // Estilos para el componente de gráfico de evolución
   .evolution-chart {
     width: 100%;
-
-    @media (max-width: 1200px) {
-      order: 2; // En mobile, mostrar después de las performance cards
-    }
   }
 }
 
@@ -255,8 +281,9 @@
   display: flex;
   flex-direction: column;
 
+  // En tablet/mobile: las cards de rendimiento van después del gráfico y la card total
   @media (max-width: 1200px) {
-    order: 1; // En mobile, mostrar antes del evolution chart
+    order: 3;
   }
 
   .performance-cards {
@@ -513,58 +540,4 @@
   letter-spacing: 2px;
   filter: blur(4px);
   user-select: none;
-}
-
-// Estados específicos para tema oscuro
-@media (prefers-color-scheme: dark) {
-
-  .skeleton-content,
-  .skeleton-performance {
-
-    .skeleton-title,
-    .skeleton-amount,
-    .skeleton-chart,
-    .skeleton-performance-header>*,
-    .skeleton-performance-amount {
-      background: linear-gradient(90deg,
-          rgba(255, 255, 255, 0.05) 25%,
-          rgba(255, 255, 255, 0.15) 50%,
-          rgba(255, 255, 255, 0.05) 75%);
-    }
-  }
-}
-
-// Layout del dashboard actualizado
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 368px;
-  gap: 24px;
-  width: 100%;
-  align-items: start;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .wallet-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr; // Dos columnas iguales
-    gap: 24px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr; // Una columna en móvil
-      gap: 20px;
-    }
-
-    // El gráfico de evolución ocupa toda la altura de la primera columna
-    .evolution-chart {
-      grid-row: 1 / -1; // Ocupa todas las filas disponibles
-    }
-
-    // La card total y el gráfico de categorías en la segunda columna
-    .total-card {
-      // Mantiene sus estilos existentes
-    }
-  }
 }

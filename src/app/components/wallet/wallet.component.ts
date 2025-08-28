@@ -5,8 +5,8 @@ import { Subject, interval, catchError, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CryptoService } from '../../services/binance.service';
 import { CryptoData } from '../../models/binance.interface';
-import { Category, WalletData } from '../../models/wallet.interface';
-import { amounts } from '../../data/wallet.data';
+import { Category, WalletData, WalletHistoryData } from '../../models/wallet.interface';
+import { amounts, walletHistoryData } from '../../data/wallet.data';
 import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
 import { WalletEvolutionChartComponent } from './wallet-evolution-chart/wallet-evolution-chart.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
@@ -18,7 +18,7 @@ import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
         ...MaterialImports,
         CommonModule,
         WalletCategoriesChartComponent,
-        WalletEvolutionChartComponent, // Nuevo componente importado
+        WalletEvolutionChartComponent,
         CurrencyFormatPipe
     ],
     templateUrl: './wallet.component.html',
@@ -36,6 +36,7 @@ export class WalletComponent implements OnInit, OnDestroy {
     readonly error = signal<string | null>(null);
     readonly lastUpdated = signal<Date | null>(null);
     readonly hideAmounts = signal(false);
+    readonly refreshTrigger = signal(0);
 
     // Computed signals para cálculos derivados
     readonly dollarTotal = computed(() => {
@@ -156,6 +157,8 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.cryptoPercentageGain() >= 0 ? 'positive' : 'negative'
     );
 
+    readonly walletHistoryData = computed<WalletHistoryData[]>(() => walletHistoryData);
+
     constructor() {
         this.lastUpdated.set(new Date());
     }
@@ -255,6 +258,7 @@ export class WalletComponent implements OnInit, OnDestroy {
     refreshData(): void {
         this.error.set(null); // Limpiar errores al hacer refresh manual
         this.loadCryptoData();
+        this.refreshTrigger.update(current => current + 1);
     }
 
     /**
