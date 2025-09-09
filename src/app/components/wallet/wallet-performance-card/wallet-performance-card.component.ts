@@ -1,8 +1,8 @@
-import { Component, Input, computed } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialImports } from '../../../shared/imports/material-imports';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
-import { PerformanceData } from '../../../models/wallet.interface';
+import { PortfolioCategory } from '../../../models/portfolio.interface';
 
 @Component({
     selector: 'app-wallet-performance-card',
@@ -16,28 +16,23 @@ import { PerformanceData } from '../../../models/wallet.interface';
     styleUrls: ['./wallet-performance-card.component.scss']
 })
 export class WalletPerformanceCardComponent {
-    @Input() hideAmounts = computed(() => false);
-    @Input() isLoading = computed(() => false);
-    @Input() hasError = computed(() => false);
-    @Input() data = computed<PerformanceData>(() => ({
-        title: '',
-        icon: '',
-        amount: 0,
-        difference: 0,
-        percentageGain: 0,
-        type: 'total'
-    }));
-
-    readonly performanceClass = computed(() =>
-        this.data().percentageGain >= 0 ? 'positive' : 'negative'
-    );
+    readonly isLoading = input.required<boolean>();
+    readonly hasError = input.required<boolean>();
+    readonly hideAmounts = input.required<boolean>();
+    readonly data = input.required<PortfolioCategory>();
 
     readonly cardTypeClass = computed(() => {
-        const type = this.data().type;
-        return `${type}-performance`;
+        const dataValue = this.data();
+        return dataValue?.type ? `${dataValue.type}-performance` : 'total-performance';
+    });
+
+    readonly performanceClass = computed(() => {
+        const dataValue = this.data();
+        return (dataValue?.percentageGain ?? 0) >= 0 ? 'positive' : 'negative';
     });
 
     readonly titleClass = computed(() => {
-        return this.data().type === 'total' ? 'performance-title-total' : 'performance-title';
+        const dataValue = this.data();
+        return dataValue?.type === 'total' ? 'performance-title-total' : 'performance-title';
     });
 }

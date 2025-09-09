@@ -68,40 +68,25 @@
 
     .error-chart-container {
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
         height: 100%;
         gap: 16px;
         color: var(--text-secondary);
+        padding: 20px;
 
-        .error-icon {
+        .error-icon-small {
             color: #f44336;
-            font-size: 48px;
-            margin-bottom: 8px;
         }
 
-        h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: var(--text-primary);
-        }
-
-        p {
+        span {
+            font-weight: 600;
             margin: 0;
             font-size: 0.9rem;
             opacity: 0.8;
             max-width: 280px;
             line-height: 1.4;
-        }
-
-        button {
-            margin-top: 8px;
-
-            mat-icon {
-                margin-right: 8px;
-            }
         }
     }
 

@@ -3,18 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
+import { PortfolioCategory } from '../../../models/portfolio.interface';
 
 // Registrar todos los componentes de Chart.js
 Chart.register(...registerables);
-
-export interface CategoryData {
-  name: string;
-  amount: number;
-  percentage: number;
-  difference: number;
-  percentageGain: number;
-  color?: string;
-}
 
 @Component({
   selector: 'app-wallet-categories-chart',
@@ -29,14 +21,16 @@ export interface CategoryData {
 })
 export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy {
   // Signals para inputs
-  readonly categoriesSignal = signal<CategoryData[]>([]);
+  readonly categoriesSignal = signal<PortfolioCategory[]>([]);
   readonly hideAmountsSignal = signal(false);
   private readonly chartInitialized = signal(false);
 
   @Input()
-  set categories(value: CategoryData[]) {
-    this.categoriesSignal.set(value || []);
+  set categories(value: PortfolioCategory[]) {
+    const filteredCategories = value?.filter(category => category.type !== 'total') || [];
+    this.categoriesSignal.set(filteredCategories);
   }
+  
   get categories() {
     return this.categoriesSignal();
   }

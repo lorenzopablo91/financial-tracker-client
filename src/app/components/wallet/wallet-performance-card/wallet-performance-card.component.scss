@@ -50,9 +50,9 @@
         }
     }
 
-    &.dollars-performance {
+    &.cedears-performance {
         color: #4BC0C0 !important;
-        background: color.scale(#4BC0C0, $lightness: 80%);
+        background: color.scale(#4BC0C0, $lightness: 80%) !important;
         font-weight: 550;
         font-size: 1.4rem;
 
@@ -64,7 +64,7 @@
 
     &.stocks-performance {
         color: #9966FF !important;
-        background: color.scale(#9966FF, $lightness: 80%);
+        background: color.scale(#9966FF, $lightness: 80%) !important;
         font-weight: 550;
         font-size: 1.4rem;
 
@@ -76,7 +76,7 @@
 
     &.crypto-performance {
         color: #FF9F40 !important;
-        background: color.scale(#FF9F40, $lightness: 80%);
+        background: color.scale(#FF9F40, $lightness: 80%) !important;
         font-weight: 550;
         font-size: 1.4rem;
 
@@ -97,7 +97,7 @@
         .skeleton-performance-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
 
             .skeleton-icon {
                 @include skeleton-base;
@@ -109,23 +109,27 @@
 
             .skeleton-performance-title {
                 @include skeleton-base;
+                width: 120px;
+                height: 20px;
+                border-radius: 4px;
                 flex: 1;
-                height: 18px;
             }
 
             .skeleton-performance-percentage {
                 @include skeleton-base;
-                width: 65px;
-                height: 22px;
-                border-radius: 11px;
+                width: 60px;
+                height: 20px;
+                border-radius: 4px;
+                flex-shrink: 0;
             }
         }
 
         .skeleton-performance-amount {
             @include skeleton-base;
-            width: 75%;
-            height: 32px;
-            border-radius: 6px;
+            width: 100px;
+            height: 28px;
+            border-radius: 4px;
+            margin-top: 4px;
         }
     }
 
@@ -134,18 +138,23 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        color: var(--text-secondary);
-        opacity: 0.7;
+        text-align: center;
         height: 100%;
+        gap: 16px;
+        color: var(--text-secondary);
+        padding: 20px;
 
         .error-icon-small {
-            font-size: 20px;
             color: #f44336;
         }
 
         span {
+            font-weight: 600;
+            margin: 0;
             font-size: 0.9rem;
+            opacity: 0.8;
+            max-width: 280px;
+            line-height: 1.4;
         }
     }
 
@@ -153,7 +162,7 @@
         display: grid;
         grid-template-columns: min-content 1fr min-content;
         align-items: center;
-        gap: 2px;
+        gap: 8px;
         margin-bottom: 12px;
 
         .performance-icon {
@@ -164,14 +173,11 @@
 
         .performance-title {
             font-size: 1rem;
-            flex: 1;
             color: var(--text-primary);
-            width: 172px;
         }
 
         .performance-title-total {
             font-size: 1rem;
-            flex: 1;
             color: var(--text-primary);
             padding-top: 8px;
         }
@@ -198,6 +204,8 @@
             .performance-percentage {
                 padding: 4px 8px;
                 border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 550;
 
                 &.positive {
                     color: #4caf50;
@@ -224,6 +232,20 @@
 
         &.negative {
             color: #f44336;
+        }
+
+        .trend-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+
+            &.positive {
+                color: #4caf50;
+            }
+
+            &.negative {
+                color: #f44336;
+            }
         }
     }
 }

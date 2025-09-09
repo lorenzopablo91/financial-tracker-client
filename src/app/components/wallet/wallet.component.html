@@ -36,13 +36,8 @@
         } @else if (error()) {
         <!-- Estado de error -->
         <div class="error-content">
-          <mat-icon class="error-icon">error_outline</mat-icon>
-          <h3>Error al cargar datos</h3>
-          <p>{{ error() }}</p>
-          <button mat-raised-button color="primary" (click)="refreshData()">
-            <mat-icon>refresh</mat-icon>
-            Reintentar
-          </button>
+          <mat-icon class="error-icon-small">error_outline</mat-icon>
+          <span>Error al cargar</span>
         </div>
         } @else {
         <!-- Contenido normal -->
@@ -75,24 +70,8 @@
   <!-- Columna derecha - Cards de rendimiento -->
   <div class="performance-section">
     <div class="performance-cards">
-      <!-- Rendimiento Total -->
-      <app-wallet-performance-card [data]="totalPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
-        [hasError]="hasErrorComputed">
-      </app-wallet-performance-card>
-
-      <!-- Rendimiento Dólares -->
-      <app-wallet-performance-card [data]="dollarPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
-        [hasError]="hasErrorComputed">
-      </app-wallet-performance-card>
-
-      <!-- Rendimiento Acciones -->
-      <app-wallet-performance-card [data]="stockPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
-        [hasError]="hasErrorComputed">
-      </app-wallet-performance-card>
-
-      <!-- Rendimiento Criptomonedas -->
-      <app-wallet-performance-card [data]="cryptoPerformanceData" [hideAmounts]="hideAmounts" [isLoading]="loading"
-        [hasError]="hasErrorComputed">
+      <app-wallet-performance-card *ngFor="let category of performanceCardsData(); trackBy: trackByIndex"
+        [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()" [hasError]="!!error()">
       </app-wallet-performance-card>
     </div>
   </div>

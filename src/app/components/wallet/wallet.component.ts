@@ -1,16 +1,16 @@
-import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialImports } from '../../shared/imports/material-imports';
-import { Subject, interval, catchError, of } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { CryptoService } from '../../services/binance.service';
-import { CryptoData } from '../../models/binance.interface';
-import { Category, PerformanceData, WalletData, WalletHistoryData } from '../../models/wallet.interface';
-import { amounts, walletHistoryData } from '../../data/wallet.data';
+import { Subject, interval } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
+import { WalletHistoryData } from '../../models/wallet.interface';
+import { walletHistoryData } from '../../data/wallet.data';
 import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
 import { WalletEvolutionChartComponent } from './wallet-evolution-chart/wallet-evolution-chart.component';
 import { WalletPerformanceCardComponent } from './wallet-performance-card/wallet-performance-card.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
+import { PortfolioService } from '../../services/portfolio.service';
+import { PortfolioCategory, PortfolioResponse } from '../../models/portfolio.interface';
 
 @Component({
     selector: 'app-wallet',
@@ -27,171 +27,39 @@ import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
     styleUrls: ['./wallet.component.scss']
 })
 export class WalletComponent implements OnInit, OnDestroy {
-    // Inyección de dependencias usando inject()
-    private readonly cryptoService = inject(CryptoService);
     private readonly destroy$ = new Subject<void>();
 
-    // Signals para estado reactivo
-    readonly amounts = signal<WalletData[]>(amounts);
-    readonly cryptoData = signal<CryptoData[]>([]);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
     readonly lastUpdated = signal<Date | null>(null);
     readonly hideAmounts = signal(false);
     readonly refreshTrigger = signal(0);
 
-    // Computed signals para cálculos derivados
-    readonly dollarTotal = computed(() => {
-        const data = this.amounts()[0];
-        if (!data) return 0;
-        return data.dollarAmount.dollarsBanked +
-            data.dollarAmount.dollarCashed +
-            data.dollarAmount.dollarInvested;
-    });
+    totalWallet = signal(0);
+    categories = signal<PortfolioCategory[]>([]);
 
-    readonly stockTotal = computed(() => {
-        const data = this.amounts()[0];
-        if (!data) return 0;
-        const totalStockPesos = data.stockMarketAmount.cedearsPesos +
-            data.stockMarketAmount.stockMarketPesos +
-            data.stockMarketAmount.cashPesos;
-        return totalStockPesos / data.dollarQuote;
-    });
-
-    readonly cryptoTotal = computed(() =>
-        this.cryptoData().reduce((total, crypto) => total + crypto.valueUSD, 0)
-    );
-
-    readonly totalWallet = computed(() =>
-        this.dollarTotal() + this.stockTotal() + this.cryptoTotal()
-    );
-
-    readonly dollarDifference = computed(() => {
-        const data = this.amounts()[0];
-        return data ? this.dollarTotal() - data.dollarUninvested : 0;
-    });
-
-    readonly stockDifference = computed(() => {
-        const data = this.amounts()[0];
-        return data ? this.stockTotal() - data.stockMarketUninvested : 0;
-    });
-
-    readonly cryptoDifference = computed(() => {
-        const data = this.amounts()[0];
-        return data ? this.cryptoTotal() - data.cryptoUninvested : 0;
-    });
-
-    readonly totalDifference = computed(() => {
-        const data = this.amounts()[0];
-        if (!data) return 0;
-        const totalUninvested = data.dollarUninvested +
-            data.stockMarketUninvested +
-            data.cryptoUninvested;
-        return this.totalWallet() - totalUninvested;
-    });
-
-    readonly categories = computed<Category[]>(() => [
-        {
-            name: 'DÓLARES',
-            amount: this.dollarTotal(),
-            color: '#4BC0C0',
-            percentage: this.getPercentage(this.dollarTotal()),
-            difference: this.dollarDifference(),
-            percentageGain: this.dollarPercentageGain()
-        },
-        {
-            name: 'ACCIONES',
-            amount: this.stockTotal(),
-            color: '#9966FF',
-            percentage: this.getPercentage(this.stockTotal()),
-            difference: this.stockDifference(),
-            percentageGain: this.stockPercentageGain()
-        },
-        {
-            name: 'CRYPTOMONEDAS',
-            amount: this.cryptoTotal(),
-            color: '#FF9F40',
-            percentage: this.getPercentage(this.cryptoTotal()),
-            difference: this.cryptoDifference(),
-            percentageGain: this.cryptoPercentageGain()
-        }
-    ]);
-
-    // Computed para porcentajes de ganancia
-    readonly dollarPercentageGain = computed(() => {
-        const data = this.amounts()[0];
-        return data ? this.getPercentageGain(this.dollarTotal(), data.dollarUninvested) : 0;
-    });
-
-    readonly stockPercentageGain = computed(() => {
-        const data = this.amounts()[0];
-        return data ? this.getPercentageGain(this.stockTotal(), data.stockMarketUninvested) : 0;
-    });
-
-    readonly cryptoPercentageGain = computed(() => {
-        const data = this.amounts()[0];
-        return data ? this.getPercentageGain(this.cryptoTotal(), data.cryptoUninvested) : 0;
-    });
-
-    readonly totalPercentageGain = computed(() => {
-        const data = this.amounts()[0];
-        if (!data) return 0;
-        const totalUninvested = data.dollarUninvested +
-            data.stockMarketUninvested +
-            data.cryptoUninvested;
-        return this.getPercentageGain(this.totalWallet(), totalUninvested);
-    });
-
-    // Computed signals para datos de rendimiento de las cards
-    readonly totalPerformanceData = computed<PerformanceData>(() => ({
-        title: 'RENDIMIENTO TOTAL',
-        icon: '',
-        amount: this.totalWallet(),
-        difference: this.totalDifference(),
-        percentageGain: this.totalPercentageGain(),
-        type: 'total'
-    }));
-
-    readonly dollarPerformanceData = computed<PerformanceData>(() => ({
-        title: 'RENDIMIENTO DÓLARES',
-        icon: 'attach_money',
-        amount: this.dollarTotal(),
-        difference: this.dollarDifference(),
-        percentageGain: this.dollarPercentageGain(),
-        type: 'dollars'
-    }));
-
-    readonly stockPerformanceData = computed<PerformanceData>(() => ({
-        title: 'RENDIMIENTO ACCIONES',
-        icon: 'bar_chart',
-        amount: this.stockTotal(),
-        difference: this.stockDifference(),
-        percentageGain: this.stockPercentageGain(),
-        type: 'stocks'
-    }));
-
-    readonly cryptoPerformanceData = computed<PerformanceData>(() => ({
-        title: 'RENDIMIENTO CRYPTOMONEDAS',
-        icon: 'currency_bitcoin',
-        amount: this.cryptoTotal(),
-        difference: this.cryptoDifference(),
-        percentageGain: this.cryptoPercentageGain(),
-        type: 'crypto'
-    }));
-
-    readonly walletHistoryData = computed<WalletHistoryData[]>(() => walletHistoryData);
-
-    // Computed para el error boolean
     readonly hasErrorComputed = computed(() => !!this.error());
+    readonly walletHistoryData = computed<WalletHistoryData[]>(() => walletHistoryData);
+    // Computed que devuelve siempre 4 cards (independiente del estado)
+    readonly performanceCardsData = computed(() => {
+        const realData = this.categories() || [];
 
-    constructor() {
+        const fixedArray = [
+            realData[0] || null,
+            realData[1] || null,
+            realData[2] || null,
+            realData[3] || null
+        ];
+
+        return fixedArray;
+    });
+
+    constructor(private portfolioService: PortfolioService) {
         this.lastUpdated.set(new Date());
     }
 
     ngOnInit(): void {
-        // Carga inicial
-        this.loadCryptoData();
-        // Inicializar auto-refresh después de la carga inicial
+        this.loadPortfolioData();
         this.initializeAutoRefresh();
     }
 
@@ -205,14 +73,11 @@ export class WalletComponent implements OnInit, OnDestroy {
         interval(5 * 60 * 1000)
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-                // Solo hacer auto-refresh si no hay errores pendientes
-                if (!this.error()) {
-                    this.loadCryptoData();
-                }
+                this.loadPortfolioData();
             });
     }
 
-    private loadCryptoData(): void {
+    private loadPortfolioData(): void {
         if (this.loading()) {
             return;
         }
@@ -220,61 +85,24 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.loading.set(true);
         this.error.set(null);
 
-        this.cryptoService.getCryptoData()
+        this.portfolioService.getPortfolioCategories()
             .pipe(
                 takeUntil(this.destroy$),
-                catchError(error => {
-                    console.error('Error loading crypto data:', error);
-
-                    // Manejar diferentes tipos de errores
-                    let errorMessage = 'Error desconocido al cargar los datos';
-
-                    if (error.status === 0) {
-                        errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
-                    } else if (error.status >= 500) {
-                        errorMessage = 'Error del servidor. Intenta más tarde.';
-                    } else if (error.status === 429) {
-                        errorMessage = 'Demasiadas solicitudes. Espera un momento.';
-                    } else if (error.message) {
-                        errorMessage = error.message;
-                    }
-
-                    this.error.set(errorMessage);
-                    this.loading.set(false);
-                    return of([]);
-                })
+                finalize(() => this.loading.set(false))
             )
             .subscribe({
-                next: (data) => {
-                    this.cryptoData.set(data);
+                next: (response: PortfolioResponse) => {
+                    this.categories.set(response.categories);
+
+                    const totalCategory = response.categories.find(c => c.type === 'total');
+                    this.totalWallet.set(totalCategory?.amount ?? 0);
+
                     this.lastUpdated.set(new Date());
-                    this.loading.set(false);
                 },
-                error: (error) => {
-                    console.error('Subscription error:', error);
-                    this.error.set('Error inesperado en la suscripción');
-                    this.loading.set(false);
+                error: (errorInfo) => {
+                    this.error.set(errorInfo.message);
                 }
             });
-    }
-
-    /**
-     * Calcula el porcentaje de ganancia
-     */
-    private getPercentageGain(currentAmount: number, originalAmount: number): number {
-        if (originalAmount === 0 || !isFinite(originalAmount)) return 0;
-        const gain = ((currentAmount - originalAmount) / originalAmount) * 100;
-        return Math.round(gain * 10) / 10;
-    }
-
-    /**
-     * Calcula el porcentaje de una categoría
-     */
-    private getPercentage(amount: number): number {
-        const total = this.totalWallet();
-        if (total === 0 || !isFinite(total)) return 0;
-        const percentage = (amount / total) * 100;
-        return Math.round(percentage * 10) / 10;
     }
 
     /**
@@ -282,16 +110,8 @@ export class WalletComponent implements OnInit, OnDestroy {
      */
     refreshData(): void {
         this.error.set(null); // Limpiar errores al hacer refresh manual
-        this.loadCryptoData();
+        this.loadPortfolioData();
         this.refreshTrigger.update(current => current + 1);
-    }
-
-    /**
-     * Reintenta cargar datos en caso de error
-     */
-    retryLoading(): void {
-        this.error.set(null);
-        this.loadCryptoData();
     }
 
     /**
@@ -304,20 +124,9 @@ export class WalletComponent implements OnInit, OnDestroy {
         }
     }
 
-    /**
-     * Verifica si hay datos válidos para mostrar
-     */
-    hasValidData(): boolean {
-        return this.categories().some(category => category.amount > 0);
+    // TrackBy function para optimizar el ngFor
+    trackByIndex(index: number): number {
+        return index;
     }
 
-    /**
-     * Obtiene el estado actual del dashboard
-     */
-    getDashboardState(): 'loading' | 'error' | 'success' | 'empty' {
-        if (this.loading()) return 'loading';
-        if (this.error()) return 'error';
-        if (!this.hasValidData()) return 'empty';
-        return 'success';
-    }
 }

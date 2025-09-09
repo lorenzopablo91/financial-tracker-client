@@ -10,12 +10,7 @@
     <!-- Estado de error -->
     <div class="error-chart-container">
         <mat-icon class="error-icon">error_outline</mat-icon>
-        <h3>Error al cargar gráfico</h3>
-        <p>{{ error() }}</p>
-        <button mat-raised-button color="primary" (click)="refreshChart()">
-            <mat-icon>refresh</mat-icon>
-            Reintentar
-        </button>
+        <span>Error al cargar</span>
     </div>
     } @else {
     <!-- Contenido normal -->
