@@ -85,7 +85,9 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.loading.set(true);
         this.error.set(null);
 
-        this.portfolioService.getPortfolioCategories()
+        const fechaInicioPortfolio = '01/01/2025'
+
+        this.portfolioService.getPortfolioCategories(fechaInicioPortfolio)
             .pipe(
                 takeUntil(this.destroy$),
                 finalize(() => this.loading.set(false))

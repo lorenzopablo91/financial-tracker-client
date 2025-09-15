@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { retry } from 'rxjs/operators';
 import { environment } from '../environments/environment';
@@ -13,8 +13,11 @@ export class PortfolioService {
 
     constructor(private http: HttpClient) { }
 
-    getPortfolioCategories(): Observable<PortfolioResponse> {
-        return this.http.get<PortfolioResponse>(`${this.baseURL}`).pipe(
+    getPortfolioCategories(beginTime: string): Observable<PortfolioResponse> {
+        let params = new HttpParams();
+        params = params.set('beginTime', beginTime);
+        
+        return this.http.get<PortfolioResponse>(`${this.baseURL}`, { params }).pipe(
             retry(1)
         );
     }
