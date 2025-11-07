@@ -13,12 +13,22 @@ export class PortfolioService {
 
     constructor(private http: HttpClient) { }
 
-    getPortfolioCategories(beginTime: string): Observable<PortfolioResponse> {
-        let params = new HttpParams();
-        params = params.set('beginTime', beginTime);
-        
-        return this.http.get<PortfolioResponse>(`${this.baseURL}`, { params }).pipe(
+    getPortfolios(): Observable<PortfolioResponse> {
+        return this.http.get<PortfolioResponse>(`${this.baseURL}`).pipe(
             retry(1)
         );
     }
+
+    getPortfolioValuation(portfolioId: string): Observable<any> {
+        return this.http.get<any>(`${this.baseURL}/${portfolioId}/valorizar`).pipe(
+            retry(1)
+        );
+    }
+
+    getPortfolioSnapshots(portfolioId: string, limit = 30): Observable<any> {
+        return this.http.get<any>(`${this.baseURL}/${portfolioId}/snapshots?limit=${limit}`).pipe(
+            retry(1)
+        );
+    }
+
 }

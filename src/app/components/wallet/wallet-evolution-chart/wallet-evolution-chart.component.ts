@@ -4,7 +4,6 @@ import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { MaterialImports } from '../../../shared/imports/material-imports';
 import { formatWalletHistoryForChart } from '../../../shared/controllers/evolution-chart.controller';
 import { WalletHistoryData } from '../../../models/wallet.interface';
-import { walletHistoryData } from '../../../data/wallet.data';
 
 // Registrar todos los componentes de Chart.js
 Chart.register(...registerables);
@@ -23,7 +22,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
     // Signals para inputs
     readonly hideAmountsSignal = signal(false);
     readonly selectedPeriodSignal = signal<'3M' | '6M' | '1A' | 'TODO'>('TODO');
-    readonly chartDataSignal = signal<WalletHistoryData[]>(walletHistoryData);
+    readonly chartDataSignal = signal<WalletHistoryData[]>([]);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
     private readonly chartInitialized = signal(false);

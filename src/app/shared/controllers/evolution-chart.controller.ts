@@ -4,14 +4,14 @@ import { WalletHistoryData } from "../../models/wallet.interface";
 export function formatWalletHistoryForChart(data: WalletHistoryData[]) {
     return {
         labels: data.map(item =>
-            item.date.toLocaleDateString('es-ES', {
+            new Date(item.date).toLocaleDateString('es-ES', {
                 day: '2-digit',
                 month: 'short'
             })
         ),
         datasets: [
             {
-                label: 'Total Billetera',
+                label: 'TOTAL BILLETERA',
                 data: data.map(item => item.totalWallet),
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',

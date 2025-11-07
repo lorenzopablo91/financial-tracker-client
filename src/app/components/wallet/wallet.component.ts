@@ -4,13 +4,12 @@ import { MaterialImports } from '../../shared/imports/material-imports';
 import { Subject, interval } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { WalletHistoryData } from '../../models/wallet.interface';
-import { walletHistoryData } from '../../data/wallet.data';
 import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
 import { WalletEvolutionChartComponent } from './wallet-evolution-chart/wallet-evolution-chart.component';
 import { WalletPerformanceCardComponent } from './wallet-performance-card/wallet-performance-card.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioCategory, PortfolioResponse } from '../../models/portfolio.interface';
+import { Portfolio, PortfolioCategory, PortfolioResponse } from '../../models/portfolio.interface';
 
 @Component({
     selector: 'app-wallet',
@@ -35,11 +34,12 @@ export class WalletComponent implements OnInit, OnDestroy {
     readonly hideAmounts = signal(false);
     readonly refreshTrigger = signal(0);
 
+    walletHistoryData = signal<WalletHistoryData[]>([]);
     totalWallet = signal(0);
     categories = signal<PortfolioCategory[]>([]);
+    portfolios = signal<Portfolio[]>([]);
 
     readonly hasErrorComputed = computed(() => !!this.error());
-    readonly walletHistoryData = computed<WalletHistoryData[]>(() => walletHistoryData);
     // Computed que devuelve siempre 4 cards (independiente del estado)
     readonly performanceCardsData = computed(() => {
         const realData = this.categories() || [];
@@ -59,13 +59,35 @@ export class WalletComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.loadPortfolioData();
+        this.getPortfolios();
         this.initializeAutoRefresh();
     }
 
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    private getPortfolios(): void {
+        this.portfolioService.getPortfolios()
+            .pipe(
+                takeUntil(this.destroy$),
+                finalize(() => this.loading.set(false))
+            )
+            .subscribe({
+                next: (response: PortfolioResponse) => {
+                    this.portfolios.set(response.data);
+
+                    // TODO: por ahora hardcodeamos el id del portafolio ya que no tenemos el selector ni abm de los mismos
+                    // Cuando tengamos ese feature, hay que cambiar la forma de cargar la data
+                    // Hacer un forkjoin aca
+                    this.loadPortfolioData();
+                },
+                error: (errorInfo) => {
+                    this.error.set(errorInfo.message);
+                }
+            });
+
     }
 
     private initializeAutoRefresh(): void {
@@ -85,21 +107,44 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.loading.set(true);
         this.error.set(null);
 
-        const fechaInicioPortfolio = '01/01/2025'
-
-        this.portfolioService.getPortfolioCategories(fechaInicioPortfolio)
+        this.portfolioService.getPortfolioValuation('d6f4bcc4-0041-404a-aef4-717f52022076')
             .pipe(
                 takeUntil(this.destroy$),
                 finalize(() => this.loading.set(false))
             )
             .subscribe({
-                next: (response: PortfolioResponse) => {
-                    this.categories.set(response.categories);
+                next: (response: any) => {
+                    this.categories.set(response.data.categorias);
 
-                    const totalCategory = response.categories.find(c => c.type === 'total');
-                    this.totalWallet.set(totalCategory?.amount ?? 0);
+                    this.totalWallet.set(response.data.valorActualActivos ?? 0);
 
                     this.lastUpdated.set(new Date());
+
+                    // TODO: cargar con forkjoin 
+                    this.loadPortfolioHistoryData();
+                },
+                error: (errorInfo) => {
+                    this.error.set(errorInfo.message);
+                }
+            });
+    }
+
+     private loadPortfolioHistoryData(): void {
+        if (this.loading()) {
+            return;
+        }
+
+        this.loading.set(true);
+        this.error.set(null);
+
+        this.portfolioService.getPortfolioSnapshots('d6f4bcc4-0041-404a-aef4-717f52022076')
+            .pipe(
+                takeUntil(this.destroy$),
+                finalize(() => this.loading.set(false))
+            )
+            .subscribe({
+                next: (response: any) => {
+                    this.walletHistoryData.set(response.data || []);
                 },
                 error: (errorInfo) => {
                     this.error.set(errorInfo.message);
