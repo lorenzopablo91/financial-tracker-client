@@ -163,11 +163,6 @@
             flex: 1;
             position: relative;
             min-height: 0; // Permite que el canvas se redimensione
-
-            canvas {
-                width: 100% !important;
-                height: 100% !important;
-            }
         }
 
         .no-data {
@@ -195,8 +190,6 @@
         }
     }
 }
-
-
 
 // Responsive adjustments
 @media (max-width: 480px) {

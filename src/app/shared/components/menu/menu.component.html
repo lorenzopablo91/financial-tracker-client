@@ -8,7 +8,7 @@
         @for (item of menuItems(); track item.path) {
         <button mat-button [routerLink]="item.path" routerLinkActive="active-link" class="menu-button">
             <mat-icon>{{ item.icon }}</mat-icon>
-            {{ item.label }}
+            <span>{{ item.label }}</span>
         </button>
         }
     </div>

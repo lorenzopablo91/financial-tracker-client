@@ -23,16 +23,58 @@ export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy 
   // Signals para inputs
   readonly categoriesSignal = signal<PortfolioCategory[]>([]);
   readonly hideAmountsSignal = signal(false);
+  readonly totalAmountSignal = signal(0);
   private readonly chartInitialized = signal(false);
 
   @Input()
   set categories(value: PortfolioCategory[]) {
     const filteredCategories = value?.filter(category => category.type !== 'total') || [];
+
+    // Si no hay categorías y hay un totalAmount signal, crear categoría "Efectivo"
+    if (filteredCategories.length === 0 && this.totalAmountSignal() > 0) {
+      const cashCategory: PortfolioCategory = {
+        name: 'EFECTIVO',
+        amount: this.totalAmountSignal(),
+        percentage: 100,
+        color: '#10b981',
+        type: 'cash',
+        percentageGain: 0,
+        amountGain: 0,
+        icon: ''
+      };
+      this.categoriesSignal.set([cashCategory]);
+      return;
+    }
+
     this.categoriesSignal.set(filteredCategories);
   }
-  
+
   get categories() {
     return this.categoriesSignal();
+  }
+
+  @Input()
+  set totalAmount(value: number) {
+    this.totalAmountSignal.set(value);
+
+    // Si ya se recibió totalAmount y no hay categorías, intentar crear categoría Efectivo
+    if (value > 0 && this.categoriesSignal().length === 0) {
+      const cashCategory: PortfolioCategory = {
+        name: 'EFECTIVO',
+        amount: value,
+        percentage: 100,
+        color: '#10b981',
+        type: 'cash',
+        percentageGain: 0,
+        amountGain: 0,
+        icon: 'cash'
+      };
+      this.categoriesSignal.set([cashCategory]);
+    }
+  }
+
+  get totalAmount() {
+    return this.totalAmountSignal();
   }
 
   @Input()
@@ -62,17 +104,29 @@ export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy 
 
   constructor() {
     effect(() => {
-      // Solo actualizar si el chart ya existe y está inicializado
-      if (this.chart && this.chartInitialized()) {
+      // Si hay datos pero el chart no está inicializado, crear el chart
+      if (this.hasData() && !this.chartInitialized()) {
+        // Esperar un tick para asegurar que el canvas esté disponible
+        setTimeout(() => {
+          if (this.chartCanvas?.nativeElement) {
+            this.createChart();
+          }
+        }, 0);
+      }
+      // Si el chart ya existe, solo actualizar
+      else if (this.chart && this.chartInitialized()) {
         this.updateExistingChart();
       }
     });
   }
 
   ngAfterViewInit(): void {
-    if (this.hasData()) {
-      this.createChart();
-    }
+    // Usar setTimeout para asegurar que el canvas esté disponible
+    setTimeout(() => {
+      if (this.hasData()) {
+        this.createChart();
+      }
+    }, 0);
   }
 
   ngOnDestroy(): void {

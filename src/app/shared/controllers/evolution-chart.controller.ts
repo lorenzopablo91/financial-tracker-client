@@ -11,7 +11,7 @@ export function formatWalletHistoryForChart(data: WalletHistoryData[]) {
         ),
         datasets: [
             {
-                label: 'TOTAL BILLETERA',
+                label: 'TOTAL PORTAFOLIO',
                 data: data.map(item => item.totalWallet),
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',

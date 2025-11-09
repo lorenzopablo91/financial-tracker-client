@@ -19,12 +19,12 @@ export class MenuComponent {
   menuItems = signal<MenuItem[]>([
     {
       path: '/balance',
-      label: 'Balance',
+      label: 'BALANCE',
       icon: 'account_balance'
     },
     {
       path: '/wallet',
-      label: 'Billetera',
+      label: 'PORTAFOLIO',
       icon: 'wallet'
     }
   ]);

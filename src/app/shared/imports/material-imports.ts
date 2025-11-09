@@ -1,7 +1,7 @@
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -12,6 +12,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSelect } from '@angular/material/select';
 
 export const MaterialImports = [
   MatFormFieldModule,
@@ -27,5 +28,7 @@ export const MaterialImports = [
   MatTableModule,
   MatTooltipModule,
   MatProgressSpinnerModule,
-  MatMenuModule
+  MatMenuModule,
+  MatSelect,
+  MatOption
 ];

@@ -1,30 +1,86 @@
-<!-- Header superior -->
-<div class="dashboard-header">
-  <div class="dashboard-controls">
-    <button mat-icon-button (click)="toggleAmountVisibility()"
-      [matTooltip]="hideAmounts() ? 'Mostrar montos' : 'Ocultar montos'" class="visibility-btn" [disabled]="loading()">
-      <mat-icon>{{ hideAmounts() ? 'visibility' : 'visibility_off' }}</mat-icon>
-    </button>
+<div class="dashboard-container">
+  <!-- Header superior -->
+  <div class="dashboard-header">
+    <!-- Selector de Portafolios (Izquierda) -->
+    <div class="portfolio-selector">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Portafolio</mat-label>
+        <mat-select [value]="selectedPortfolioId()" (selectionChange)="onPortfolioChange($event.value)"
+          [disabled]="isLoadingPortfolios() || loading()">
+          @if (isLoadingPortfolios()) {
+          <mat-option disabled>
+            <div class="loading-option">
+              <mat-spinner diameter="20"></mat-spinner>
+              <span>Cargando portafolios...</span>
+            </div>
+          </mat-option>
+          } @else if (portfolios().length === 0) {
+          <mat-option disabled>
+            <span>No hay portafolios disponibles</span>
+          </mat-option>
+          } @else {
+          @for (portfolio of portfolios(); track portfolio.id) {
+          <mat-option [value]="portfolio.id">
+            {{ portfolio.nombre }}
+          </mat-option>
+          }
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
 
-    <div class="refresh-section">
-      <span class="text-muted">Última actualización: {{ lastUpdated() | date:'M/d/yy, h:mm a' }}</span>
-      <button mat-icon-button (click)="refreshData()" matTooltip="Actualizar datos" [disabled]="loading()">
-        <mat-icon [class.spinning]="loading()">refresh</mat-icon>
+    <!-- Descripción del Portafolio (Centro) -->
+    <div class="portfolio-description">
+      @if (hasSelectedPortfolio()) {
+      <mat-icon>wallet</mat-icon>
+      <span>{{ portfolioDescription() }}</span>
+      } @else {
+      <mat-icon class="no-portfolio">info_outline</mat-icon>
+      <span class="no-portfolio-text">Debe seleccionar un portafolio para visualizar los datos</span>
+      }
+    </div>
+
+    <!-- Controles del Dashboard (Derecha) -->
+    <div class="dashboard-controls">
+      <button mat-icon-button (click)="toggleAmountVisibility()"
+        [matTooltip]="hideAmounts() ? 'Mostrar montos' : 'Ocultar montos'" class="visibility-btn"
+        [disabled]="loading() || !hasSelectedPortfolio()">
+        <mat-icon>{{ hideAmounts() ? 'visibility' : 'visibility_off' }}</mat-icon>
       </button>
+
+      <div class="refresh-section">
+        @if (lastUpdated()) {
+        <span class="text-muted">
+          Última actualización: {{ lastUpdated() | date:'M/d/yy, h:mm a' }}
+        </span>
+        }
+        <button mat-icon-button (click)="refreshData()" matTooltip="Actualizar datos"
+          [disabled]="loading() || !hasSelectedPortfolio()">
+          <mat-icon [class.spinning]="loading()">refresh</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="dashboard-layout">
-  <!-- Columna izquierda - Gráfico evolución + Billetera/Torta -->
-  <div class="wallet-section">
-    <!-- Gráfico de evolución - PRIMERA COLUMNA -->
-    <app-wallet-evolution-chart [chartData]="walletHistoryData()" [hideAmounts]="hideAmounts()" [isLoading]="loading()"
-      [refreshTrigger]="refreshTrigger()" class="evolution-chart">
-    </app-wallet-evolution-chart>
+  <!-- Contenido del Dashboard -->
+  @if (!hasSelectedPortfolio()) {
+  <!-- Mensaje cuando no hay portafolio seleccionado -->
+  <div class="no-portfolio-message">
+    <mat-icon>wallet</mat-icon>
+    <h2>No hay portafolio seleccionado</h2>
+    <p>Por favor, seleccione un portafolio del menú superior para visualizar sus datos.</p>
+  </div>
+  } @else {
+  <!-- Dashboard con datos -->
+  <div class="dashboard-layout" [class.has-investments]="!hasCashOnly()">
+    <!-- Columna izquierda - Gráfico evolución + Billetera/Torta -->
+    <div class="wallet-section">
+      <!-- Gráfico de evolución - PRIMERA COLUMNA -->
+      <app-wallet-evolution-chart [chartData]="walletHistoryData()" [hideAmounts]="hideAmounts()"
+        [isLoading]="loading()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
+      </app-wallet-evolution-chart>
 
-    <!-- Total de billetera + Gráfico categorías - SEGUNDA COLUMNA -->
-    <div class="wallet-summary-column">
+      <!-- Total de billetera + Gráfico categorías - SEGUNDA COLUMNA -->
       <mat-card class="total-card">
         @if (loading()) {
         <!-- Estado de carga -->
@@ -37,14 +93,14 @@
         <!-- Estado de error -->
         <div class="error-content">
           <mat-icon class="error-icon-small">error_outline</mat-icon>
-          <span>Error al cargar</span>
+          <span>{{ error() }}</span>
         </div>
         } @else {
         <!-- Contenido normal -->
         <div class="summary-content">
           <!-- Título de la card arriba del monto -->
           <div class="card-title">
-            <span class="summary-title">💰 TOTAL BILLETERA</span>
+            <span class="summary-title">💰 TOTAL PORTAFOLIO</span>
           </div>
 
           <!-- Total Amount centrado -->
@@ -55,24 +111,28 @@
           </div>
 
           <!-- Gráfico de categorías centrado -->
-          @if (categories() && categories().length > 0) {
           <div class="categories-chart-section">
-            <app-wallet-categories-chart [categories]="categories()" [hideAmounts]="hideAmounts()">
+            <app-wallet-categories-chart [categories]="categories()" [totalAmount]="totalWallet()"
+              [hideAmounts]="hideAmounts()">
             </app-wallet-categories-chart>
           </div>
-          }
         </div>
         }
       </mat-card>
     </div>
-  </div>
 
-  <!-- Columna derecha - Cards de rendimiento -->
-  <div class="performance-section">
-    <div class="performance-cards">
-      <app-wallet-performance-card *ngFor="let category of performanceCardsData(); trackBy: trackByIndex"
-        [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()" [hasError]="!!error()">
-      </app-wallet-performance-card>
+    <!-- Columna derecha - Cards de rendimiento (solo si hay inversiones) -->
+    @if (!hasCashOnly()) {
+    <div class="performance-section">
+      <div class="performance-cards">
+        @for (category of performanceCardsData(); track $index) {
+        <app-wallet-performance-card [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()"
+          [hasError]="!!error()">
+        </app-wallet-performance-card>
+        }
+      </div>
     </div>
+    }
   </div>
+  }
 </div>
