@@ -1,0 +1,93 @@
+.confirm-dialog {
+    width: 100%;
+    min-width: 320px;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+
+    @media (min-width: 768px) {
+        min-width: 400px;
+    }
+
+    .dialog-title {
+        margin: 0;
+        padding: 0 12px;
+        height: 56px;
+        flex-shrink: 0;
+
+        @media (min-width: 768px) {
+            padding: 0 16px;
+        }
+
+        .title-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 100%;
+
+            mat-icon {
+                color: var(--primary-500);
+                margin-right: 4px;
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+
+                @media (min-width: 768px) {
+                    font-size: 24px;
+                    width: 24px;
+                    height: 24px;
+                }
+            }
+
+            span {
+                font-size: 1rem;
+
+                @media (min-width: 768px) {
+                    font-size: 1.25rem;
+                }
+            }
+        }
+    }
+
+    .dialog-content {
+        padding: 16px;
+        flex: 1;
+        overflow-y: auto;
+        margin: 0;
+
+        @media (min-width: 768px) {
+            padding: 24px;
+        }
+
+        &.mat-mdc-dialog-content {
+            max-height: none;
+        }
+
+        .message {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--neutral-800);
+        }
+    }
+
+    mat-dialog-actions {
+        padding: 12px 16px;
+        margin: 0;
+        gap: 8px;
+        flex-shrink: 0;
+        border-top: 1px solid var(--neutral-200);
+        flex-wrap: wrap;
+
+        @media (min-width: 768px) {
+            padding: 16px 24px;
+        }
+
+        button {
+            @media (max-width: 480px) {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    }
+}

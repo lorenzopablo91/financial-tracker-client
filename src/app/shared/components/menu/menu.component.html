@@ -4,12 +4,26 @@
         <span class="app-title">GESTOR DE FINANZAS</span>
     </div>
 
-    <div class="menu-items">
-        @for (item of menuItems(); track item.path) {
-        <button mat-button [routerLink]="item.path" routerLinkActive="active-link" class="menu-button">
-            <mat-icon>{{ item.icon }}</mat-icon>
-            <span>{{ item.label }}</span>
-        </button>
+    <div class="menu-center">
+        <div class="menu-items">
+            @for (item of menuItems(); track item.path) {
+            <button mat-button [routerLink]="item.path" routerLinkActive="active-link" class="menu-button">
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span>{{ item.label }}</span>
+            </button>
+            }
+        </div>
+    </div>
+
+    <div class="menu-actions">
+        @if (currentUser$ | async; as user) {
+        <div class="user-info">
+            <span class="user-name">{{ user.name }}</span>
+        </div>
         }
+
+        <button mat-icon-button (click)="onLogout()" class="logout-button" title="Cerrar sesión">
+            <mat-icon>logout</mat-icon>
+        </button>
     </div>
 </mat-toolbar>

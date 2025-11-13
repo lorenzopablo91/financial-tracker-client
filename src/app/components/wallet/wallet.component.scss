@@ -5,6 +5,7 @@
   0% {
     background-position: -200px 0;
   }
+
   100% {
     background-position: calc(200px + 100%) 0;
   }
@@ -14,6 +15,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -21,12 +23,10 @@
 
 // ============ MIXINS ============
 @mixin skeleton-base {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 25%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.1) 75%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.1) 25%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.1) 75%);
   background-size: 200px 100%;
   animation: skeleton-loading 1.5s infinite;
   border-radius: 4px;
@@ -34,10 +34,6 @@
 
 // ============ CONTENEDOR PRINCIPAL ============
 .dashboard-container {
-  width: 100%;
-  height: 100%;
-  padding: 0 16px;
-
   @media (min-width: 768px) {
     padding: 0 24px;
   }

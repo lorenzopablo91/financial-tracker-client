@@ -1,0 +1,21 @@
+<div class="confirm-dialog">
+    <mat-toolbar color="accent" class="dialog-title">
+        <div class="title-content">
+            <mat-icon>{{ data.icon || 'help' }}</mat-icon>
+            <span>{{ data.title || 'Confirmar acción' }}</span>
+        </div>
+    </mat-toolbar>
+
+    <mat-dialog-content class="dialog-content">
+        <p class="message">{{ data.message || '¿Estás seguro de continuar?' }}</p>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">
+            {{ data.cancelText || 'Cancelar' }}
+        </button>
+        <button mat-raised-button color="primary" (click)="onConfirm()">
+            {{ data.confirmText || 'Confirmar' }}
+        </button>
+    </mat-dialog-actions>
+</div>

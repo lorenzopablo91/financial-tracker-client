@@ -7,13 +7,14 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { routes } from './app.routes';
 import { errorHandlerInterceptor } from './shared/interceptors/error-handler.interceptor';
+import { authInterceptor } from './shared/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(
-      withInterceptors([errorHandlerInterceptor])
+      withInterceptors([errorHandlerInterceptor, authInterceptor])
     ),
     importProvidersFrom(
       BrowserAnimationsModule,

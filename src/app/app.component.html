@@ -1,0 +1,4 @@
+<app-menu *ngIf="showMenu"></app-menu>
+<main class="main-content" [class.full-width]="!showMenu">
+    <router-outlet></router-outlet>
+</main>

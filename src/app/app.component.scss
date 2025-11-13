@@ -1,0 +1,9 @@
+ .main-content {
+     padding: 20px;
+     height: min-content;
+ }
+
+ .main-content.full-width {
+     padding: 0;
+     min-height: calc(100vh - 64px);
+ }
