@@ -1,6 +1,7 @@
 {
-    "buildCommand": "ng build --configuration production",
+    "buildCommand": "npm run build",
     "outputDirectory": "dist/financial-tracker/browser",
+    "framework": "angular",
     "rewrites": [
         {
             "source": "/(.*)",
