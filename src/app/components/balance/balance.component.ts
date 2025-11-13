@@ -34,7 +34,7 @@ export class BalanceComponent implements OnInit {
   monthYearControl = new FormControl();
 
   // Signal writable que contiene los datos (en lugar de usar la constante directamente)
-  private _balanceData = signal<Array<FinancialData>>([...BALANCE_DATA]);
+  private _balanceData = signal<Array<FinancialData>>([]); //TODO: ...BALANCE_DATA
 
   // Signals para manejar el estado
   private _selectedMonth = signal<number | null>(null);
