@@ -259,50 +259,171 @@
 .dashboard-layout {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   width: 100%;
-  align-items: stretch;
+}
 
-  @media (min-width: 768px) {
-    gap: 24px;
-  }
+// ============ CARRUSEL DE PERFORMANCE ============
+.performance-carousel-section {
+  width: 100%;
+  overflow: hidden;
 
-  // Layout de 2 columnas solo en desktop
-  @media (min-width: 1201px) {
-    &.has-investments {
-      display: grid;
-      grid-template-columns: 1fr 352px;
-      gap: 24px;
-      align-items: start;
+  .performance-carousel {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 0 12px 0;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    // Estilos del scrollbar
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--accent-500);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--primary-500);
+      border-radius: 4px;
+      opacity: 0.5;
+
+      &:hover {
+        background: var(--primary-600);
+      }
+    }
+
+    @media (min-width: 768px) {
+      gap: 20px;
+    }
+
+    app-wallet-performance-card {
+      flex: 0 0 auto;
+      width: 280px;
+      height: 116px;
+
+      @media (min-width: 480px) {
+        width: 320px;
+      }
+
+      @media (min-width: 768px) {
+        width: 352px;
+      }
+
+      // En pantallas grandes, si hay 3 cards, distribuir equitativamente
+      @media (min-width: 1200px) {
+        flex: 1 1 calc(33.333% - 14px);
+        min-width: 320px;
+        max-width: 400px;
+      }
+    }
+
+    // Para alinear las cards cuando no hay scroll
+    @media (min-width: 1200px) {
+      justify-content: center;
+    }
+
+    // Skeleton de performance cards
+    .performance-card-skeleton {
+      flex: 0 0 auto;
+      width: 280px;
+      height: 116px;
+      background: var(--accent-500);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      @media (min-width: 480px) {
+        width: 320px;
+      }
+
+      @media (min-width: 768px) {
+        width: 352px;
+        padding: 20px;
+      }
+
+      @media (min-width: 1200px) {
+        flex: 1 1 calc(33.333% - 14px);
+        min-width: 320px;
+        max-width: 400px;
+      }
+
+      .skeleton-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .skeleton-icon {
+          @include skeleton-base;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .skeleton-title {
+          @include skeleton-base;
+          width: 140px;
+          height: 18px;
+          flex: 1;
+
+          @media (min-width: 768px) {
+            width: 160px;
+            height: 20px;
+          }
+        }
+      }
+
+      .skeleton-amount {
+        @include skeleton-base;
+        width: 160px;
+        height: 32px;
+        margin-top: 4px;
+
+        @media (min-width: 768px) {
+          width: 180px;
+          height: 36px;
+        }
+      }
+
+      .skeleton-percentage {
+        @include skeleton-base;
+        width: 80px;
+        height: 20px;
+        margin-top: auto;
+
+        @media (min-width: 768px) {
+          width: 90px;
+          height: 22px;
+        }
+      }
     }
   }
 }
 
-// ============ SECCIÓN DE BILLETERA ============
-.wallet-section {
+// ============ SECCIÓN DE GRÁFICOS PRINCIPALES ============
+.charts-section {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
 
   @media (min-width: 768px) {
     gap: 24px;
   }
 
-  // Layout de 2 columnas para tablet/desktop
-  @media (min-width: 768px) and (max-width: 1200px) {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  @media (min-width: 1201px) {
+  // Layout 50/50 en desktop
+  @media (min-width: 1024px) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-
-    .evolution-chart {
-      grid-row: 1 / -1;
-    }
+    align-items: start;
   }
 
   // --- Card Total ---
@@ -323,8 +444,8 @@
       min-height: 480px;
     }
 
-    @media (min-width: 1201px) {
-      height: 512px;
+    @media (min-width: 1024px) {
+      height: 520px;
       min-height: unset;
     }
 
@@ -501,29 +622,12 @@
     }
   }
 
+  // --- Gráfico de Evolución ---
   .evolution-chart {
     width: 100%;
-  }
-}
 
-// ============ SECCIÓN DE PERFORMANCE ============
-.performance-section {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-
-  .performance-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    app-wallet-performance-card {
-      height: auto;
-      min-height: 116px;
-
-      @media (min-width: 1201px) {
-        height: 116px;
-      }
+    @media (min-width: 1024px) {
+      height: 520px;
     }
   }
 }

@@ -72,15 +72,41 @@
   </div>
   } @else {
   <!-- Dashboard con datos -->
-  <div class="dashboard-layout" [class.has-investments]="!hasCashOnly()">
-    <!-- Columna izquierda - Gráfico evolución + Billetera/Torta -->
-    <div class="wallet-section">
-      <!-- Gráfico de evolución - PRIMERA COLUMNA -->
-      <app-wallet-evolution-chart [chartData]="walletHistoryData()" [hideAmounts]="hideAmounts()"
-        [isLoading]="loading()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
-      </app-wallet-evolution-chart>
+  <div class="dashboard-layout">
 
-      <!-- Total de billetera + Gráfico categorías - SEGUNDA COLUMNA -->
+    <!-- Carrusel de Cards de Rendimiento (solo si hay inversiones) -->
+    @if (!hasCashOnly()) {
+    <div class="performance-carousel-section">
+      @if (loading()) {
+      <!-- Skeleton para las cards de rendimiento -->
+      <div class="performance-carousel">
+        @for (item of [1, 2, 3]; track $index) {
+        <div class="performance-card-skeleton">
+          <div class="skeleton-header">
+            <div class="skeleton-icon"></div>
+            <div class="skeleton-title"></div>
+          </div>
+          <div class="skeleton-amount"></div>
+          <div class="skeleton-percentage"></div>
+        </div>
+        }
+      </div>
+      } @else {
+      <!-- Cards reales -->
+      <div class="performance-carousel">
+        @for (category of performanceCardsData(); track $index) {
+        <app-wallet-performance-card [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()"
+          [hasError]="!!error()">
+        </app-wallet-performance-card>
+        }
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Sección de gráficos principales -->
+    <div class="charts-section">
+      <!-- Card Total + Gráfico de Torta (Izquierda) -->
       <mat-card class="total-card">
         @if (loading()) {
         <!-- Estado de carga -->
@@ -119,20 +145,12 @@
         </div>
         }
       </mat-card>
-    </div>
 
-    <!-- Columna derecha - Cards de rendimiento (solo si hay inversiones) -->
-    @if (!hasCashOnly()) {
-    <div class="performance-section">
-      <div class="performance-cards">
-        @for (category of performanceCardsData(); track $index) {
-        <app-wallet-performance-card [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()"
-          [hasError]="!!error()">
-        </app-wallet-performance-card>
-        }
-      </div>
+      <!-- Gráfico de Evolución (Derecha) -->
+      <app-wallet-evolution-chart [chartData]="walletHistoryData()" [hideAmounts]="hideAmounts()"
+        [isLoading]="loading()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
+      </app-wallet-evolution-chart>
     </div>
-    }
   </div>
   }
 </div>
