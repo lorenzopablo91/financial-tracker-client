@@ -314,17 +314,6 @@
         width: 352px;
       }
 
-      // En pantallas grandes, si hay 3 cards, distribuir equitativamente
-      @media (min-width: 1200px) {
-        flex: 1 1 calc(33.333% - 14px);
-        min-width: 320px;
-        max-width: 400px;
-      }
-    }
-
-    // Para alinear las cards cuando no hay scroll
-    @media (min-width: 1200px) {
-      justify-content: center;
     }
 
     // Skeleton de performance cards

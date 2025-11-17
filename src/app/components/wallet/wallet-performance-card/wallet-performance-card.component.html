@@ -1,58 +1,64 @@
 <!-- wallet-performance-card.component.html -->
 <mat-card class="performance-card" [ngClass]="cardTypeClass()">
   @if (isLoading()) {
-    <!-- Skeleton -->
-    <div class="skeleton-performance">
-      <div class="skeleton-performance-header">
-        <div class="skeleton-icon"></div>
-        <div class="skeleton-performance-title"></div>
-        <div class="skeleton-performance-percentage"></div>
-      </div>
-      <div class="skeleton-performance-amount"></div>
+  <!-- Skeleton -->
+  <div class="skeleton-performance">
+    <div class="skeleton-performance-header">
+      <div class="skeleton-icon"></div>
+      <div class="skeleton-performance-title"></div>
+      <div class="skeleton-performance-percentage"></div>
     </div>
+    <div class="skeleton-performance-amount"></div>
+  </div>
   } @else if (hasError()) {
-    <!-- Error -->
-    <div class="error-performance">
-      <mat-icon class="error-icon-small">error_outline</mat-icon>
-      <span>Error al cargar</span>
-    </div>
+  <!-- Error -->
+  <div class="error-performance">
+    <mat-icon class="error-icon-small">error_outline</mat-icon>
+    <span>Error al cargar</span>
+  </div>
   } @else if (data()) {
-    <!-- Contenido normal -->
-    <div class="performance-header">
-      @if (data()!.type === 'total') {
-        <span>💰</span>
-      } @else {
-        <mat-icon class="performance-icon">{{ data()!.icon }}</mat-icon>
-      }
-      <span [class]="titleClass()">RENDIMIENTO {{ data()!.name }}</span>
-      <div class="performance-indicators">
-        <span class="performance-percentage" [ngClass]="performanceClass()">
-          {{ data()!.percentageGain >= 0 ? '+' : '' }}{{ data()!.percentageGain }}%
-        </span>
-      </div>
-    </div>
-
-    <div class="performance-amount" [ngClass]="performanceClass()">
-      <span [class.hidden-amount]="hideAmounts()">
-        @if (hideAmounts()) {
+  <!-- Contenido normal -->
+  <div class="performance-header">
+    @if (data()!.type === 'total') {
+    <span>💰</span>
+    } @else {
+    <mat-icon class="performance-icon">{{ data()!.icon }}</mat-icon>
+    }
+    <span [class]="titleClass()">RENDIMIENTO {{ data()!.name }}</span>
+    <div class="performance-indicators">
+      <span class="performance-percentage" [ngClass]="performanceClass()">
+        <span [class.hidden-amount]="hideAmounts()">
+          @if (hideAmounts()) {
           ••••••
-        } @else {
-          {{ data()!.amountGain >= 0 ? '+' : '' }}{{ data()!.amountGain | currencyFormat:'USD' }}
-        }
+          } @else {
+          {{ data()!.percentageGain >= 0 ? '+' : '' }}{{ data()!.percentageGain }}%
+          }
+        </span>
       </span>
-      <mat-icon class="trend-icon" [ngClass]="performanceClass()">
-        {{ data()!.percentageGain >= 0 ? 'trending_up' : 'trending_down' }}
-      </mat-icon>
     </div>
+  </div>
+
+  <div class="performance-amount" [ngClass]="performanceClass()">
+    <span [class.hidden-amount]="hideAmounts()">
+      @if (hideAmounts()) {
+      ••••••
+      } @else {
+      {{ data()!.amountGain >= 0 ? '+' : '' }}{{ data()!.amountGain | currencyFormat:'USD' }}
+      }
+    </span>
+    <mat-icon class="trend-icon" [ngClass]="performanceClass()">
+      {{ data()!.percentageGain >= 0 ? 'trending_up' : 'trending_down' }}
+    </mat-icon>
+  </div>
   } @else {
-    <!-- Skeleton por defecto cuando no hay data -->
-    <div class="skeleton-performance">
-      <div class="skeleton-performance-header">
-        <div class="skeleton-icon"></div>
-        <div class="skeleton-performance-title"></div>
-        <div class="skeleton-performance-percentage"></div>
-      </div>
-      <div class="skeleton-performance-amount"></div>
+  <!-- Skeleton por defecto cuando no hay data -->
+  <div class="skeleton-performance">
+    <div class="skeleton-performance-header">
+      <div class="skeleton-icon"></div>
+      <div class="skeleton-performance-title"></div>
+      <div class="skeleton-performance-percentage"></div>
     </div>
+    <div class="skeleton-performance-amount"></div>
+  </div>
   }
 </mat-card>
