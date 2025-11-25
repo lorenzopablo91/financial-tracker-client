@@ -228,4 +228,28 @@ export class WalletComponent implements OnInit, OnDestroy {
     trackByIndex(index: number): number {
         return index;
     }
+
+    onDepositMoney(): void {
+        // Implementar lógica para ingresar dinero
+    }
+
+    onBuyAsset(): void {
+        // Implementar lógica para comprar activo
+    }
+
+    onSellAsset(): void {
+        // Implementar lógica para vender activo
+    }
+
+    onWithdrawMoney(): void {
+        // Implementar lógica para retirar dinero
+    }
+
+    onViewTransactions(): void {
+        // Implementar lógica para ver detalle de operaciones
+    }
+
+    onNewPortfolio(): void {
+        // Implementar lógica para crear el portafolio
+    }
 }

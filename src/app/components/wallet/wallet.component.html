@@ -29,25 +29,8 @@
       </mat-form-field>
     </div>
 
-    <!-- Descripción del Portafolio (Centro) -->
-    <div class="portfolio-description">
-      @if (hasSelectedPortfolio()) {
-      <mat-icon>wallet</mat-icon>
-      <span>{{ portfolioDescription() }}</span>
-      } @else {
-      <mat-icon class="no-portfolio">info_outline</mat-icon>
-      <span class="no-portfolio-text">Debe seleccionar un portafolio para visualizar los datos</span>
-      }
-    </div>
-
     <!-- Controles del Dashboard (Derecha) -->
     <div class="dashboard-controls">
-      <button mat-icon-button (click)="toggleAmountVisibility()"
-        [matTooltip]="hideAmounts() ? 'Mostrar montos' : 'Ocultar montos'" class="visibility-btn"
-        [disabled]="loading() || !hasSelectedPortfolio()">
-        <mat-icon>{{ hideAmounts() ? 'visibility' : 'visibility_off' }}</mat-icon>
-      </button>
-
       <div class="refresh-section">
         @if (lastUpdated()) {
         <span class="text-muted">
@@ -59,7 +42,57 @@
           <mat-icon [class.spinning]="loading()">refresh</mat-icon>
         </button>
       </div>
+      <button mat-icon-button (click)="toggleAmountVisibility()"
+        [matTooltip]="hideAmounts() ? 'Mostrar montos' : 'Ocultar montos'" class="visibility-btn"
+        [disabled]="loading() || !hasSelectedPortfolio()">
+        <mat-icon>{{ hideAmounts() ? 'visibility' : 'visibility_off' }}</mat-icon>
+      </button>
+
+      <!-- Menú Hamburguesa -->
+      <button mat-icon-button [matMenuTriggerFor]="dashboardMenu" matTooltip="Más opciones" class="menu-btn"
+        [disabled]="loading()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <mat-menu #dashboardMenu="matMenu">
+        <button mat-menu-item (click)="onDepositMoney()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <span>Ingresar dinero</span>
+        </button>
+        <button mat-menu-item (click)="onBuyAsset()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>shopping_cart</mat-icon>
+          <span>Comprar activo</span>
+        </button>
+        <button mat-menu-item (click)="onSellAsset()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>sell</mat-icon>
+          <span>Vender activo</span>
+        </button>
+        <button mat-menu-item (click)="onWithdrawMoney()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>money_off</mat-icon>
+          <span>Retirar dinero</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>receipt_long</mat-icon>
+          <span>Detalle de operaciones</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="onNewPortfolio()">
+          <mat-icon>add</mat-icon>
+          <span>Nuevo portafolio</span>
+        </button>
+      </mat-menu>
     </div>
+  </div>
+
+  <!-- Descripción del Portafolio (debajo en mobile, oculta en desktop) -->
+  <div class="portfolio-description">
+    @if (hasSelectedPortfolio()) {
+    <mat-icon>wallet</mat-icon>
+    <span>{{ portfolioDescription() }}</span>
+    } @else {
+    <mat-icon class="no-portfolio">info_outline</mat-icon>
+    <span class="no-portfolio-text">Debe seleccionar un portafolio para visualizar los datos</span>
+    }
   </div>
 
   <!-- Contenido del Dashboard -->

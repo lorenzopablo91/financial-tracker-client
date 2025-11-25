@@ -13,6 +13,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelect } from '@angular/material/select';
+import { MatDividerModule } from '@angular/material/divider';
 
 export const MaterialImports = [
   MatFormFieldModule,
@@ -30,5 +31,6 @@ export const MaterialImports = [
   MatProgressSpinnerModule,
   MatMenuModule,
   MatSelect,
-  MatOption
+  MatOption,
+  MatDividerModule
 ];
