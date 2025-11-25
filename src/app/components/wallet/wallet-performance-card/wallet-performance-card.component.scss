@@ -42,6 +42,8 @@
     &.total-performance {
         font-weight: 800;
         font-size: 1.8rem;
+        // Mantiene el color por defecto del tema
+        background: var(--accent-500);
 
         .performance-percentage {
             font-size: 1rem;
@@ -50,33 +52,12 @@
         }
     }
 
-    &.cedears-performance {
-        color: #4BC0C0 !important;
-        background: color.scale(#4BC0C0, $lightness: 80%) !important;
-        font-weight: 550;
-        font-size: 1.4rem;
-
-        .performance-percentage {
-            font-size: 0.8rem;
-            font-weight: 550;
-        }
-    }
-
-    &.stocks-performance {
-        color: #9966FF !important;
-        background: color.scale(#9966FF, $lightness: 80%) !important;
-        font-weight: 550;
-        font-size: 1.4rem;
-
-        .performance-percentage {
-            font-size: 0.8rem;
-            font-weight: 550;
-        }
-    }
-
-    &.crypto-performance {
-        color: #FF9F40 !important;
-        background: color.scale(#FF9F40, $lightness: 80%) !important;
+    // Estilos para cards de inversiones (ahora sin colores hardcodeados)
+    // Los colores se aplicarán dinámicamente vía [ngStyle]
+    &.cedears-performance,
+    &.stocks-performance,
+    &.crypto-performance,
+    &.fund-performance {
         font-weight: 550;
         font-size: 1.4rem;
 

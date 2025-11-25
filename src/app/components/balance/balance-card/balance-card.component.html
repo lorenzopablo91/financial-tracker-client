@@ -44,9 +44,6 @@
                 <div class="label-container">
                     <span class="label">Ahorros (ARS):</span>
                     <span class="percentage">{{ (SAVINGS_PERCENT * 100).toFixed(0) }}%</span>
-                    <button mat-icon-button (click)="openSavingsEditor()" matTooltip="Distribuir ahorros">
-                        <mat-icon class="title-icon">pie_chart</mat-icon>
-                    </button>
                 </div>
                 <span class="value bold blue-text">{{ savings() | currencyFormat:'ARS' }}</span>
             </div>
