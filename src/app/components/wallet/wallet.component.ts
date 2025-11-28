@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialImports } from '../../shared/imports/material-imports';
-import { Subject, interval, forkJoin, of } from 'rxjs';
+import { Subject, forkJoin, of } from 'rxjs';
 import { finalize, takeUntil, catchError } from 'rxjs/operators';
 import { WalletHistoryData } from '../../models/wallet.interface';
 import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
@@ -83,7 +83,6 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.getPortfolios();
-        this.initializeAutoRefresh();
     }
 
     ngOnDestroy(): void {
@@ -176,20 +175,6 @@ export class WalletComponent implements OnInit, OnDestroy {
                 this.error.set('Error al cargar los datos del portafolio');
             }
         });
-    }
-
-    /**
-     * Configura el auto-refresh cada 5 minutos
-     */
-    private initializeAutoRefresh(): void {
-        interval(5 * 60 * 1000)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                const portfolioId = this.selectedPortfolioId();
-                if (portfolioId) {
-                    this.loadPortfolioData(portfolioId);
-                }
-            });
     }
 
     /**
