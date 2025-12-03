@@ -11,6 +11,7 @@ import { WalletPerformanceCardComponent } from './wallet-performance-card/wallet
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { PortfolioService } from '../../services/portfolio.service';
 import { Portfolio, PortfolioCategory, PortfolioResponse } from '../../models/portfolio.interface';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
     selector: 'app-wallet',
@@ -77,7 +78,7 @@ export class WalletComponent implements OnInit, OnDestroy {
         return validCategories;
     });
 
-    constructor(private portfolioService: PortfolioService) {
+    constructor(private portfolioService: PortfolioService, private toastService: ToastService) {
         this.lastUpdated.set(new Date());
     }
 
@@ -102,6 +103,7 @@ export class WalletComponent implements OnInit, OnDestroy {
                 catchError(error => {
                     console.error('Error loading portfolios:', error);
                     this.error.set('Error al cargar los portafolios');
+                    this.toastService.error('Error al cargar los portafolios');
                     return of({ success: false, count: 0, data: [] } as PortfolioResponse);
                 }),
                 finalize(() => this.isLoadingPortfolios.set(false))
@@ -129,12 +131,14 @@ export class WalletComponent implements OnInit, OnDestroy {
             valuation: this.portfolioService.getPortfolioValuation(portfolioId).pipe(
                 catchError(error => {
                     console.error('Error loading portfolio valuation:', error);
+                    this.toastService.error('Error al cargar la valuación del portafolio');
                     return of(null);
                 })
             ),
             snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId).pipe(
                 catchError(error => {
                     console.error('Error loading portfolio snapshots:', error);
+                    this.toastService.warning('No se pudieron cargar los datos históricos');
                     return of(null);
                 })
             )
@@ -168,11 +172,16 @@ export class WalletComponent implements OnInit, OnDestroy {
                 // Verificar si hubo algún error crítico
                 if (!results.valuation && !results.snapshots) {
                     this.error.set('Error al cargar los datos del portafolio');
+                    this.toastService.error('Error al cargar los datos del portafolio');
+                } else if (results.valuation && results.snapshots) {
+                    // Solo mostrar success si ambas cargas fueron exitosas
+                    this.toastService.success('Datos actualizados correctamente');
                 }
             },
             error: (error) => {
                 console.error('Error in forkJoin:', error);
                 this.error.set('Error al cargar los datos del portafolio');
+                this.toastService.error('Error inesperado al cargar los datos');
             }
         });
     }
@@ -195,6 +204,8 @@ export class WalletComponent implements OnInit, OnDestroy {
             this.error.set(null);
             this.loadPortfolioData(portfolioId);
             this.refreshTrigger.update(current => current + 1);
+        } else {
+            this.toastService.warning('Debes seleccionar un portafolio primero');
         }
     }
 
@@ -216,25 +227,59 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     onDepositMoney(): void {
         // Implementar lógica para ingresar dinero
+        this.toastService.info('Función en desarrollo');
     }
 
     onBuyAsset(): void {
         // Implementar lógica para comprar activo
+        this.toastService.info('Función en desarrollo');
     }
 
     onSellAsset(): void {
         // Implementar lógica para vender activo
+        this.toastService.info('Función en desarrollo');
     }
 
     onWithdrawMoney(): void {
         // Implementar lógica para retirar dinero
+        this.toastService.info('Función en desarrollo');
     }
 
     onViewTransactions(): void {
         // Implementar lógica para ver detalle de operaciones
+        this.toastService.info('Función en desarrollo');
     }
 
     onNewPortfolio(): void {
         // Implementar lógica para crear el portafolio
+        this.toastService.info('Función en desarrollo');
+    }
+
+    onCreateSnapshot(): void {
+        const portfolioId = this.selectedPortfolioId();
+
+        if (!portfolioId) {
+            this.toastService.warning('Debes seleccionar un portafolio primero');
+            return;
+        }
+
+        this.portfolioService.createSnapshot(portfolioId)
+            .pipe(
+                takeUntil(this.destroy$),
+                catchError(error => {
+                    console.error('Error creating snapshot:', error);
+                    this.toastService.error('Error al crear el snapshot');
+                    return of({ success: false });
+                })
+            )
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.toastService.success(response.message || 'Snapshot creado exitosamente');
+                        // Recargar datos para mostrar el nuevo snapshot
+                        this.refreshData();
+                    }
+                }
+            });
     }
 }

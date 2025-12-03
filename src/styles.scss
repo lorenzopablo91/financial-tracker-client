@@ -425,3 +425,92 @@ $app-theme: mat.define-light-theme((color: (primary: $primary-palette,
 .animate-slide-in {
   animation: slideIn var(--transition-normal) ease-out;
 }
+
+// Toast/Snackbar styles para Angular Material 17+
+.success-snackbar {
+  --mdc-snackbar-container-color: #4caf50 !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+
+  .mdc-snackbar__surface {
+    background-color: #4caf50 !important;
+  }
+
+  .mdc-snackbar__label,
+  .mat-mdc-snack-bar-label {
+    color: white !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    --mat-mdc-snack-bar-button-color: white !important;
+
+    button {
+      color: white !important;
+    }
+  }
+}
+
+.error-snackbar {
+  --mdc-snackbar-container-color: #f44336 !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+
+  .mdc-snackbar__surface {
+    background-color: #f44336 !important;
+  }
+
+  .mdc-snackbar__label,
+  .mat-mdc-snack-bar-label {
+    color: white !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    --mat-mdc-snack-bar-button-color: white !important;
+
+    button {
+      color: white !important;
+    }
+  }
+}
+
+.warning-snackbar {
+  --mdc-snackbar-container-color: #ff9800 !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+
+  .mdc-snackbar__surface {
+    background-color: #ff9800 !important;
+  }
+
+  .mdc-snackbar__label,
+  .mat-mdc-snack-bar-label {
+    color: white !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    --mat-mdc-snack-bar-button-color: white !important;
+
+    button {
+      color: white !important;
+    }
+  }
+}
+
+.info-snackbar {
+  --mdc-snackbar-container-color: #2196f3 !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+
+  .mdc-snackbar__surface {
+    background-color: #2196f3 !important;
+  }
+
+  .mdc-snackbar__label,
+  .mat-mdc-snack-bar-label {
+    color: white !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    --mat-mdc-snack-bar-button-color: white !important;
+
+    button {
+      color: white !important;
+    }
+  }
+}

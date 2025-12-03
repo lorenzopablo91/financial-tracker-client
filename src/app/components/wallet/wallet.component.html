@@ -70,6 +70,10 @@
           <mat-icon>money_off</mat-icon>
           <span>Retirar dinero</span>
         </button>
+        <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>camera_alt</mat-icon>
+          <span>Crear snapshot</span>
+        </button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
           <mat-icon>receipt_long</mat-icon>

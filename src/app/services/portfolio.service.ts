@@ -31,4 +31,10 @@ export class PortfolioService {
         );
     }
 
+    createSnapshot(portfolioId: string): Observable<any> {
+        return this.http.post<any>(`${this.baseURL}/${portfolioId}/snapshot`, {}).pipe(
+            retry(1)
+        );
+    }
+
 }
