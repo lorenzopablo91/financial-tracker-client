@@ -103,6 +103,6 @@ export class UnauthorizedComponent {
   constructor(private router: Router) { }
 
   goBack(): void {
-    this.router.navigate(['/wallet']);
+    this.router.navigate(['/portfolio']);
   }
 }

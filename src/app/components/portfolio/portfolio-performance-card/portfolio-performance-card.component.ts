@@ -5,19 +5,18 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { PortfolioCategory } from '../../../models/portfolio.interface';
 
 @Component({
-    selector: 'app-wallet-performance-card',
+    selector: 'app-portfolio-performance-card',
     standalone: true,
     imports: [
         ...MaterialImports,
         CommonModule,
         CurrencyFormatPipe
     ],
-    templateUrl: './wallet-performance-card.component.html',
-    styleUrls: ['./wallet-performance-card.component.scss']
+    templateUrl: './portfolio-performance-card.component.html',
+    styleUrls: ['./portfolio-performance-card.component.scss']
 })
-export class WalletPerformanceCardComponent {
+export class PortfolioPerformanceCardComponent {
     readonly isLoading = input.required<boolean>();
-    readonly hasError = input.required<boolean>();
     readonly hideAmounts = input.required<boolean>();
     readonly data = input.required<PortfolioCategory>();
 

@@ -2,33 +2,33 @@ import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effe
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { MaterialImports } from '../../../shared/imports/material-imports';
-import { formatWalletHistoryForChart } from '../../../shared/controllers/evolution-chart.controller';
-import { WalletHistoryData } from '../../../models/wallet.interface';
+import { formatPortfolioHistoryForChart } from '../../../shared/controllers/evolution-chart.controller';
+import { PortfolioHistoryData } from '../../../models/portfolio.interface';
 
 // Registrar todos los componentes de Chart.js
 Chart.register(...registerables);
 
 @Component({
-    selector: 'app-wallet-evolution-chart',
+    selector: 'app-portfolio-evolution-chart',
     standalone: true,
     imports: [
         CommonModule,
         MaterialImports
     ],
-    templateUrl: './wallet-evolution-chart.component.html',
-    styleUrls: ['./wallet-evolution-chart.component.scss']
+    templateUrl: './portfolio-evolution-chart.component.html',
+    styleUrls: ['./portfolio-evolution-chart.component.scss']
 })
-export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
+export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestroy {
     // Signals para inputs
     readonly hideAmountsSignal = signal(false);
     readonly selectedPeriodSignal = signal<'3M' | '6M' | '1A' | 'TODO'>('TODO');
-    readonly chartDataSignal = signal<WalletHistoryData[]>([]);
+    readonly chartDataSignal = signal<PortfolioHistoryData[]>([]);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
     private readonly chartInitialized = signal(false);
 
     @Input()
-    set chartData(data: WalletHistoryData[]) {
+    set chartData(data: PortfolioHistoryData[]) {
         if (data) {
             this.chartDataSignal.set(data);
         }
@@ -191,7 +191,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
         }
 
         try {
-            const chartData = formatWalletHistoryForChart(this.filteredData());
+            const chartData = formatPortfolioHistoryForChart(this.filteredData());
 
             const config: ChartConfiguration = {
                 type: 'line',
@@ -292,7 +292,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
         }
 
         try {
-            const chartData = formatWalletHistoryForChart(this.filteredData());
+            const chartData = formatPortfolioHistoryForChart(this.filteredData());
 
             // Actualizar datos del chart
             this.chart.data = chartData;
@@ -330,7 +330,7 @@ export class WalletEvolutionChartComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    updateData(newData: WalletHistoryData[]): void {
+    updateData(newData: PortfolioHistoryData[]): void {
         this.chartDataSignal.set(newData);
         // El effect se encargará de recrear el gráfico automáticamente
     }

@@ -66,7 +66,7 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req: HttpRequest<unkn
 function showError(message: string, snackBar: MatSnackBar): void {
     snackBar.open(message, 'Cerrar', {
         duration: 5000,
-        horizontalPosition: 'center',
+        horizontalPosition: 'right',
         verticalPosition: 'top',
         panelClass: ['error-snackbar']
     });

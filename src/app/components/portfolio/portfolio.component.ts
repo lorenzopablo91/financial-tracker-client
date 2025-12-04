@@ -2,33 +2,35 @@ import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialImports } from '../../shared/imports/material-imports';
-import { Subject, forkJoin, of } from 'rxjs';
-import { finalize, takeUntil, catchError } from 'rxjs/operators';
-import { WalletHistoryData } from '../../models/wallet.interface';
-import { WalletCategoriesChartComponent } from './wallet-categories-chart/wallet-categories-chart.component';
-import { WalletEvolutionChartComponent } from './wallet-evolution-chart/wallet-evolution-chart.component';
-import { WalletPerformanceCardComponent } from './wallet-performance-card/wallet-performance-card.component';
+import { Subject, forkJoin } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
+import { PortfolioHistoryData } from '../../models/portfolio.interface';
+import { PortfolioCategoriesChartComponent } from './portfolio-categories-chart/portfolio-categories-chart.component';
+import { PortfolioEvolutionChartComponent } from './portfolio-evolution-chart/portfolio-evolution-chart.component';
+import { PortfolioPerformanceCardComponent } from './portfolio-performance-card/portfolio-performance-card.component';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 import { PortfolioService } from '../../services/portfolio.service';
 import { Portfolio, PortfolioCategory, PortfolioResponse } from '../../models/portfolio.interface';
 import { ToastService } from '../../shared/services/toast.service';
+import { PortfolioRegisterModalComponent } from './portfolio-register-modal/portfolio-register-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
-    selector: 'app-wallet',
+    selector: 'app-portfolio',
     standalone: true,
     imports: [
         ...MaterialImports,
         CommonModule,
         FormsModule,
-        WalletCategoriesChartComponent,
-        WalletEvolutionChartComponent,
-        WalletPerformanceCardComponent,
+        PortfolioCategoriesChartComponent,
+        PortfolioEvolutionChartComponent,
+        PortfolioPerformanceCardComponent,
         CurrencyFormatPipe
     ],
-    templateUrl: './wallet.component.html',
-    styleUrls: ['./wallet.component.scss']
+    templateUrl: './portfolio.component.html',
+    styleUrls: ['./portfolio.component.scss']
 })
-export class WalletComponent implements OnInit, OnDestroy {
+export class PortfolioComponent implements OnInit, OnDestroy {
     private readonly destroy$ = new Subject<void>();
 
     // Señales de portafolios
@@ -38,14 +40,13 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     // Señales de estado
     readonly loading = signal(false);
-    readonly error = signal<string | null>(null);
     readonly lastUpdated = signal<Date | null>(null);
     readonly hideAmounts = signal(false);
     readonly refreshTrigger = signal(0);
 
     // Señales de datos
-    readonly walletHistoryData = signal<WalletHistoryData[]>([]);
-    readonly totalWallet = signal(0);
+    readonly portfolioHistoryData = signal<PortfolioHistoryData[]>([]);
+    readonly totalPortfolio = signal(0);
     readonly categories = signal<PortfolioCategory[]>([]);
 
     // Computed para descripción del portafolio
@@ -59,8 +60,6 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     // Computed para verificar si hay portafolio seleccionado
     readonly hasSelectedPortfolio = computed(() => this.selectedPortfolioId() !== null);
-
-    readonly hasErrorComputed = computed(() => !!this.error());
 
     // Computed para detectar si solo hay efectivo (sin inversiones)
     readonly hasCashOnly = computed(() => {
@@ -78,7 +77,11 @@ export class WalletComponent implements OnInit, OnDestroy {
         return validCategories;
     });
 
-    constructor(private portfolioService: PortfolioService, private toastService: ToastService) {
+    constructor(
+        private portfolioService: PortfolioService,
+        private toastService: ToastService,
+        private dialog: MatDialog
+    ) {
         this.lastUpdated.set(new Date());
     }
 
@@ -100,12 +103,6 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.portfolioService.getPortfolios()
             .pipe(
                 takeUntil(this.destroy$),
-                catchError(error => {
-                    console.error('Error loading portfolios:', error);
-                    this.error.set('Error al cargar los portafolios');
-                    this.toastService.error('Error al cargar los portafolios');
-                    return of({ success: false, count: 0, data: [] } as PortfolioResponse);
-                }),
                 finalize(() => this.isLoadingPortfolios.set(false))
             )
             .subscribe({
@@ -124,24 +121,11 @@ export class WalletComponent implements OnInit, OnDestroy {
         }
 
         this.loading.set(true);
-        this.error.set(null);
 
         // Ejecutar ambas llamadas en paralelo
         forkJoin({
-            valuation: this.portfolioService.getPortfolioValuation(portfolioId).pipe(
-                catchError(error => {
-                    console.error('Error loading portfolio valuation:', error);
-                    this.toastService.error('Error al cargar la valuación del portafolio');
-                    return of(null);
-                })
-            ),
-            snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId).pipe(
-                catchError(error => {
-                    console.error('Error loading portfolio snapshots:', error);
-                    this.toastService.warning('No se pudieron cargar los datos históricos');
-                    return of(null);
-                })
-            )
+            valuation: this.portfolioService.getPortfolioValuation(portfolioId),
+            snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId)
         }).pipe(
             takeUntil(this.destroy$),
             finalize(() => this.loading.set(false))
@@ -150,38 +134,22 @@ export class WalletComponent implements OnInit, OnDestroy {
                 // Procesar datos de valuación
                 if (results.valuation) {
                     this.categories.set(results.valuation.data.categorias);
-                    this.totalWallet.set(
+                    this.totalPortfolio.set(
                         results.valuation.data.totalInvertido ??
                         results.valuation.data.capitalInicial
                     );
-                } else {
-                    this.categories.set([]);
-                    this.totalWallet.set(0);
                 }
 
                 // Procesar datos históricos
                 if (results.snapshots) {
-                    this.walletHistoryData.set(results.snapshots.data || []);
-                } else {
-                    this.walletHistoryData.set([]);
+                    this.portfolioHistoryData.set(results.snapshots.data || []);
                 }
 
                 // Actualizar timestamp
                 this.lastUpdated.set(new Date());
 
-                // Verificar si hubo algún error crítico
-                if (!results.valuation && !results.snapshots) {
-                    this.error.set('Error al cargar los datos del portafolio');
-                    this.toastService.error('Error al cargar los datos del portafolio');
-                } else if (results.valuation && results.snapshots) {
-                    // Solo mostrar success si ambas cargas fueron exitosas
-                    this.toastService.success('Datos actualizados correctamente');
-                }
-            },
-            error: (error) => {
-                console.error('Error in forkJoin:', error);
-                this.error.set('Error al cargar los datos del portafolio');
-                this.toastService.error('Error inesperado al cargar los datos');
+                // Solo mostrar success si ambas cargas fueron exitosas
+                this.toastService.success('Datos actualizados correctamente');
             }
         });
     }
@@ -191,7 +159,6 @@ export class WalletComponent implements OnInit, OnDestroy {
      */
     onPortfolioChange(portfolioId: string): void {
         this.selectedPortfolioId.set(portfolioId);
-        // Cargar datos del nuevo portafolio
         this.loadPortfolioData(portfolioId);
     }
 
@@ -201,7 +168,6 @@ export class WalletComponent implements OnInit, OnDestroy {
     refreshData(): void {
         const portfolioId = this.selectedPortfolioId();
         if (portfolioId) {
-            this.error.set(null);
             this.loadPortfolioData(portfolioId);
             this.refreshTrigger.update(current => current + 1);
         } else {
@@ -219,42 +185,56 @@ export class WalletComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * TrackBy function para optimizar el ngFor
+     * Abre el modal para crear un nuevo portafolio
      */
-    trackByIndex(index: number): number {
-        return index;
-    }
-
-    onDepositMoney(): void {
-        // Implementar lógica para ingresar dinero
-        this.toastService.info('Función en desarrollo');
-    }
-
-    onBuyAsset(): void {
-        // Implementar lógica para comprar activo
-        this.toastService.info('Función en desarrollo');
-    }
-
-    onSellAsset(): void {
-        // Implementar lógica para vender activo
-        this.toastService.info('Función en desarrollo');
-    }
-
-    onWithdrawMoney(): void {
-        // Implementar lógica para retirar dinero
-        this.toastService.info('Función en desarrollo');
-    }
-
-    onViewTransactions(): void {
-        // Implementar lógica para ver detalle de operaciones
-        this.toastService.info('Función en desarrollo');
-    }
-
     onNewPortfolio(): void {
-        // Implementar lógica para crear el portafolio
-        this.toastService.info('Función en desarrollo');
+        const dialogRef = this.dialog.open(PortfolioRegisterModalComponent, {
+            width: '500px',
+            maxWidth: '95vw',
+            disableClose: true,
+            autoFocus: true
+        });
+
+        dialogRef.afterClosed()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (result) => {
+                    if (result) {
+                        this.createPortfolio(result);
+                    }
+                }
+            });
     }
 
+    /**
+     * Crea un nuevo portafolio
+     */
+    private createPortfolio(data: { nombre: string; descripcion?: string; capitalInicial?: number }): void {
+        this.portfolioService.createPortfolio(data)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.toastService.success(response.message || 'Portafolio creado exitosamente');
+
+                        // Recargar la lista de portafolios
+                        this.getPortfolios();
+
+                        // Seleccionar automáticamente el nuevo portafolio
+                        if (response.data && response.data.id) {
+                            setTimeout(() => {
+                                this.selectedPortfolioId.set(response.data.id);
+                                this.loadPortfolioData(response.data.id);
+                            }, 500);
+                        }
+                    }
+                }
+            });
+    }
+
+    /**
+     * Crea un snapshot del portafolio actual
+     */
     onCreateSnapshot(): void {
         const portfolioId = this.selectedPortfolioId();
 
@@ -264,14 +244,7 @@ export class WalletComponent implements OnInit, OnDestroy {
         }
 
         this.portfolioService.createSnapshot(portfolioId)
-            .pipe(
-                takeUntil(this.destroy$),
-                catchError(error => {
-                    console.error('Error creating snapshot:', error);
-                    this.toastService.error('Error al crear el snapshot');
-                    return of({ success: false });
-                })
-            )
+            .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
                     if (response.success) {
@@ -281,5 +254,13 @@ export class WalletComponent implements OnInit, OnDestroy {
                     }
                 }
             });
+    }
+
+    onViewTransactions(): void {
+        this.toastService.info('Función en desarrollo');
+    }
+
+    onDeletePortfolio(): void {
+        this.toastService.info('Función en desarrollo');
     }
 }

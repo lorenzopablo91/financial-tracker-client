@@ -28,9 +28,9 @@ export const routes: Routes = [
         data: { role: 'ADMIN' }
     },
     {
-        path: 'wallet',
-        loadComponent: () => import('./components/wallet/wallet.component')
-            .then(m => m.WalletComponent),
+        path: 'portfolio',
+        loadComponent: () => import('./components/portfolio/portfolio.component')
+            .then(m => m.PortfolioComponent),
         canActivate: [authGuard],
         data: { role: 'ADMIN' }
     },

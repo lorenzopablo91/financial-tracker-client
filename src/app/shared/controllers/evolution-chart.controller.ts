@@ -1,7 +1,7 @@
-import { WalletHistoryData } from "../../models/wallet.interface";
+import { PortfolioHistoryData } from "../../models/portfolio.interface";
 
 // Función helper para formatear los datos para Chart.js
-export function formatWalletHistoryForChart(data: WalletHistoryData[]) {
+export function formatPortfolioHistoryForChart(data: PortfolioHistoryData[]) {
     return {
         labels: data.map(item =>
             new Date(item.date).toLocaleDateString('es-ES', {
@@ -12,7 +12,7 @@ export function formatWalletHistoryForChart(data: WalletHistoryData[]) {
         datasets: [
             {
                 label: 'TOTAL PORTAFOLIO',
-                data: data.map(item => item.totalWallet),
+                data: data.map(item => item.totalPortfolio),
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 borderWidth: 3,

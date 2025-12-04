@@ -39,7 +39,7 @@ export class LoginComponent {
       .subscribe({
         next: (response) => {
           // TODO: cuando este el dashboard, redirigir ahi
-          this.router.navigate(['/wallet']);
+          this.router.navigate(['/portfolio']);
         },
         error: (error) => {
           this.loading = false;

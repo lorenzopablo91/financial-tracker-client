@@ -54,35 +54,22 @@
         <mat-icon>menu</mat-icon>
       </button>
       <mat-menu #dashboardMenu="matMenu">
-        <button mat-menu-item (click)="onDepositMoney()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>account_balance_wallet</mat-icon>
-          <span>Ingresar dinero</span>
-        </button>
-        <button mat-menu-item (click)="onBuyAsset()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>shopping_cart</mat-icon>
-          <span>Comprar activo</span>
-        </button>
-        <button mat-menu-item (click)="onSellAsset()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>sell</mat-icon>
-          <span>Vender activo</span>
-        </button>
-        <button mat-menu-item (click)="onWithdrawMoney()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>money_off</mat-icon>
-          <span>Retirar dinero</span>
-        </button>
-        <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>camera_alt</mat-icon>
-          <span>Crear snapshot</span>
-        </button>
-        <mat-divider></mat-divider>
-        <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>receipt_long</mat-icon>
-          <span>Detalle de operaciones</span>
-        </button>
-        <mat-divider></mat-divider>
         <button mat-menu-item (click)="onNewPortfolio()">
           <mat-icon>add</mat-icon>
-          <span>Nuevo portafolio</span>
+          <span>Crear portafolio</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>save</mat-icon>
+          <span>Guardar valuación actual</span>
+        </button>
+        <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>receipt_long</mat-icon>
+          <span>Gestionar operaciones</span>
+        </button>
+        <button mat-menu-item (click)="onDeletePortfolio()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>delete</mat-icon>
+          <span>Eliminar portafolio</span>
         </button>
       </mat-menu>
     </div>
@@ -132,9 +119,8 @@
       <!-- Cards reales -->
       <div class="performance-carousel">
         @for (category of performanceCardsData(); track $index) {
-        <app-wallet-performance-card [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()"
-          [hasError]="!!error()">
-        </app-wallet-performance-card>
+        <app-portfolio-performance-card [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()">
+        </app-portfolio-performance-card>
         }
       </div>
       }
@@ -152,12 +138,6 @@
           <div class="skeleton-amount"></div>
           <div class="skeleton-chart"></div>
         </div>
-        } @else if (error()) {
-        <!-- Estado de error -->
-        <div class="error-content">
-          <mat-icon class="error-icon-small">error_outline</mat-icon>
-          <span>{{ error() }}</span>
-        </div>
         } @else {
         <!-- Contenido normal -->
         <div class="summary-content">
@@ -169,24 +149,24 @@
           <!-- Total Amount centrado -->
           <div class="total-amount-container">
             <div class="total-amount" [class.hidden-amount]="hideAmounts()">
-              {{ hideAmounts() ? '••••••••' : (totalWallet() | currencyFormat:'USD') }}
+              {{ hideAmounts() ? '••••••••' : (totalPortfolio() | currencyFormat:'USD') }}
             </div>
           </div>
 
           <!-- Gráfico de categorías centrado -->
           <div class="categories-chart-section">
-            <app-wallet-categories-chart [categories]="categories()" [totalAmount]="totalWallet()"
+            <app-portfolio-categories-chart [categories]="categories()" [totalAmount]="totalPortfolio()"
               [hideAmounts]="hideAmounts()">
-            </app-wallet-categories-chart>
+            </app-portfolio-categories-chart>
           </div>
         </div>
         }
       </mat-card>
 
       <!-- Gráfico de Evolución (Derecha) -->
-      <app-wallet-evolution-chart [chartData]="walletHistoryData()" [hideAmounts]="hideAmounts()"
+      <app-portfolio-evolution-chart [chartData]="portfolioHistoryData()" [hideAmounts]="hideAmounts()"
         [isLoading]="loading()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
-      </app-wallet-evolution-chart>
+      </app-portfolio-evolution-chart>
     </div>
   </div>
   }

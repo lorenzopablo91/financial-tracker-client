@@ -27,9 +27,9 @@ export class MenuComponent {
       roles: ['ADMIN']
     },
     {
-      path: '/wallet',
+      path: '/portfolio',
       label: 'PORTAFOLIO',
-      icon: 'wallet',
+      icon: 'portfolio',
       roles: ['ADMIN', 'VIEWER']
     }
   ]);

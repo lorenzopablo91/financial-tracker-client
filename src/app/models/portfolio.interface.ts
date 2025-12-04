@@ -40,3 +40,8 @@ export interface PortfolioCategory {
     icon: string;
     type: string;
 }
+
+export interface PortfolioHistoryData {
+    date: Date;
+    totalPortfolio: number;
+}

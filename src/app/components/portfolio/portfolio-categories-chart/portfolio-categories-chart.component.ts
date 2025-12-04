@@ -9,17 +9,17 @@ import { PortfolioCategory } from '../../../models/portfolio.interface';
 Chart.register(...registerables);
 
 @Component({
-  selector: 'app-wallet-categories-chart',
+  selector: 'app-portfolio-categories-chart',
   standalone: true,
   imports: [
     CommonModule,
     MatIconModule,
     CurrencyFormatPipe
   ],
-  templateUrl: './wallet-categories-chart.component.html',
-  styleUrls: ['./wallet-categories-chart.component.scss']
+  templateUrl: './portfolio-categories-chart.component.html',
+  styleUrls: ['./portfolio-categories-chart.component.scss']
 })
-export class WalletCategoriesChartComponent implements AfterViewInit, OnDestroy {
+export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestroy {
   // Signals para inputs
   readonly categoriesSignal = signal<PortfolioCategory[]>([]);
   readonly hideAmountsSignal = signal(false);
