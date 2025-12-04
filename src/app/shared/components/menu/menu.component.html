@@ -7,7 +7,10 @@
     <div class="menu-center">
         <div class="menu-items">
             @for (item of menuItems(); track item.path) {
-            <button mat-button [routerLink]="item.path" routerLinkActive="active-link" class="menu-button">
+            <button mat-button [routerLink]="item.enabled ? item.path : null" [disabled]="!item.enabled"
+                routerLinkActive="active-link" class="menu-button" [class.disabled-item]="!item.enabled"
+                (click)="onMenuClick(item, $event)"
+                [title]="!item.enabled ? 'No tienes permisos para acceder a esta sección' : ''">
                 <mat-icon>{{ item.icon }}</mat-icon>
                 <span>{{ item.label }}</span>
             </button>

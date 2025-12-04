@@ -14,6 +14,8 @@ import { Portfolio, PortfolioCategory, PortfolioResponse } from '../../models/po
 import { ToastService } from '../../shared/services/toast.service';
 import { PortfolioRegisterModalComponent } from './portfolio-register-modal/portfolio-register-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../shared/components/dialogs/confirm-dialog.component';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
     selector: 'app-portfolio',
@@ -80,7 +82,8 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     constructor(
         private portfolioService: PortfolioService,
         private toastService: ToastService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private authService: AuthService,
     ) {
         this.lastUpdated.set(new Date());
     }
@@ -92,6 +95,13 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    /**
+     * Verifica si el rol del usuario
+     */
+    isAdmin(): boolean {
+        return this.authService.getUserRole() === 'ADMIN';
     }
 
     /**
@@ -191,8 +201,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(PortfolioRegisterModalComponent, {
             width: '500px',
             maxWidth: '95vw',
-            disableClose: true,
-            autoFocus: true
+            autoFocus: true,
         });
 
         dialogRef.afterClosed()
@@ -261,6 +270,40 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     }
 
     onDeletePortfolio(): void {
-        this.toastService.info('Función en desarrollo');
+        const portfolioId = this.selectedPortfolioId();
+
+        if (!portfolioId) {
+            this.toastService.warning('Debes seleccionar un portafolio primero');
+            return;
+        }
+
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '420px',
+            maxWidth: '90vw',
+            autoFocus: false,
+            panelClass: 'custom-confirm-dialog',
+            data: {
+                title: 'Eliminar Portafolio',
+                message: '¿Estás seguro que deseas eliminar el portafolio seleccionado?',
+                confirmText: 'Confirmar',
+                cancelText: 'Cancelar',
+                icon: 'delete_forever'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.portfolioService.deletePortfolio(portfolioId)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: () => {
+                            this.toastService.success('Portafolio eliminado exitosamente');
+                            // Limpiar portafolio seleccionado
+                            this.selectedPortfolioId.set(null);
+                            this.getPortfolios();
+                        }
+                    });
+            }
+        });
     }
 }

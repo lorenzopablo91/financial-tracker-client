@@ -514,3 +514,93 @@ $app-theme: mat.define-light-theme((color: (primary: $primary-palette,
     }
   }
 }
+
+// ==== GLOBAL DIALOG STYLES ====
+
+.app-dialog {
+  width: 100%;
+  max-width: 600px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 768px) {
+    min-width: 400px;
+  }
+
+  // Title bar
+  .dialog-title {
+    padding: 0 16px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--neutral-200);
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+  }
+
+  // Content
+  .dialog-content {
+    padding: 16px 24px;
+    flex: 1;
+    overflow-y: auto;
+
+    .message {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+
+  // Actions Footer
+  mat-dialog-actions {
+    padding: 12px 16px;
+    border-top: 1px solid var(--neutral-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    button {
+      min-width: 120px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      mat-icon,
+      span {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  }
+}
+
+/* Cursor not-allowed en botones deshabilitados Angular Material 17+ */
+.mdc-button--disabled,
+.mat-mdc-button-disabled,
+.mdc-elevated-button--disabled,
+.mdc-text-button--disabled,
+.mdc-outlined-button--disabled,
+.mdc-filled-button--disabled {
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
+  /* permite hover cursor */
+}
+
+.mdc-button--disabled *,
+.mat-mdc-button-disabled *,
+.mdc-elevated-button--disabled *,
+.mdc-text-button--disabled *,
+.mdc-outlined-button--disabled *,
+.mdc-filled-button--disabled * {
+  cursor: not-allowed !important;
+}

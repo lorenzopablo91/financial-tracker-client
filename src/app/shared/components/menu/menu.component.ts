@@ -29,24 +29,26 @@ export class MenuComponent {
     {
       path: '/portfolio',
       label: 'PORTAFOLIO',
-      icon: 'portfolio',
+      icon: 'wallet',
       roles: ['ADMIN', 'VIEWER']
     }
   ]);
 
+  // Computed que devuelve todos los items con información de si están habilitados
   menuItems = computed(() => {
     const userRole = this.authService.getUserRole();
 
     if (!userRole) {
-      return [];
+      return this.allMenuItems().map(item => ({
+        ...item,
+        enabled: false
+      }));
     }
 
-    return this.allMenuItems().filter(item => {
-      if (!item.roles || item.roles.length === 0) {
-        return true;
-      }
-      return item.roles.includes(userRole);
-    });
+    return this.allMenuItems().map(item => ({
+      ...item,
+      enabled: !item.roles || item.roles.length === 0 || item.roles.includes(userRole)
+    }));
   });
 
   currentUser$ = this.authService.currentUser$;
@@ -59,6 +61,14 @@ export class MenuComponent {
 
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  // Método para verificar si un item está habilitado antes de navegar
+  onMenuClick(item: MenuItem & { enabled: boolean }, event: Event): void {
+    if (!item.enabled) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   addMenuItem(item: MenuItem): void {
@@ -74,7 +84,7 @@ export class MenuComponent {
       data: {
         title: 'Cerrar Sesión',
         message: '¿Estás seguro que deseas cerrar sesión?',
-        confirmText: 'Cerrar Sesión',
+        confirmText: 'Confirmar',
         cancelText: 'Cancelar',
         icon: 'logout'
       }

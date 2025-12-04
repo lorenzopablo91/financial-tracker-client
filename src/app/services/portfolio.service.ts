@@ -43,4 +43,8 @@ export class PortfolioService {
         return this.http.post<any>(`${this.baseURL}`, data);
     }
 
+    deletePortfolio(portfolioId: string): Observable<void> {
+        return this.http.delete<void>(`${this.baseURL}/${portfolioId}`);
+    }
+
 }

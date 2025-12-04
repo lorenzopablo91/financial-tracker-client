@@ -1,9 +1,8 @@
-<div class="confirm-dialog">
-    <mat-toolbar color="accent" class="dialog-title">
-        <div class="title-content">
-            <mat-icon>{{ data.icon || 'help' }}</mat-icon>
-            <span>{{ data.title || 'Confirmar acción' }}</span>
-        </div>
+<div class="app-dialog">
+
+    <mat-toolbar class="dialog-title" color="accent">
+        <mat-icon>{{ data.icon || 'help' }}</mat-icon>
+        <span>{{ data.title || 'Confirmar acción' }}</span>
     </mat-toolbar>
 
     <mat-dialog-content class="dialog-content">
@@ -14,8 +13,10 @@
         <button mat-button (click)="onCancel()">
             {{ data.cancelText || 'Cancelar' }}
         </button>
+
         <button mat-raised-button color="primary" (click)="onConfirm()">
             {{ data.confirmText || 'Confirmar' }}
         </button>
     </mat-dialog-actions>
+
 </div>

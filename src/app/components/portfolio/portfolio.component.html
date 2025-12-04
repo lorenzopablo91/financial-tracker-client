@@ -54,12 +54,12 @@
         <mat-icon>menu</mat-icon>
       </button>
       <mat-menu #dashboardMenu="matMenu">
-        <button mat-menu-item (click)="onNewPortfolio()">
+        <button mat-menu-item (click)="onNewPortfolio()" [disabled]="!isAdmin()">
           <mat-icon>add</mat-icon>
           <span>Crear portafolio</span>
         </button>
         <mat-divider></mat-divider>
-        <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio()">
+        <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio() || !isAdmin()">
           <mat-icon>save</mat-icon>
           <span>Guardar valuación actual</span>
         </button>
@@ -67,7 +67,7 @@
           <mat-icon>receipt_long</mat-icon>
           <span>Gestionar operaciones</span>
         </button>
-        <button mat-menu-item (click)="onDeletePortfolio()" [disabled]="!hasSelectedPortfolio()">
+        <button mat-menu-item (click)="onDeletePortfolio()" [disabled]="!hasSelectedPortfolio() || !isAdmin()">
           <mat-icon>delete</mat-icon>
           <span>Eliminar portafolio</span>
         </button>

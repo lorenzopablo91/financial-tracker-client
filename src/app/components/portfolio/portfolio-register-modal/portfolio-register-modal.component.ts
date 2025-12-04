@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MaterialImports } from '../../../shared/imports/material-imports';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-portfolio-register-modal',
@@ -17,11 +18,11 @@ import { MaterialImports } from '../../../shared/imports/material-imports';
 })
 export class PortfolioRegisterModalComponent {
   portfolioForm: FormGroup;
-  readonly isSubmitting = signal(false);
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<PortfolioRegisterModalComponent>
+    private dialogRef: MatDialogRef<PortfolioRegisterModalComponent>,
+    private toastService: ToastService
   ) {
     this.portfolioForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -31,29 +32,29 @@ export class PortfolioRegisterModalComponent {
   }
 
   onSubmit(): void {
-    if (this.portfolioForm.valid && !this.isSubmitting()) {
-      this.isSubmitting.set(true);
-
-      // Preparar los datos, eliminando campos vacíos opcionales
-      const formData = { ...this.portfolioForm.value };
-
-      // Si descripción está vacía, no la enviamos
-      if (!formData.descripcion || formData.descripcion.trim() === '') {
-        delete formData.descripcion;
-      }
-
-      // Si capitalInicial es null, 0 o vacío, no lo enviamos
-      if (formData.capitalInicial === null || formData.capitalInicial === '' || formData.capitalInicial === 0) {
-        delete formData.capitalInicial;
-      }
-
-      this.dialogRef.close(formData);
+    if (!this.portfolioForm.valid) {
+      this.toastService.warning('Por favor, corrige los errores en el formulario antes de enviar.');
+      this.portfolioForm.markAllAsTouched();
+      return;
     }
+
+    // Preparar los datos, eliminando campos vacíos opcionales
+    const formData = { ...this.portfolioForm.value };
+
+    // Si descripción está vacía, no la enviamos
+    if (!formData.descripcion || formData.descripcion.trim() === '') {
+      delete formData.descripcion;
+    }
+
+    // Si capitalInicial es null, 0 o vacío, no lo enviamos
+    if (formData.capitalInicial === null || formData.capitalInicial === '' || formData.capitalInicial === 0) {
+      delete formData.capitalInicial;
+    }
+
+    this.dialogRef.close(formData);
   }
 
   onCancel(): void {
-    if (!this.isSubmitting()) {
-      this.dialogRef.close(null);
-    }
+    this.dialogRef.close(null);
   }
 }
