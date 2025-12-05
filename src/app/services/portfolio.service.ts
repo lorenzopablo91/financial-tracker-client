@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { retry } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { PortfolioResponse } from '../models/portfolio.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -13,38 +12,77 @@ export class PortfolioService {
 
     constructor(private http: HttpClient) { }
 
-    getPortfolios(): Observable<PortfolioResponse> {
-        return this.http.get<PortfolioResponse>(`${this.baseURL}`).pipe(
+    /**
+     * Obtiene la lista de portafolios
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    getPortfolios(options?: any): Observable<any> {
+        return this.http.get<any>(this.baseURL, options).pipe(
             retry(1)
         );
     }
 
-    getPortfolioValuation(portfolioId: string): Observable<any> {
-        return this.http.get<any>(`${this.baseURL}/${portfolioId}/valorizar`).pipe(
+    /**
+     * Obtiene la valuación de un portafolio
+     * @param portfolioId ID del portafolio
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    getPortfolioValuation(portfolioId: string, options?: any): Observable<any> {
+        return this.http.get<any>(`${this.baseURL}/${portfolioId}/valorizar`, options).pipe(
             retry(1)
         );
     }
 
-    getPortfolioSnapshots(portfolioId: string, limit = 30): Observable<any> {
-        return this.http.get<any>(`${this.baseURL}/${portfolioId}/snapshots?limit=${limit}`).pipe(
+    /**
+     * Obtiene los snapshots históricos de un portafolio
+     * @param portfolioId ID del portafolio
+     * @param limit Cantidad de snapshots a obtener
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    getPortfolioSnapshots(portfolioId: string, limit = 30, options?: any): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseURL}/${portfolioId}/snapshots?limit=${limit}`,
+            options
+        ).pipe(
             retry(1)
         );
     }
 
-    createSnapshot(portfolioId: string): Observable<any> {
-        return this.http.post<any>(`${this.baseURL}/${portfolioId}/snapshot`, {});
+    /**
+     * Crea un nuevo portafolio
+     * @param data Datos del portafolio
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    createPortfolio(data: { nombre: string; descripcion?: string; capitalInicial?: number }, options?: any): Observable<any> {
+        return this.http.post<any>(this.baseURL, data, options);
     }
 
-    createPortfolio(data: {
-        nombre: string;
-        descripcion?: string;
-        capitalInicial?: number;
-    }): Observable<any> {
-        return this.http.post<any>(`${this.baseURL}`, data);
+    /**
+     * Crea un snapshot del portafolio
+     * @param portfolioId ID del portafolio
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    createSnapshot(portfolioId: string, options?: any): Observable<any> {
+        return this.http.post<any>(`${this.baseURL}/${portfolioId}/snapshot`, {}, options);
     }
 
-    deletePortfolio(portfolioId: string): Observable<void> {
-        return this.http.delete<void>(`${this.baseURL}/${portfolioId}`);
+    /**
+     * Elimina un portafolio
+     * @param portfolioId ID del portafolio
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    deletePortfolio(portfolioId: string, options?: any): Observable<any> {
+        return this.http.delete<any>(`${this.baseURL}/${portfolioId}`, options);
     }
 
+    /**
+     * Obtiene las transacciones de un portafolio
+     * @param portfolioId ID del portafolio
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    getTransactions(portfolioId: string, options?: any): Observable<any> {
+        return this.http.get<any>(`${this.baseURL}/${portfolioId}/transactions`, options).pipe(
+            retry(1)
+        );
+    }
 }

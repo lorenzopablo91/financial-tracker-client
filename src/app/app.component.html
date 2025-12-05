@@ -1,4 +1,5 @@
 <app-menu *ngIf="showMenu"></app-menu>
 <main class="main-content" [class.full-width]="!showMenu">
+    <app-loader [isLoading]="loaderService.isLoading()" [message]="loaderService.message()" />
     <router-outlet></router-outlet>
 </main>

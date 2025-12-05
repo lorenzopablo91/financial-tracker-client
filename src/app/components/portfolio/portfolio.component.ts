@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpContext } from '@angular/common/http';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { Subject, forkJoin } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
@@ -16,6 +17,8 @@ import { PortfolioRegisterModalComponent } from './portfolio-register-modal/port
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/components/dialogs/confirm-dialog.component';
 import { AuthService } from '../../shared/services/auth.service';
+import { LoaderService } from '../../shared/services/loader.service';
+import { LOADER_MESSAGE, SKIP_LOADER } from '../../shared/interceptors/loader-context.interceptor';
 
 @Component({
     selector: 'app-portfolio',
@@ -41,7 +44,6 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     readonly isLoadingPortfolios = signal<boolean>(false);
 
     // Señales de estado
-    readonly loading = signal(false);
     readonly lastUpdated = signal<Date | null>(null);
     readonly hideAmounts = signal(false);
     readonly refreshTrigger = signal(0);
@@ -84,6 +86,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         private toastService: ToastService,
         private dialog: MatDialog,
         private authService: AuthService,
+        private loaderService: LoaderService
     ) {
         this.lastUpdated.set(new Date());
     }
@@ -106,6 +109,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
     /**
      * Carga la lista de portafolios disponibles
+     * NOTA: Esta llamada NO muestra loader (excluida en el interceptor)
      */
     private getPortfolios(): void {
         this.isLoadingPortfolios.set(true);
@@ -124,21 +128,30 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
     /**
      * Carga todos los datos del portafolio usando forkJoin para ejecutar en paralelo
+     * Usa control manual del loader para un mensaje único
      */
     private loadPortfolioData(portfolioId: string): void {
-        if (this.loading()) {
-            return;
-        }
+        // Contexto para desactivar el loader automático
+        const context = new HttpContext().set(SKIP_LOADER, true);
 
-        this.loading.set(true);
+        // Mostrar loader con mensaje personalizado
+        this.loaderService.show('📊 Cargando datos del portafolio...');
+
+        // Actualizar mensaje después de 2 segundos si aún está cargando
+        const timer = setTimeout(() => {
+            this.loaderService.updateMessage('📈 Calculando rendimientos...');
+        }, 2000);
 
         // Ejecutar ambas llamadas en paralelo
         forkJoin({
-            valuation: this.portfolioService.getPortfolioValuation(portfolioId),
-            snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId)
+            valuation: this.portfolioService.getPortfolioValuation(portfolioId, { context }),
+            snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId, 30, { context })
         }).pipe(
             takeUntil(this.destroy$),
-            finalize(() => this.loading.set(false))
+            finalize(() => {
+                clearTimeout(timer);
+                this.loaderService.hide();
+            })
         ).subscribe({
             next: (results) => {
                 // Procesar datos de valuación
@@ -158,7 +171,6 @@ export class PortfolioComponent implements OnInit, OnDestroy {
                 // Actualizar timestamp
                 this.lastUpdated.set(new Date());
 
-                // Solo mostrar success si ambas cargas fueron exitosas
                 this.toastService.success('Datos actualizados correctamente');
             }
         });
@@ -189,9 +201,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
      * Toggle para mostrar/ocultar saldos
      */
     toggleAmountVisibility(): void {
-        if (!this.loading()) {
-            this.hideAmounts.update(value => !value);
-        }
+        this.hideAmounts.update(value => !value);
     }
 
     /**
@@ -216,25 +226,25 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Crea un nuevo portafolio
+     * Crea un nuevo portafolio con mensaje personalizado
      */
     private createPortfolio(data: { nombre: string; descripcion?: string; capitalInicial?: number }): void {
-        this.portfolioService.createPortfolio(data)
+        this.portfolioService.createPortfolio(data, {
+            context: new HttpContext().set(LOADER_MESSAGE, '🚀 Creando tu nuevo portafolio...')
+        })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
                     if (response.success) {
                         this.toastService.success(response.message || 'Portafolio creado exitosamente');
 
-                        // Recargar la lista de portafolios
+                        // Recargar la lista de portafolios (sin loader)
                         this.getPortfolios();
 
                         // Seleccionar automáticamente el nuevo portafolio
                         if (response.data && response.data.id) {
-                            setTimeout(() => {
-                                this.selectedPortfolioId.set(response.data.id);
-                                this.loadPortfolioData(response.data.id);
-                            }, 500);
+                            this.selectedPortfolioId.set(response.data.id);
+                            this.loadPortfolioData(response.data.id);
                         }
                     }
                 }
@@ -242,7 +252,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Crea un snapshot del portafolio actual
+     * Crea un snapshot del portafolio actual con mensaje personalizado
      */
     onCreateSnapshot(): void {
         const portfolioId = this.selectedPortfolioId();
@@ -252,12 +262,14 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.portfolioService.createSnapshot(portfolioId)
+        this.portfolioService.createSnapshot(portfolioId, {
+            context: new HttpContext().set(LOADER_MESSAGE, '📸 Guardando valuación del portafolio...')
+        })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
                     if (response.success) {
-                        this.toastService.success(response.message || 'Snapshot creado exitosamente');
+                        this.toastService.success(response.message || 'Valuación del portafolio guardada exitosamente');
                         // Recargar datos para mostrar el nuevo snapshot
                         this.refreshData();
                     }
@@ -269,6 +281,9 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         this.toastService.info('Función en desarrollo');
     }
 
+    /**
+     * Elimina el portafolio seleccionado con mensaje personalizado
+     */
     onDeletePortfolio(): void {
         const portfolioId = this.selectedPortfolioId();
 
@@ -293,13 +308,17 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.portfolioService.deletePortfolio(portfolioId)
+                this.portfolioService.deletePortfolio(portfolioId, {
+                    context: new HttpContext().set(LOADER_MESSAGE, '🗑️ Eliminando portafolio y todas sus operaciones...')
+                })
                     .pipe(takeUntil(this.destroy$))
                     .subscribe({
                         next: () => {
                             this.toastService.success('Portafolio eliminado exitosamente');
+
                             // Limpiar portafolio seleccionado
                             this.selectedPortfolioId.set(null);
+                            // Recargar lista de portafolios (sin loader)
                             this.getPortfolios();
                         }
                     });

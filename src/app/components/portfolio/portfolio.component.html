@@ -6,7 +6,7 @@
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Portafolio</mat-label>
         <mat-select [value]="selectedPortfolioId()" (selectionChange)="onPortfolioChange($event.value)"
-          [disabled]="isLoadingPortfolios() || loading()">
+          [disabled]="isLoadingPortfolios() || isLoadingPortfolios()">
           @if (isLoadingPortfolios()) {
           <mat-option disabled>
             <div class="loading-option">
@@ -38,19 +38,19 @@
         </span>
         }
         <button mat-icon-button (click)="refreshData()" matTooltip="Actualizar datos"
-          [disabled]="loading() || !hasSelectedPortfolio()">
-          <mat-icon [class.spinning]="loading()">refresh</mat-icon>
+          [disabled]="isLoadingPortfolios() || !hasSelectedPortfolio()">
+          <mat-icon [class.spinning]="isLoadingPortfolios()">refresh</mat-icon>
         </button>
       </div>
       <button mat-icon-button (click)="toggleAmountVisibility()"
         [matTooltip]="hideAmounts() ? 'Mostrar montos' : 'Ocultar montos'" class="visibility-btn"
-        [disabled]="loading() || !hasSelectedPortfolio()">
+        [disabled]="isLoadingPortfolios() || !hasSelectedPortfolio()">
         <mat-icon>{{ hideAmounts() ? 'visibility' : 'visibility_off' }}</mat-icon>
       </button>
 
       <!-- Menú Hamburguesa -->
       <button mat-icon-button [matMenuTriggerFor]="dashboardMenu" matTooltip="Más opciones" class="menu-btn"
-        [disabled]="loading()">
+        [disabled]="isLoadingPortfolios()">
         <mat-icon>menu</mat-icon>
       </button>
       <mat-menu #dashboardMenu="matMenu">
@@ -101,7 +101,7 @@
     <!-- Carrusel de Cards de Rendimiento (solo si hay inversiones) -->
     @if (!hasCashOnly()) {
     <div class="performance-carousel-section">
-      @if (loading()) {
+      @if (isLoadingPortfolios()) {
       <!-- Skeleton para las cards de rendimiento -->
       <div class="performance-carousel">
         @for (item of [1, 2, 3, 4]; track $index) {
@@ -119,7 +119,8 @@
       <!-- Cards reales -->
       <div class="performance-carousel">
         @for (category of performanceCardsData(); track $index) {
-        <app-portfolio-performance-card [data]="category" [hideAmounts]="hideAmounts()" [isLoading]="loading()">
+        <app-portfolio-performance-card [data]="category" [hideAmounts]="hideAmounts()"
+          [isLoading]="isLoadingPortfolios()">
         </app-portfolio-performance-card>
         }
       </div>
@@ -131,7 +132,7 @@
     <div class="charts-section">
       <!-- Card Total + Gráfico de Torta (Izquierda) -->
       <mat-card class="total-card">
-        @if (loading()) {
+        @if (isLoadingPortfolios()) {
         <!-- Estado de carga -->
         <div class="skeleton-content">
           <div class="skeleton-title"></div>
@@ -165,7 +166,7 @@
 
       <!-- Gráfico de Evolución (Derecha) -->
       <app-portfolio-evolution-chart [chartData]="portfolioHistoryData()" [hideAmounts]="hideAmounts()"
-        [isLoading]="loading()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
+        [isLoading]="isLoadingPortfolios()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
       </app-portfolio-evolution-chart>
     </div>
   </div>
