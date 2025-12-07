@@ -51,10 +51,11 @@ export const loaderInterceptor: HttpInterceptorFn = (req, next) => {
 
     if (!skipProgressiveMessages) {
         const progressiveSteps = [
-            { text: 'Ups, esto puede demorar un rato más... ⏳', delay: 10000 },
-            { text: 'Estamos reconectando nuevamente la aplicación... 🌐', delay: 30000 },
-            { text: 'Falta menos, lo barato sale caro... 🐭', delay: 60000 },
-            { text: 'Gracias por la espera, terminando de conectar... 🙌', delay: 90000 },
+            { text: '⏳ Ups, esto puede demorar un rato más...', delay: 10000 },
+            { text: '🌐 Conectando nuevamente la aplicación...', delay: 30000 },
+            { text: '⚙️ Ajustando configuraciones necesarias...', delay: 45000 },
+            { text: '🚀 Finalizando los últimos detalles...', delay: 60000 },
+            { text: '🙌 ¡Gracias por la espera, todo listo!', delay: 90000 },
         ];
 
         progressiveSteps.forEach(step => {
