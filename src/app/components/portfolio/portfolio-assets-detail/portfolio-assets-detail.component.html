@@ -1,0 +1,264 @@
+<div class="assets-detail-container">
+    <!-- Header con botón de regreso -->
+    <div class="detail-header">
+        <button mat-icon-button (click)="onBack()" class="back-button" matTooltip="Volver al dashboard">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-title">
+            <h2>Detalle de Activos</h2>
+            <span class="assets-count">
+                ({{ stats().assetsCount }})
+                @if (selectedFilter() !== 'all') {
+                <span class="filter-badge" [style.background-color]="getTypeColor(selectedFilter()) + '20'"
+                    [style.color]="getTypeColor(selectedFilter())">
+                    {{ selectedFilter().toUpperCase() }}
+                </span>
+                }
+            </span>
+        </div>
+        <div class="header-actions">
+            <button mat-icon-button [matMenuTriggerFor]="filterMenu" matTooltip="Filtrar por tipo">
+                <mat-icon>filter_list</mat-icon>
+            </button>
+            <mat-menu #filterMenu="matMenu">
+                <button mat-menu-item (click)="onFilterChange('all')" [class.active]="selectedFilter() === 'all'">
+                    <mat-icon>select_all</mat-icon>
+                    <span>TODOS</span>
+                </button>
+                <mat-divider></mat-divider>
+                @for (type of assetTypes(); track type) {
+                <button mat-menu-item (click)="onFilterChange(type)" [class.active]="selectedFilter() === type">
+                    <mat-icon [style.color]="getTypeColor(type)">{{ getTypeIcon(type) }}</mat-icon>
+                    <span>{{ type.toUpperCase() }}</span>
+                </button>
+                }
+            </mat-menu>
+        </div>
+    </div>
+
+    <!-- Tabla de activos -->
+    <div class="assets-table-container">
+        <mat-card class="table-card">
+            @if (isLoading()) {
+            <!-- Estado de carga -->
+            <div class="loading-state">
+                <div class="skeleton-table">
+                    <!-- Skeleton Header -->
+                    <div class="skeleton-header">
+                        <div class="skeleton-cell skeleton-type"></div>
+                        <div class="skeleton-cell skeleton-ticker"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+
+                    <!-- Skeleton Rows -->
+                    <div class="skeleton-row" *ngFor="let item of [1,2,3,4,5]">
+                        <div class="skeleton-cell skeleton-type">
+                            <div class="skeleton-badge"></div>
+                        </div>
+                        <div class="skeleton-cell skeleton-ticker">
+                            <div class="skeleton-ticker-content">
+                                <div class="skeleton-text skeleton-text-lg"></div>
+                                <div class="skeleton-text skeleton-text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-gain-content">
+                                <div class="skeleton-text skeleton-text-md"></div>
+                                <div class="skeleton-text skeleton-text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            } @else if (filteredAssets().length === 0) {
+            <!-- Estado vacío -->
+            <div class="empty-state">
+                <mat-icon>inventory_2</mat-icon>
+                <h3>No hay activos</h3>
+                <p>No se encontraron activos con el filtro seleccionado</p>
+            </div>
+            } @else {
+            <!-- Tabla con datos -->
+            <div class="table-wrapper">
+                <table mat-table [dataSource]="filteredAssets()" class="assets-table">
+
+                    <!-- Columna: Tipo/Icono -->
+                    <ng-container matColumnDef="tipo">
+                        <th mat-header-cell *matHeaderCellDef class="col-type">
+                            <button mat-button class="sort-button" (click)="onSort('tipo')">
+                                TIPO
+                                <mat-icon class="sort-icon">{{ getSortIcon('tipo') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset" class="col-type">
+                            <div class="type-badge" [style.background-color]="getTypeColor(asset.tipo) + '20'">
+                                <mat-icon [style.color]="getTypeColor(asset.tipo)">{{ getTypeIcon(asset.tipo)
+                                    }}</mat-icon>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Ticker -->
+                    <ng-container matColumnDef="prefijo">
+                        <th mat-header-cell *matHeaderCellDef class="col-ticker">
+                            <button mat-button class="sort-button" (click)="onSort('prefijo')">
+                                ACTIVO
+                                <mat-icon class="sort-icon">{{ getSortIcon('prefijo') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset" class="col-ticker">
+                            <div class="ticker-info">
+                                <span class="ticker-symbol">{{ asset.prefijo }}</span>
+                                <span class="ticker-name">{{ asset.nombre }}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Cantidad -->
+                    <ng-container matColumnDef="cantidad">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('cantidad')">
+                                CANTIDAD
+                                <mat-icon class="sort-icon">{{ getSortIcon('cantidad') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            {{ formatQuantity(asset.cantidad, asset.tipo) }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Precio Promedio -->
+                    <ng-container matColumnDef="costoPromedioUSD">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('costoPromedioUSD')">
+                                PRECIO COMPRA
+                                <mat-icon class="sort-icon">{{ getSortIcon('costoPromedioUSD') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : (asset.costoPromedioUSD | currencyFormat:'USD') }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Precio Actual -->
+                    <ng-container matColumnDef="precioMercado">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('precioMercado')">
+                                PRECIO ACTUAL
+                                <mat-icon class="sort-icon">{{ getSortIcon('precioMercado') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : (asset.precioMercado | currencyFormat:'USD') }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Costo Base -->
+                    <ng-container matColumnDef="costoBase">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('costoBase')">
+                                VALOR BASE
+                                <mat-icon class="sort-icon">{{ getSortIcon('costoBase') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : (asset.costoBase | currencyFormat:'USD') }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Valor Actual -->
+                    <ng-container matColumnDef="valorActual">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('valorActual')">
+                                VALOR ACTUAL
+                                <mat-icon class="sort-icon">{{ getSortIcon('valorActual') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : (asset.valorActual | currencyFormat:'USD') }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: % en Portafolio -->
+                    <ng-container matColumnDef="porcentajeComposicion">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('porcentajeComposicion')">
+                                % EN PORTAFOLIO
+                                <mat-icon class="sort-icon">{{ getSortIcon('porcentajeComposicion') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : asset.porcentajeComposicion.toFixed(2) + '%' }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Ganancia/Pérdida -->
+                    <ng-container matColumnDef="gananciaPerdida">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('gananciaPerdida')">
+                                GANANCIA/PERDIDA
+                                <mat-icon class="sort-icon">{{ getSortIcon('gananciaPerdida') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let asset">
+                            <div class="gain-info" [class.hidden-amount]="hideAmounts()">
+                                <span class="gain-amount" [class.positive]="asset.gananciaPerdida > 0"
+                                    [class.negative]="asset.gananciaPerdida < 0">
+                                    {{ hideAmounts() ? '••••' : (asset.gananciaPerdida | currencyFormat:'USD') }}
+                                </span>
+                                @if (!hideAmounts()) {
+                                <span class="gain-percent" [class.positive]="asset.gananciaPorc > 0"
+                                    [class.negative]="asset.gananciaPorc < 0">
+                                    ({{ asset.gananciaPorc > 0 ? '+' : '' }}{{ asset.gananciaPorc.toFixed(2) }}%)
+                                </span>
+                                }
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row
+                        *matHeaderRowDef="['tipo', 'prefijo', 'cantidad', 'costoPromedioUSD', 'precioMercado', 'costoBase', 'valorActual', 'porcentajeComposicion', 'gananciaPerdida']">
+                    </tr>
+                    <tr mat-row
+                        *matRowDef="let row; columns: ['tipo', 'prefijo', 'cantidad', 'costoPromedioUSD', 'precioMercado', 'costoBase', 'valorActual', 'porcentajeComposicion', 'gananciaPerdida']">
+                    </tr>
+                </table>
+            </div>
+            }
+        </mat-card>
+    </div>
+</div>

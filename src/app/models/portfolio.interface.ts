@@ -45,3 +45,27 @@ export interface PortfolioHistoryData {
     date: Date;
     totalPortfolio: number;
 }
+
+export interface Asset {
+    tipo: string;
+    prefijo: string;
+    nombre: string;
+    cantidad: number;
+    costoPromedioUSD: number;
+    precioMercado: number;
+    costoBase: number;
+    valorActual: number;
+    gananciaPerdida: number;
+    gananciaPorc: number;
+    color: string;
+    icono: string;
+    porcentajeComposicion: number;
+}
+
+export interface AssetStats {
+    assetsCount: number;
+    totalValue: number;
+    totalCost: number;
+    totalGain: number;
+    totalGainPerc: number;
+}

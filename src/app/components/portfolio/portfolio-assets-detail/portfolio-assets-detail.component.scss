@@ -1,0 +1,409 @@
+.assets-detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0;
+
+    @media (min-width: 768px) {
+        gap: 24px;
+    }
+}
+
+// ============ HEADER ============
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--accent-500);
+    border-radius: 8px;
+
+    @media (min-width: 768px) {
+        padding: 16px 20px;
+        gap: 16px;
+    }
+
+    .back-button {
+        flex-shrink: 0;
+
+        mat-icon {
+            color: var(--primary-500);
+        }
+    }
+
+    .header-title {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        @media (min-width: 768px) {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-900);
+
+            @media (min-width: 768px) {
+                font-size: 1.5rem;
+            }
+        }
+    }
+
+    .header-actions {
+        flex-shrink: 0;
+
+        button {
+            mat-icon {
+                color: var(--primary-500);
+            }
+        }
+    }
+}
+
+// ============ TABLA ============
+.assets-table-container {
+    width: 100%;
+
+    .table-card {
+        background: var(--accent-500);
+        border-radius: 12px;
+        padding: 0;
+        border: 1px solid var(--accent-500);
+        overflow: hidden;
+    }
+
+    // ========== LOADING STATE ==========
+    .loading-state {
+        padding: 0;
+
+        .skeleton-table {
+            width: 100%;
+            min-width: 1000px;
+        }
+
+        .skeleton-header {
+            display: flex;
+            background: var(--accent-500);
+            padding: 16px 12px;
+            border-bottom: 2px solid var(--accent-500);
+            gap: 12px;
+        }
+
+        .skeleton-row {
+            display: flex;
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--accent-500);
+            gap: 12px;
+            animation: skeleton-pulse 1.5s ease-in-out infinite;
+        }
+
+        // Estilos comunes para todas las celdas skeleton
+        .skeleton-cell {
+            min-width: 120px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            // Excepciones: tipo y ticker
+            &.skeleton-type {
+                width: 60px;
+                min-width: 60px;
+                flex: none;
+                justify-content: center;
+            }
+
+            &.skeleton-ticker {
+                min-width: 180px;
+                justify-content: flex-start;
+            }
+        }
+
+        .skeleton-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--neutral-900);
+            opacity: 0.2;
+        }
+
+        .skeleton-ticker-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .skeleton-gain-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .skeleton-text {
+            background: var(--neutral-900);
+            border-radius: 4px;
+            height: 14px;
+            opacity: 0.2;
+
+            &.skeleton-text-sm {
+                width: 60%;
+                height: 12px;
+            }
+
+            &.skeleton-text-md {
+                width: 80%;
+            }
+
+            &.skeleton-text-lg {
+                width: 90%;
+                height: 16px;
+            }
+        }
+
+        @keyframes skeleton-pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .skeleton-table {
+                min-width: auto;
+                overflow-x: auto;
+            }
+        }
+    }
+
+    // ========== EMPTY STATE ==========
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        gap: 16px;
+        text-align: center;
+
+        mat-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            color: var(--neutral-900);
+            opacity: 0.5;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-900);
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--neutral-900);
+        }
+    }
+
+    // ========== TABLE WRAPPER ==========
+    .table-wrapper {
+        overflow-x: auto;
+
+        &::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: var(--accent-500);
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--neutral-900);
+            border-radius: 4px;
+
+            &:hover {
+                background: var(--primary-600);
+            }
+        }
+    }
+
+    // ========== ASSETS TABLE ==========
+    .assets-table {
+        width: 100%;
+        min-width: 1000px;
+
+        // Estilos comunes para headers y cells
+        th,
+        td {
+            padding: 16px 12px;
+            font-size: 0.9rem;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            min-width: 120px;
+        }
+
+        th {
+            background: var(--accent-500);
+            color: var(--neutral-900);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--accent-500);
+        }
+
+        td {
+            border-bottom: 1px solid var(--accent-500);
+            color: var(--neutral-900);
+        }
+
+        // Excepciones: columna tipo
+        .col-type {
+            width: 60px;
+            min-width: 60px;
+            text-align: center;
+
+            .type-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+
+                mat-icon {
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+        }
+
+        // Excepciones: columna ticker
+        .col-ticker {
+            min-width: 180px;
+            text-align: left;
+
+            .ticker-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+
+                .ticker-symbol {
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                    color: var(--neutral-900);
+                }
+
+                .ticker-name {
+                    font-size: 0.8rem;
+                    color: var(--neutral-900);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 200px;
+                }
+            }
+        }
+
+        // Hover en filas
+        tr.mat-mdc-row:hover {
+            background: var(--accent-500);
+        }
+
+        // Sort button
+        .sort-button {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0;
+            min-width: auto;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--neutral-900);
+
+            .sort-icon {
+                font-size: 16px;
+                width: 16px;
+                height: 16px;
+                opacity: 0.5;
+            }
+
+            &:hover .sort-icon {
+                opacity: 1;
+            }
+        }
+
+        // Ganancia/Pérdida info
+        .gain-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+
+            &.hidden-amount {
+                filter: blur(4px);
+            }
+
+            .gain-amount {
+                font-weight: 600;
+                font-size: 0.95rem;
+
+                &.positive {
+                    color: var(--success-color);
+                }
+
+                &.negative {
+                    color: var(--error-color);
+                }
+            }
+
+            .gain-percent {
+                font-size: 0.8rem;
+                font-weight: 500;
+
+                &.positive {
+                    color: var(--success-color);
+                }
+
+                &.negative {
+                    color: var(--error-color);
+                }
+            }
+        }
+    }
+}
+
+// ============ UTILITIES ============
+.hidden-amount {
+    font-family: monospace;
+    letter-spacing: 2px;
+    filter: blur(4px);
+    user-select: none;
+}
+
+// Menu activo
+::ng-deep .mat-mdc-menu-panel {
+    .mat-mdc-menu-item.active {
+        background: var(--primary-500);
+        color: var(--primary-50);
+
+        mat-icon {
+            color: var(--primary-50) !important;
+        }
+    }
+}

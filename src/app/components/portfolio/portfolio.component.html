@@ -59,12 +59,16 @@
           <span>Crear portafolio</span>
         </button>
         <mat-divider></mat-divider>
+        <button mat-menu-item (click)="onViewAssetsDetail()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>list_alt</mat-icon>
+          <span>Ver detalle de activos</span>
+        </button>
         <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio() || !isAdmin()">
           <mat-icon>save</mat-icon>
           <span>Guardar valuación actual</span>
         </button>
         <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>receipt_long</mat-icon>
+          <mat-icon>sync_alt</mat-icon>
           <span>Gestionar operaciones</span>
         </button>
         <button mat-menu-item (click)="onDeletePortfolio()" [disabled]="!hasSelectedPortfolio() || !isAdmin()">
@@ -94,6 +98,13 @@
     <h2>No hay portafolio seleccionado</h2>
     <p>Por favor, seleccione un portafolio del menú superior para visualizar sus datos.</p>
   </div>
+  } @else {
+
+  @if (showAssetsDetail()) {
+  <!-- Vista de Detalle de Activos -->
+  <app-portfolio-assets-detail [assets]="assets()" [hideAmounts]="hideAmounts()" [isLoading]="isLoadingPortfolios()"
+    (backClicked)="onBackToDashboard()">
+  </app-portfolio-assets-detail>
   } @else {
   <!-- Dashboard con datos -->
   <div class="dashboard-layout">
@@ -170,5 +181,6 @@
       </app-portfolio-evolution-chart>
     </div>
   </div>
+  }
   }
 </div>

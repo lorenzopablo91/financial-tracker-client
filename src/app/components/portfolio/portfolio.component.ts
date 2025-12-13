@@ -5,7 +5,7 @@ import { HttpContext } from '@angular/common/http';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { Subject, forkJoin } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
-import { PortfolioHistoryData } from '../../models/portfolio.interface';
+import { Asset, PortfolioHistoryData } from '../../models/portfolio.interface';
 import { PortfolioCategoriesChartComponent } from './portfolio-categories-chart/portfolio-categories-chart.component';
 import { PortfolioEvolutionChartComponent } from './portfolio-evolution-chart/portfolio-evolution-chart.component';
 import { PortfolioPerformanceCardComponent } from './portfolio-performance-card/portfolio-performance-card.component';
@@ -18,7 +18,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/components/dialogs/confirm-dialog.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { LoaderService } from '../../shared/services/loader.service';
-import { LOADER_MESSAGE, SKIP_LOADER } from '../../shared/interceptors/loader-context.interceptor';
+import { LOADER_MESSAGE } from '../../shared/interceptors/loader-context.interceptor';
+import { PortfolioAssetsDetailComponent } from './portfolio-assets-detail/portfolio-assets-detail.component';
 
 @Component({
     selector: 'app-portfolio',
@@ -30,6 +31,7 @@ import { LOADER_MESSAGE, SKIP_LOADER } from '../../shared/interceptors/loader-co
         PortfolioCategoriesChartComponent,
         PortfolioEvolutionChartComponent,
         PortfolioPerformanceCardComponent,
+        PortfolioAssetsDetailComponent,
         CurrencyFormatPipe
     ],
     templateUrl: './portfolio.component.html',
@@ -48,10 +50,14 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     readonly hideAmounts = signal(false);
     readonly refreshTrigger = signal(0);
 
+    // Señales para controlar vista
+    readonly showAssetsDetail = signal(false);
+
     // Señales de datos
     readonly portfolioHistoryData = signal<PortfolioHistoryData[]>([]);
     readonly totalPortfolio = signal(0);
     readonly categories = signal<PortfolioCategory[]>([]);
+    readonly assets = signal<Asset[]>([]);
 
     // Computed para descripción del portafolio
     readonly portfolioDescription = computed(() => {
@@ -131,13 +137,13 @@ export class PortfolioComponent implements OnInit, OnDestroy {
      * Usa control manual del loader para un mensaje único
      */
     private loadPortfolioData(portfolioId: string): void {
-        // Contexto para desactivar el loader automático
-        const context = new HttpContext().set(SKIP_LOADER, true);
+        this.isLoadingPortfolios.set(true);
+        const context = new HttpContext().set(LOADER_MESSAGE, '📊 Cargando datos del portafolio...');
 
-        // Mostrar loader con mensaje personalizado
+        // Mostrar el mensaje inicial
         this.loaderService.show('📊 Cargando datos del portafolio...');
 
-        // Actualizar mensaje después de 2 segundos si aún está cargando
+        // Timer para cambiar mensaje después de 2 segundos
         const timer = setTimeout(() => {
             this.loaderService.updateMessage('📈 Calculando rendimientos...');
         }, 2000);
@@ -150,6 +156,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             takeUntil(this.destroy$),
             finalize(() => {
                 clearTimeout(timer);
+                this.isLoadingPortfolios.set(false);
                 this.loaderService.hide();
             })
         ).subscribe({
@@ -161,6 +168,11 @@ export class PortfolioComponent implements OnInit, OnDestroy {
                         results.valuation.data.totalInvertido ??
                         results.valuation.data.capitalInicial
                     );
+
+                    // Extraer activos si existen
+                    if (results.valuation.data.activos) {
+                        this.assets.set(results.valuation.data.activos);
+                    }
                 }
 
                 // Procesar datos históricos
@@ -181,6 +193,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
      */
     onPortfolioChange(portfolioId: string): void {
         this.selectedPortfolioId.set(portfolioId);
+        this.showAssetsDetail.set(false); // Resetear vista al cambiar portafolio
         this.loadPortfolioData(portfolioId);
     }
 
@@ -277,6 +290,31 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             });
     }
 
+    /**
+     * Muestra el detalle de activos
+     */
+    onViewAssetsDetail(): void {
+        if (!this.hasSelectedPortfolio()) {
+            this.toastService.warning('Debes seleccionar un portafolio primero');
+            return;
+        }
+        this.showAssetsDetail.set(true);
+    }
+
+    /**
+     * Vuelve al dashboard desde el detalle de activos
+     */
+    onBackToDashboard(): void {
+        this.showAssetsDetail.set(false);
+        this.refreshTrigger.update(current => current + 1);
+
+        // Recargar datos del portafolio para actualizar gráficos
+        const portfolioId = this.selectedPortfolioId();
+        if (portfolioId) {
+            this.loadPortfolioData(portfolioId);
+        }
+    }
+
     onViewTransactions(): void {
         this.toastService.info('Función en desarrollo');
     }
@@ -318,6 +356,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
                             // Limpiar portafolio seleccionado
                             this.selectedPortfolioId.set(null);
+                            this.showAssetsDetail.set(false);
                             // Recargar lista de portafolios (sin loader)
                             this.getPortfolios();
                         }
