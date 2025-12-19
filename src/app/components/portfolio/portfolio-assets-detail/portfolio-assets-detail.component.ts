@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { Asset, AssetStats } from '../../../models/portfolio.interface';
@@ -21,6 +21,7 @@ export class PortfolioAssetsDetailComponent {
     assets = input.required<Asset[]>();
     hideAmounts = input.required<boolean>();
     isLoading = input.required<boolean>();
+    initialCategoryFilter = input<string | null>(null);
 
     // Outputs
     backClicked = output<void>();
@@ -29,6 +30,18 @@ export class PortfolioAssetsDetailComponent {
     selectedFilter = signal<string>('all');
     sortColumn = signal<string>('tipo');
     sortDirection = signal<'asc' | 'desc' | null>('asc');
+
+    constructor() {
+        // Effect para aplicar el filtro inicial cuando se pasa desde el padre
+        effect(() => {
+            const categoryFilter = this.initialCategoryFilter();
+            if (categoryFilter) {
+                untracked(() => {
+                    this.selectedFilter.set(categoryFilter);
+                });
+            }
+        });
+    }
 
     // Computed - Tipos únicos de activos
     assetTypes = computed(() => {
@@ -41,8 +54,9 @@ export class PortfolioAssetsDetailComponent {
         let assets = this.assets();
 
         // 1. Filtrar por tipo
-        if (this.selectedFilter() !== 'all') {
-            assets = assets.filter(a => a.tipo === this.selectedFilter());
+        const filter = this.selectedFilter();
+        if (filter !== 'all') {
+            assets = assets.filter(a => a.tipo === filter);
         }
 
         // 2. Ordenar

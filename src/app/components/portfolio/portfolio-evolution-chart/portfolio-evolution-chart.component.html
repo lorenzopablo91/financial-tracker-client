@@ -1,26 +1,33 @@
 <mat-card class="evolution-chart-card">
     @if (loading()) {
-    <!-- Estado de carga -->
+    <!-- Skeleton mientras carga -->
     <div class="skeleton-chart-container">
         <div class="skeleton-chart-title"></div>
         <div class="skeleton-chart"></div>
     </div>
     } @else if (error()) {
-    <!-- Estado de error -->
+    <!-- Mensaje de error -->
     <div class="error-chart-container">
-        <mat-icon class="error-icon">error_outline</mat-icon>
-        <span>Error al cargar</span>
+        <mat-icon class="error-icon-small">error_outline</mat-icon>
+        <span>{{ error() }}</span>
     </div>
-    } @else {
-    <!-- Contenido normal -->
-    <div class="chart-header">
-        <div class="chart-title">
-            <mat-icon class="chart-icon">show_chart</mat-icon>
-            <span>EVOLUCIÓN PORTAFOLIO</span>
+    } @else if (!hasData()) {
+    <!-- Sin datos -->
+    <div class="chart-container">
+        <div class="no-data">
+            <mat-icon>show_chart</mat-icon>
+            <p>No hay datos de evolución disponibles</p>
         </div>
     </div>
+    } @else {
+    <!-- Gráfico normal -->
+    <div class="chart-header">
+        <h3 class="chart-title">
+            <mat-icon class="chart-icon">trending_up</mat-icon>
+            <span>EVOLUCIÓN PORTAFOLIO</span>
+        </h3>
+    </div>
 
-    <!-- Botones de período -->
     <div class="period-buttons">
         <button mat-button [class.active]="selectedPeriod() === '3M'" (click)="setPeriod('3M')">3M</button>
         <button mat-button [class.active]="selectedPeriod() === '6M'" (click)="setPeriod('6M')">6M</button>
@@ -29,17 +36,9 @@
     </div>
 
     <div class="chart-container">
-        @if (hasData()) {
         <div class="chart-wrapper">
-            <canvas #chartCanvas></canvas>
+            <canvas #chartCanvas [attr.data-key]="canvasKey()"></canvas>
         </div>
-        } @else {
-        <!-- Sin datos -->
-        <div class="no-data">
-            <mat-icon>show_chart</mat-icon>
-            <p>No hay datos de evolución disponibles</p>
-        </div>
-        }
     </div>
     }
 </mat-card>

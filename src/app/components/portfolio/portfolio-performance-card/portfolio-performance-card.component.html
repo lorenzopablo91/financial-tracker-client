@@ -1,4 +1,10 @@
-<mat-card class="performance-card" [ngClass]="cardTypeClass()" [ngStyle]="dynamicStyles()">
+<mat-card 
+  class="performance-card" 
+  [ngClass]="cardTypeClass()" 
+  [ngStyle]="dynamicStyles()"
+  (click)="onCardClick()"
+  [class.clickable]="!isLoading()">
+  
   @if (isLoading()) {
   <!-- Skeleton -->
   <div class="skeleton-performance">

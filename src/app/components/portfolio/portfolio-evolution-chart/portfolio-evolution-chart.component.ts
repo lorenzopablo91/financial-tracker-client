@@ -25,6 +25,9 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
     readonly chartDataSignal = signal<PortfolioHistoryData[]>([]);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
+    readonly refreshTriggerSignal = signal(0);
+    readonly canvasKey = signal(0);
+
     private readonly chartInitialized = signal(false);
 
     @Input()
@@ -64,10 +67,8 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
 
     // Input para recibir señal de actualización desde el componente padre
     @Input()
-    set refreshTrigger(value: any) {
-        if (value) {
-            this.refreshChart();
-        }
+    set refreshTrigger(value: number) {
+        this.refreshTriggerSignal.set(value);
     }
 
     @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
@@ -149,6 +150,31 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
                 }
             }
         });
+
+        // Effect para refreshTrigger
+        effect(() => {
+            const trigger = this.refreshTriggerSignal();
+
+            if (trigger > 0 && !this.loading()) {
+                // Destruir el gráfico
+                this.destroyChart();
+
+                // Cambiar la key para forzar recreación del canvas
+                this.canvasKey.update(k => k + 1);
+
+                // Recrear el gráfico
+                if (this.chartCanvas?.nativeElement && this.hasData()) {
+
+                    this.createChart();
+
+                    requestAnimationFrame(() => {
+                        if (this.chart) {
+                            this.chart.resize();
+                        }
+                    });
+                }
+            }
+        });
     }
 
     ngAfterViewInit(): void {
@@ -183,7 +209,21 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
         // Destruir chart anterior si existe
         this.destroyChart();
 
-        const ctx = this.chartCanvas.nativeElement.getContext('2d');
+        const canvas = this.chartCanvas.nativeElement;
+        const container = canvas.parentElement;
+
+        // Asegurar que el contenedor tenga dimensiones
+        if (!container || container.clientHeight === 0 || container.clientWidth === 0) {
+            console.warn('Container has no dimensions yet, retrying...');
+            setTimeout(() => this.createChart(), 100);
+            return;
+        }
+
+        // Forzar las dimensiones del canvas al tamaño del contenedor
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+
+        const ctx = canvas.getContext('2d');
         if (!ctx) {
             console.error('Could not get 2D context from canvas');
             this.error.set('No se pudo obtener el contexto 2D del canvas');
@@ -269,7 +309,7 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
                         }
                     },
                     animation: {
-                        duration: 800,
+                        duration: 1000,
                         easing: 'easeInOutQuart'
                     }
                 }

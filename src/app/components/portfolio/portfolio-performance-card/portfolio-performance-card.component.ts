@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialImports } from '../../../shared/imports/material-imports';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
@@ -19,6 +19,9 @@ export class PortfolioPerformanceCardComponent {
     readonly isLoading = input.required<boolean>();
     readonly hideAmounts = input.required<boolean>();
     readonly data = input.required<PortfolioCategory>();
+
+    // Output para emitir cuando se hace clic en la card
+    readonly cardClicked = output<PortfolioCategory>();
 
     // Computed para la clase del tipo de card
     readonly cardTypeClass = computed(() => {
@@ -79,4 +82,12 @@ export class PortfolioPerformanceCardComponent {
             'background-color': lightenColor(categoryData.color, 80)
         };
     });
+
+    // Método para manejar el clic en la card
+    onCardClick(): void {
+        const categoryData = this.data();
+        if (categoryData && !this.isLoading()) {
+            this.cardClicked.emit(categoryData);
+        }
+    }
 }

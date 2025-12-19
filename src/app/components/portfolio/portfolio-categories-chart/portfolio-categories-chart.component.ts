@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effect, signal, computed } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ElementRef, AfterViewInit, effect, signal, computed, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -25,6 +25,8 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
   readonly hideAmountsSignal = signal(false);
   readonly totalAmountSignal = signal(0);
   private readonly chartInitialized = signal(false);
+
+  @Output() categoryClicked = new EventEmitter<PortfolioCategory>();
 
   @Input()
   set categories(value: PortfolioCategory[]) {
@@ -170,6 +172,15 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const category = this.categoriesSignal()[index];
+            if (category) {
+              this.categoryClicked.emit(category);
+            }
+          }
+        },
         plugins: {
           legend: {
             display: false
@@ -272,5 +283,10 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
   // Método público para actualizar datos sin recrear
   public updateChart(): void {
     this.updateExistingChart();
+  }
+
+  // Método para manejar el click en una categoría
+  onCategoryClick(category: PortfolioCategory): void {
+    this.categoryClicked.emit(category);
   }
 }

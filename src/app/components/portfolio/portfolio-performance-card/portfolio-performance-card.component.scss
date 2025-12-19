@@ -34,9 +34,18 @@
     justify-content: center;
     font-family: 'Roboto Mono';
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    &.clickable {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        &:active {
+            transform: translateY(-2px);
+        }
     }
 
     &.total-performance {
@@ -52,13 +61,9 @@
         }
     }
 
-    // Estilos para cards de inversiones (ahora sin colores hardcodeados)
-    // Los colores se aplicarán dinámicamente vía [ngStyle]
-    &.cedears-performance,
-    &.stocks-performance,
-    &.crypto-performance,
-    &.fund-performance {
-        font-weight: 550;
+    // Estilos para todas las cards que NO sean total
+    &:not(.total-performance) {
+        font-weight: 800;
         font-size: 1.4rem;
 
         .performance-percentage {

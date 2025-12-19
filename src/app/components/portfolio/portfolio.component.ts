@@ -53,6 +53,9 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     // Señales para controlar vista
     readonly showAssetsDetail = signal(false);
 
+    // Señal para el filtro de categoría
+    readonly selectedCategoryType = signal<string | null>(null);
+
     // Señales de datos
     readonly portfolioHistoryData = signal<PortfolioHistoryData[]>([]);
     readonly totalPortfolio = signal(0);
@@ -301,20 +304,6 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         this.showAssetsDetail.set(true);
     }
 
-    /**
-     * Vuelve al dashboard desde el detalle de activos
-     */
-    onBackToDashboard(): void {
-        this.showAssetsDetail.set(false);
-        this.refreshTrigger.update(current => current + 1);
-
-        // Recargar datos del portafolio para actualizar gráficos
-        const portfolioId = this.selectedPortfolioId();
-        if (portfolioId) {
-            this.loadPortfolioData(portfolioId);
-        }
-    }
-
     onViewTransactions(): void {
         this.toastService.info('Función en desarrollo');
     }
@@ -363,5 +352,27 @@ export class PortfolioComponent implements OnInit, OnDestroy {
                     });
             }
         });
+    }
+
+    /**
+     * Maneja la selección de categoría desde el gráfico
+     */
+    onCategorySelected(category: PortfolioCategory): void {
+        this.showAssetsDetail.set(true);
+        // Si es la categoría TOTAL, no aplicar filtro (mostrar todos los activos)
+        if (category.type === 'total') {
+            this.selectedCategoryType.set(null);
+            return;
+        }
+        this.selectedCategoryType.set(category.type);
+    }
+
+    /**
+     * Vuelve al dashboard desde el detalle de activos
+     */
+    onBackToDashboard(): void {
+        this.showAssetsDetail.set(false);
+        this.selectedCategoryType.set(null); // Limpiar filtro al volver
+        this.refreshTrigger.update(current => current + 1);
     }
 }

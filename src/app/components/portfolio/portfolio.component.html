@@ -103,7 +103,7 @@
   @if (showAssetsDetail()) {
   <!-- Vista de Detalle de Activos -->
   <app-portfolio-assets-detail [assets]="assets()" [hideAmounts]="hideAmounts()" [isLoading]="isLoadingPortfolios()"
-    (backClicked)="onBackToDashboard()">
+    [initialCategoryFilter]="selectedCategoryType()" (backClicked)="onBackToDashboard()">
   </app-portfolio-assets-detail>
   } @else {
   <!-- Dashboard con datos -->
@@ -131,7 +131,7 @@
       <div class="performance-carousel">
         @for (category of performanceCardsData(); track $index) {
         <app-portfolio-performance-card [data]="category" [hideAmounts]="hideAmounts()"
-          [isLoading]="isLoadingPortfolios()">
+          [isLoading]="isLoadingPortfolios()" (cardClicked)="onCategorySelected($event)">
         </app-portfolio-performance-card>
         }
       </div>
@@ -168,7 +168,7 @@
           <!-- Gráfico de categorías centrado -->
           <div class="categories-chart-section">
             <app-portfolio-categories-chart [categories]="categories()" [totalAmount]="totalPortfolio()"
-              [hideAmounts]="hideAmounts()">
+              [hideAmounts]="hideAmounts()" (categoryClicked)="onCategorySelected($event)">
             </app-portfolio-categories-chart>
           </div>
         </div>
