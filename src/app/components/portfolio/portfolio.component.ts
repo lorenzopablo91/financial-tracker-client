@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpContext } from '@angular/common/http';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { Subject, forkJoin } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
-import { Asset, PortfolioHistoryData } from '../../models/portfolio.interface';
+import { finalize, retry, takeUntil } from 'rxjs/operators';
+import { Asset, PortfolioHistoryData, Transaction } from '../../models/portfolio.interface';
 import { PortfolioCategoriesChartComponent } from './portfolio-categories-chart/portfolio-categories-chart.component';
 import { PortfolioEvolutionChartComponent } from './portfolio-evolution-chart/portfolio-evolution-chart.component';
 import { PortfolioPerformanceCardComponent } from './portfolio-performance-card/portfolio-performance-card.component';
@@ -20,6 +20,7 @@ import { AuthService } from '../../shared/services/auth.service';
 import { LoaderService } from '../../shared/services/loader.service';
 import { LOADER_MESSAGE } from '../../shared/interceptors/loader-context.interceptor';
 import { PortfolioAssetsDetailComponent } from './portfolio-assets-detail/portfolio-assets-detail.component';
+import { PortfolioTransactionsComponent } from './portfolio-transactions/portfolio-transactions.component';
 
 @Component({
     selector: 'app-portfolio',
@@ -32,6 +33,7 @@ import { PortfolioAssetsDetailComponent } from './portfolio-assets-detail/portfo
         PortfolioEvolutionChartComponent,
         PortfolioPerformanceCardComponent,
         PortfolioAssetsDetailComponent,
+        PortfolioTransactionsComponent,
         CurrencyFormatPipe
     ],
     templateUrl: './portfolio.component.html',
@@ -44,6 +46,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     readonly portfolios = signal<Portfolio[]>([]);
     readonly selectedPortfolioId = signal<string | null>(null);
     readonly isLoadingPortfolios = signal<boolean>(false);
+    readonly isLoadingTransactions = signal<boolean>(false);
 
     // Señales de estado
     readonly lastUpdated = signal<Date | null>(null);
@@ -52,6 +55,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
     // Señales para controlar vista
     readonly showAssetsDetail = signal(false);
+    readonly showTransactions = signal(false);
 
     // Señal para el filtro de categoría
     readonly selectedCategoryType = signal<string | null>(null);
@@ -61,6 +65,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     readonly totalPortfolio = signal(0);
     readonly categories = signal<PortfolioCategory[]>([]);
     readonly assets = signal<Asset[]>([]);
+    readonly transactions = signal<Transaction[]>([]);
 
     // Computed para descripción del portafolio
     readonly portfolioDescription = computed(() => {
@@ -125,6 +130,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
         this.portfolioService.getPortfolios()
             .pipe(
+                retry(1),
                 takeUntil(this.destroy$),
                 finalize(() => this.isLoadingPortfolios.set(false))
             )
@@ -156,6 +162,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             valuation: this.portfolioService.getPortfolioValuation(portfolioId, { context }),
             snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId, 30, { context })
         }).pipe(
+            retry(1),
             takeUntil(this.destroy$),
             finalize(() => {
                 clearTimeout(timer);
@@ -196,7 +203,9 @@ export class PortfolioComponent implements OnInit, OnDestroy {
      */
     onPortfolioChange(portfolioId: string): void {
         this.selectedPortfolioId.set(portfolioId);
-        this.showAssetsDetail.set(false); // Resetear vista al cambiar portafolio
+        // Resetear vista al cambiar portafolio
+        this.showAssetsDetail.set(false);
+        this.showTransactions.set(false);
         this.loadPortfolioData(portfolioId);
     }
 
@@ -301,11 +310,37 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             this.toastService.warning('Debes seleccionar un portafolio primero');
             return;
         }
+        this.showTransactions.set(false);
         this.showAssetsDetail.set(true);
     }
 
+    /**
+     * Muestra las operaciones del portafolio seleccionado
+     */
     onViewTransactions(): void {
-        this.toastService.info('Función en desarrollo');
+        const portfolioId = this.selectedPortfolioId();
+        if (!portfolioId) {
+            this.toastService.warning('Debes seleccionar un portafolio primero');
+            return;
+        }
+
+        const context = new HttpContext().set(LOADER_MESSAGE, '📑 Cargando operaciones del portafolio..');
+        this.showTransactions.set(true);
+        this.isLoadingTransactions.set(true);
+
+        this.portfolioService.getTransactions(portfolioId, { context })
+            .pipe(
+                retry(1),
+                takeUntil(this.destroy$),
+                finalize(() => {
+                    this.isLoadingTransactions.set(false);
+                })
+            )
+            .subscribe({
+                next: (response) => {
+                    this.transactions.set(response.data);
+                }
+            });
     }
 
     /**
@@ -346,6 +381,8 @@ export class PortfolioComponent implements OnInit, OnDestroy {
                             // Limpiar portafolio seleccionado
                             this.selectedPortfolioId.set(null);
                             this.showAssetsDetail.set(false);
+                            this.showTransactions.set(false);
+
                             // Recargar lista de portafolios (sin loader)
                             this.getPortfolios();
                         }
@@ -368,10 +405,12 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Vuelve al dashboard desde el detalle de activos
+     * Vuelve al portafolio desde el detalle de activos
      */
-    onBackToDashboard(): void {
+    onBackToPortfolio(): void {
         this.showAssetsDetail.set(false);
+        this.showTransactions.set(false);
+        this.isLoadingTransactions.set(false);
         this.selectedCategoryType.set(null); // Limpiar filtro al volver
         this.refreshTrigger.update(current => current + 1);
     }

@@ -1,7 +1,7 @@
 <div class="assets-detail-container">
     <!-- Header con botón de regreso -->
     <div class="detail-header">
-        <button mat-icon-button (click)="onBack()" class="back-button" matTooltip="Volver al dashboard">
+        <button mat-icon-button (click)="onBack()" class="back-button" matTooltip="Volver al portafolio">
             <mat-icon>arrow_back</mat-icon>
         </button>
         <div class="header-title">
@@ -147,7 +147,9 @@
                             </button>
                         </th>
                         <td mat-cell *matCellDef="let asset">
-                            {{ formatQuantity(asset.cantidad, asset.tipo) }}
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : formatQuantity(asset.cantidad, asset.tipo) }}
+                            </span>
                         </td>
                     </ng-container>
 

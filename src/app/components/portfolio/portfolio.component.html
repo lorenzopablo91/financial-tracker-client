@@ -1,6 +1,6 @@
-<div class="dashboard-container">
+<div class="portfolio-container">
   <!-- Header superior -->
-  <div class="dashboard-header">
+  <div class="portfolio-header">
     <!-- Selector de Portafolios (Izquierda) -->
     <div class="portfolio-selector">
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -29,8 +29,8 @@
       </mat-form-field>
     </div>
 
-    <!-- Controles del Dashboard (Derecha) -->
-    <div class="dashboard-controls">
+    <!-- Controles del Portfolio (Derecha) -->
+    <div class="portfolio-controls">
       <div class="refresh-section">
         @if (lastUpdated()) {
         <span class="text-muted">
@@ -38,7 +38,7 @@
         </span>
         }
         <button mat-icon-button (click)="refreshData()" matTooltip="Actualizar datos"
-          [disabled]="isLoadingPortfolios() || !hasSelectedPortfolio()">
+          [disabled]="isLoadingPortfolios() || !hasSelectedPortfolio() || showTransactions()">
           <mat-icon [class.spinning]="isLoadingPortfolios()">refresh</mat-icon>
         </button>
       </div>
@@ -49,11 +49,11 @@
       </button>
 
       <!-- Menú Hamburguesa -->
-      <button mat-icon-button [matMenuTriggerFor]="dashboardMenu" matTooltip="Más opciones" class="menu-btn"
+      <button mat-icon-button [matMenuTriggerFor]="portfolioMenu" matTooltip="Más opciones" class="menu-btn"
         [disabled]="isLoadingPortfolios()">
         <mat-icon>menu</mat-icon>
       </button>
-      <mat-menu #dashboardMenu="matMenu">
+      <mat-menu #portfolioMenu="matMenu">
         <button mat-menu-item (click)="onNewPortfolio()" [disabled]="!isAdmin()">
           <mat-icon>add</mat-icon>
           <span>Crear portafolio</span>
@@ -61,16 +61,17 @@
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="onViewAssetsDetail()" [disabled]="!hasSelectedPortfolio()">
           <mat-icon>list_alt</mat-icon>
-          <span>Ver detalle de activos</span>
+          <span>Detalle de activos</span>
+        </button>
+        <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
+          <mat-icon>receipt_long</mat-icon>
+          <span>Detalle de operaciones</span>
         </button>
         <button mat-menu-item (click)="onCreateSnapshot()" [disabled]="!hasSelectedPortfolio() || !isAdmin()">
           <mat-icon>save</mat-icon>
-          <span>Guardar valuación actual</span>
+          <span>Guardar valuación</span>
         </button>
-        <button mat-menu-item (click)="onViewTransactions()" [disabled]="!hasSelectedPortfolio()">
-          <mat-icon>sync_alt</mat-icon>
-          <span>Gestionar operaciones</span>
-        </button>
+        <mat-divider></mat-divider>
         <button mat-menu-item (click)="onDeletePortfolio()" [disabled]="!hasSelectedPortfolio() || !isAdmin()">
           <mat-icon>delete</mat-icon>
           <span>Eliminar portafolio</span>
@@ -90,7 +91,7 @@
     }
   </div>
 
-  <!-- Contenido del Dashboard -->
+  <!-- Contenido del Portfolio -->
   @if (!hasSelectedPortfolio()) {
   <!-- Mensaje cuando no hay portafolio seleccionado -->
   <div class="no-portfolio-message">
@@ -100,14 +101,19 @@
   </div>
   } @else {
 
-  @if (showAssetsDetail()) {
+  @if (showTransactions()) {
+  <!-- Vista de Transacciones -->
+  <app-portfolio-transactions [transactions]="transactions()" [hideAmounts]="hideAmounts()"
+    [isLoading]="isLoadingTransactions()" (backClicked)="onBackToPortfolio()">
+  </app-portfolio-transactions>
+  } @else if (showAssetsDetail()) {
   <!-- Vista de Detalle de Activos -->
   <app-portfolio-assets-detail [assets]="assets()" [hideAmounts]="hideAmounts()" [isLoading]="isLoadingPortfolios()"
-    [initialCategoryFilter]="selectedCategoryType()" (backClicked)="onBackToDashboard()">
+    [initialCategoryFilter]="selectedCategoryType()" (backClicked)="onBackToPortfolio()">
   </app-portfolio-assets-detail>
   } @else {
-  <!-- Dashboard con datos -->
-  <div class="dashboard-layout">
+  <!-- Portfolio con datos -->
+  <div class="portfolio-layout">
 
     <!-- Carrusel de Cards de Rendimiento (solo si hay inversiones) -->
     @if (!hasCashOnly()) {

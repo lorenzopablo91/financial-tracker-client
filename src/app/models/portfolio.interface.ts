@@ -69,3 +69,33 @@ export interface AssetStats {
     totalGain: number;
     totalGainPerc: number;
 }
+
+export interface Transaction {
+    id: string;
+    portafolioId: string;
+    tipo: 'COMPRA' | 'VENTA' | 'APORTE' | 'RETIRO';
+    fecha: string;
+    createdAt: string;
+
+    // Para COMPRA/VENTA
+    activoColor?: string;
+    activoIcono?: string;
+    activoId?: string;
+    activoNombre?: string;
+    activoPrefijo?: string;
+    activoTipo?: string;
+    cantidad?: string;
+    precioUSD?: string;
+    precioARS?: string;
+    tipoCambio?: string;
+
+    // Monto de la operación
+    montoUSD: string;
+
+    // Para VENTA
+    gananciaRealizada?: string | null;
+    costoBaseVendido?: string | null;
+
+    // Opcional
+    notas?: string;
+}

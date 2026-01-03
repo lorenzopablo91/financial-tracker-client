@@ -33,14 +33,14 @@
 }
 
 // ============ CONTENEDOR PRINCIPAL ============
-.dashboard-container {
+.portfolio-container {
   @media (min-width: 768px) {
     padding: 0 24px;
   }
 }
 
-// ============ HEADER DEL DASHBOARD ============
-.dashboard-header {
+// ============ HEADER DEL PORTFOLIO ============
+.portfolio-header {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -92,8 +92,8 @@
     }
   }
 
-  // --- Controles del Dashboard ---
-  .dashboard-controls {
+  // --- Controles del Portfolio ---
+  .portfolio-controls {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -294,7 +294,7 @@
 }
 
 // ============ LAYOUT PRINCIPAL ============
-.dashboard-layout {
+.portfolio-layout {
   display: flex;
   flex-direction: column;
   gap: 24px;

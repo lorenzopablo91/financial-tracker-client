@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { retry } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -17,9 +16,7 @@ export class PortfolioService {
      * @param options Opciones HTTP adicionales (incluye context para loader)
      */
     getPortfolios(options?: any): Observable<any> {
-        return this.http.get<any>(this.baseURL, options).pipe(
-            retry(1)
-        );
+        return this.http.get<any>(this.baseURL, options);
     }
 
     /**
@@ -28,9 +25,7 @@ export class PortfolioService {
      * @param options Opciones HTTP adicionales (incluye context para loader)
      */
     getPortfolioValuation(portfolioId: string, options?: any): Observable<any> {
-        return this.http.get<any>(`${this.baseURL}/${portfolioId}/valorizar`, options).pipe(
-            retry(1)
-        );
+        return this.http.get<any>(`${this.baseURL}/${portfolioId}/valorizar`, options);
     }
 
     /**
@@ -43,9 +38,7 @@ export class PortfolioService {
         return this.http.get<any>(
             `${this.baseURL}/${portfolioId}/snapshots?limit=${limit}`,
             options
-        ).pipe(
-            retry(1)
-        );
+        )
     }
 
     /**
@@ -81,8 +74,6 @@ export class PortfolioService {
      * @param options Opciones HTTP adicionales (incluye context para loader)
      */
     getTransactions(portfolioId: string, options?: any): Observable<any> {
-        return this.http.get<any>(`${this.baseURL}/${portfolioId}/transactions`, options).pipe(
-            retry(1)
-        );
+        return this.http.get<any>(`${this.baseURL}/${portfolioId}/operaciones`, options);
     }
 }

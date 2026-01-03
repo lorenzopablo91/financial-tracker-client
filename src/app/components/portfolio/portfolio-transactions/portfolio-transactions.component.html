@@ -1,0 +1,288 @@
+<div class="transactions-container">
+    <!-- Header con botón de regreso -->
+    <div class="detail-header">
+        <button mat-icon-button (click)="onBack()" class="back-button" matTooltip="Volver al portafolio">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-title">
+            <h2>Detalle de operaciones</h2>
+            <span class="transactions-count">
+                ({{ stats().transactionsCount }})
+                @if (selectedFilter() !== 'all' && selectedFilter() !== 'APORTE') {
+                <span class="filter-badge" [style.background-color]="getOperationColor(selectedFilter()) + '20'"
+                    [style.color]="getOperationColor(selectedFilter())">
+                    {{ selectedFilter() }}
+                </span>
+                }
+            </span>
+        </div>
+        <div class="header-actions">
+            @if (isAdmin()) {
+            <button mat-icon-button [matMenuTriggerFor]="filterMenu" matTooltip="Filtrar por operación">
+                <mat-icon>filter_list</mat-icon>
+            </button>
+            <mat-menu #filterMenu="matMenu">
+                @for (type of transactionTypes(); track type) {
+                <button mat-menu-item (click)="onFilterChange(type)" [class.active]="selectedFilter() === type">
+                    <mat-icon [style.color]="getOperationColor(type)">{{ getOperationIcon(type) }}</mat-icon>
+                    <span>{{ type }}</span>
+                </button>
+                }
+            </mat-menu>
+            }
+        </div>
+    </div>
+
+    <!-- Tabla de transacciones -->
+    <div class="transactions-table-container">
+        <mat-card class="table-card">
+            @if (isLoading()) {
+            <!-- Estado de carga -->
+            <div class="loading-state">
+                <div class="skeleton-table">
+                    <!-- Skeleton Header -->
+                    <div class="skeleton-header">
+                        <div class="skeleton-cell skeleton-date"></div>
+                        <div class="skeleton-cell skeleton-operation"></div>
+                        <div class="skeleton-cell skeleton-asset-type"></div>
+                        <div class="skeleton-cell skeleton-asset"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+
+                    <!-- Skeleton Rows -->
+                    <div class="skeleton-row" *ngFor="let item of [1,2,3,4,5]">
+                        <div class="skeleton-cell skeleton-date">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell skeleton-operation">
+                            <div class="skeleton-badge-lg"></div>
+                        </div>
+                        <div class="skeleton-cell skeleton-asset-type">
+                            <div class="skeleton-badge"></div>
+                        </div>
+                        <div class="skeleton-cell skeleton-asset">
+                            <div class="skeleton-asset-content">
+                                <div class="skeleton-text skeleton-text-lg"></div>
+                                <div class="skeleton-text skeleton-text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-gain-content">
+                                <div class="skeleton-text skeleton-text-md"></div>
+                                <div class="skeleton-text skeleton-text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-cell">
+                            <div class="skeleton-text skeleton-text-md"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            } @else if (filteredTransactions().length === 0) {
+            <!-- Estado vacío -->
+            <div class="empty-state">
+                <mat-icon>receipt_long</mat-icon>
+                <h3>No hay operaciones</h3>
+                <p>No se encontraron operaciones con el filtro seleccionado</p>
+            </div>
+            } @else {
+            <!-- Tabla con datos -->
+            <div class="table-wrapper">
+                <table mat-table [dataSource]="filteredTransactions()" class="transactions-table">
+
+                    <!-- Columna: Fecha -->
+                    <ng-container matColumnDef="fecha">
+                        <th mat-header-cell *matHeaderCellDef class="col-date">
+                            <button mat-button class="sort-button" (click)="onSort('fecha')">
+                                FECHA
+                                <mat-icon class="sort-icon">{{ getSortIcon('fecha') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction" class="col-date">
+                            {{ formatDate(transaction.fecha) }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Operación -->
+                    <ng-container matColumnDef="operacion">
+                        <th mat-header-cell *matHeaderCellDef class="col-operation">
+                            <button mat-button class="sort-button" (click)="onSort('operacion')">
+                                OPERACIÓN
+                                <mat-icon class="sort-icon">{{ getSortIcon('operacion') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction" class="col-operation">
+                            <div class="operation-badge"
+                                [style.background-color]="getOperationColor(transaction.tipo) + '20'">
+                                <mat-icon [style.color]="getOperationColor(transaction.tipo)">
+                                    {{ getOperationIcon(transaction.tipo) }}
+                                </mat-icon>
+                                <span [style.color]="getOperationColor(transaction.tipo)">{{ transaction.tipo }}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Tipo de Activo -->
+                    <ng-container matColumnDef="activoTipo">
+                        <th mat-header-cell *matHeaderCellDef class="col-asset-type">
+                            <button mat-button class="sort-button" (click)="onSort('tipo')">
+                                TIPO
+                                <mat-icon class="sort-icon">{{ getSortIcon('tipo') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction" class="col-asset-type">
+                            @if (transaction.activoTipo) {
+                            <div class="type-badge"
+                                [style.background-color]="getAssetTypeColor(transaction.activoTipo) + '20'">
+                                <mat-icon [style.color]="getAssetTypeColor(transaction.activoTipo)">
+                                    {{ getAssetTypeIcon(transaction.activoTipo) }}
+                                </mat-icon>
+                            </div>
+                            } @else {
+                            <span class="cash-badge">💵</span>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Activo -->
+                    <ng-container matColumnDef="activo">
+                        <th mat-header-cell *matHeaderCellDef class="col-asset">
+                            <button mat-button class="sort-button" (click)="onSort('activo')">
+                                ACTIVO
+                                <mat-icon class="sort-icon">{{ getSortIcon('activo') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction" class="col-asset">
+                            @if (transaction.activoPrefijo) {
+                            <div class="asset-info">
+                                <span class="asset-symbol">{{ transaction.activoPrefijo }}</span>
+                                <span class="asset-name">{{ transaction.activoNombre }}</span>
+                            </div>
+                            } @else {
+                            <span class="asset-cash">Efectivo</span>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Cantidad -->
+                    <ng-container matColumnDef="cantidad">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('cantidad')">
+                                CANTIDAD
+                                <mat-icon class="sort-icon">{{ getSortIcon('cantidad') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction">
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : formatQuantity(transaction.cantidad) }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Precio Unitario -->
+                    <ng-container matColumnDef="precioUnitario">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('precioUSD')">
+                                PRECIO UNITARIO
+                                <mat-icon class="sort-icon">{{ getSortIcon('precioUSD') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction">
+                            @if (transaction.tipo === 'COMPRA' || transaction.tipo === 'VENTA') {
+                            <span [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : (transaction.precioUSD | currencyFormat:'USD') }}
+                            </span>
+                            } @else {
+                            <span class="not-applicable">-</span>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Monto Total -->
+                    <ng-container matColumnDef="montoUSD">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('montoUSD')">
+                                MONTO TOTAL
+                                <mat-icon class="sort-icon">{{ getSortIcon('montoUSD') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction">
+                            <span class="monto-total" [class.aporte]="transaction.tipo === 'APORTE'"
+                                [class.retiro]="transaction.tipo === 'RETIRO'" [class.hidden-amount]="hideAmounts()">
+                                {{ hideAmounts() ? '••••' : (transaction.montoUSD | currencyFormat:'USD') }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Ganancia/Pérdida -->
+                    <ng-container matColumnDef="ganancia">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <button mat-button class="sort-button" (click)="onSort('gananciaRealizada')">
+                                GANANCIA/PÉRDIDA
+                                <mat-icon class="sort-icon">{{ getSortIcon('gananciaRealizada') }}</mat-icon>
+                            </button>
+                        </th>
+                        <td mat-cell *matCellDef="let transaction">
+                            @if (transaction.tipo === 'VENTA' && transaction.gananciaRealizada) {
+                            <div class="gain-info" [class.hidden-amount]="hideAmounts()">
+                                <span class="gain-amount"
+                                    [class.positive]="isGananciaPositive(transaction.gananciaRealizada)"
+                                    [class.negative]="isGananciaNegative(transaction.gananciaRealizada)">
+                                    {{ hideAmounts() ? '••••' : (transaction.gananciaRealizada | currencyFormat:'USD')
+                                    }}
+                                </span>
+                                @if (!hideAmounts()) {
+                                <span class="gain-percent" [class.positive]="getGananciaPorc(transaction) > 0"
+                                    [class.negative]="getGananciaPorc(transaction) < 0">
+                                    ({{ getGananciaPorc(transaction) > 0 ? '+' : '' }}{{
+                                    getGananciaPorc(transaction).toFixed(2) }}%)
+                                </span>
+                                }
+                            </div>
+                            } @else {
+                            <span class="not-applicable">-</span>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna: Notas -->
+                    <ng-container matColumnDef="notas">
+                        <th mat-header-cell *matHeaderCellDef class="col-notes">
+                            NOTAS
+                        </th>
+                        <td mat-cell *matCellDef="let transaction" class="col-notes">
+                            @if (transaction.notas) {
+                            <span class="notes-text" [matTooltip]="transaction.notas">
+                                {{ transaction.notas }}
+                            </span>
+                            } @else {
+                            <span class="not-applicable">-</span>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row
+                        *matHeaderRowDef="['fecha', 'operacion', 'activoTipo', 'activo', 'cantidad', 'precioUnitario', 'montoUSD', 'ganancia', 'notas']">
+                    </tr>
+                    <tr mat-row
+                        *matRowDef="let row; columns: ['fecha', 'operacion', 'activoTipo', 'activo', 'cantidad', 'precioUnitario', 'montoUSD', 'ganancia', 'notas']">
+                    </tr>
+                </table>
+            </div>
+            }
+        </mat-card>
+    </div>
+</div>

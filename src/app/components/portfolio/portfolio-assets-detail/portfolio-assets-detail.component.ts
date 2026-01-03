@@ -178,7 +178,7 @@ export class PortfolioAssetsDetailComponent {
         });
     }
 
-    // Volver al dashboard
+    // Volver al portafolio
     onBack() {
         this.backClicked.emit();
     }
