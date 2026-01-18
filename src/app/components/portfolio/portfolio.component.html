@@ -103,13 +103,22 @@
 
   @if (showTransactions()) {
   <!-- Vista de Transacciones -->
-  <app-portfolio-transactions [transactions]="transactions()" [hideAmounts]="hideAmounts()"
-    [isLoading]="isLoadingTransactions()" (backClicked)="onBackToPortfolio()">
+  <app-portfolio-transactions 
+    [transactions]="transactions()" 
+    [hideAmounts]="hideAmounts()"
+    [isLoading]="isLoadingTransactions()" 
+    [portfolioId]="selectedPortfolioId()!"
+    (backClicked)="onBackToPortfolio()"
+    (transactionCompleted)="onTransactionCompleted()">
   </app-portfolio-transactions>
   } @else if (showAssetsDetail()) {
   <!-- Vista de Detalle de Activos -->
-  <app-portfolio-assets-detail [assets]="assets()" [hideAmounts]="hideAmounts()" [isLoading]="isLoadingPortfolios()"
-    [initialCategoryFilter]="selectedCategoryType()" (backClicked)="onBackToPortfolio()">
+  <app-portfolio-assets-detail 
+    [assets]="assets()" 
+    [hideAmounts]="hideAmounts()" 
+    [isLoading]="isLoadingPortfolios()"
+    [initialCategoryFilter]="selectedCategoryType()" 
+    (backClicked)="onBackToPortfolio()">
   </app-portfolio-assets-detail>
   } @else {
   <!-- Portfolio con datos -->
@@ -136,8 +145,11 @@
       <!-- Cards reales -->
       <div class="performance-carousel">
         @for (category of performanceCardsData(); track $index) {
-        <app-portfolio-performance-card [data]="category" [hideAmounts]="hideAmounts()"
-          [isLoading]="isLoadingPortfolios()" (cardClicked)="onCategorySelected($event)">
+        <app-portfolio-performance-card 
+          [data]="category" 
+          [hideAmounts]="hideAmounts()"
+          [isLoading]="isLoadingPortfolios()" 
+          (cardClicked)="onCategorySelected($event)">
         </app-portfolio-performance-card>
         }
       </div>
@@ -173,8 +185,11 @@
 
           <!-- Gráfico de categorías centrado -->
           <div class="categories-chart-section">
-            <app-portfolio-categories-chart [categories]="categories()" [totalAmount]="totalPortfolio()"
-              [hideAmounts]="hideAmounts()" (categoryClicked)="onCategorySelected($event)">
+            <app-portfolio-categories-chart 
+              [categories]="categories()" 
+              [totalAmount]="totalPortfolio()"
+              [hideAmounts]="hideAmounts()" 
+              (categoryClicked)="onCategorySelected($event)">
             </app-portfolio-categories-chart>
           </div>
         </div>
@@ -182,8 +197,12 @@
       </mat-card>
 
       <!-- Gráfico de Evolución (Derecha) -->
-      <app-portfolio-evolution-chart [chartData]="portfolioHistoryData()" [hideAmounts]="hideAmounts()"
-        [isLoading]="isLoadingPortfolios()" [refreshTrigger]="refreshTrigger()" class="evolution-chart">
+      <app-portfolio-evolution-chart 
+        [chartData]="portfolioHistoryData()" 
+        [hideAmounts]="hideAmounts()"
+        [isLoading]="isLoadingPortfolios()" 
+        [refreshTrigger]="refreshTrigger()" 
+        class="evolution-chart">
       </app-portfolio-evolution-chart>
     </div>
   </div>

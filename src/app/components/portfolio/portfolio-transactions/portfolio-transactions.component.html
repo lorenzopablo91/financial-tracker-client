@@ -18,6 +18,7 @@
         </div>
         <div class="header-actions">
             @if (isAdmin()) {
+            <!-- Botón de Filtro -->
             <button mat-icon-button [matMenuTriggerFor]="filterMenu" matTooltip="Filtrar por operación">
                 <mat-icon>filter_list</mat-icon>
             </button>
@@ -28,6 +29,30 @@
                     <span>{{ type }}</span>
                 </button>
                 }
+            </mat-menu>
+
+            <!-- Botón de Registrar Operación -->
+            <button mat-icon-button [matMenuTriggerFor]="actionsMenu" matTooltip="Registrar operación">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionsMenu="matMenu">
+                <button mat-menu-item (click)="onRegisterOperation('APORTE')">
+                    <mat-icon [style.color]="getOperationColor('APORTE')">{{ getOperationIcon('APORTE') }}</mat-icon>
+                    <span>Ingresar Dinero</span>
+                </button>
+                <button mat-menu-item (click)="onRegisterOperation('RETIRO')">
+                    <mat-icon [style.color]="getOperationColor('RETIRO')">{{ getOperationIcon('RETIRO') }}</mat-icon>
+                    <span>Retirar Dinero</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="onRegisterOperation('COMPRA')">
+                    <mat-icon [style.color]="getOperationColor('COMPRA')">{{ getOperationIcon('COMPRA') }}</mat-icon>
+                    <span>Comprar Activo</span>
+                </button>
+                <button mat-menu-item (click)="onRegisterOperation('VENTA')">
+                    <mat-icon [style.color]="getOperationColor('VENTA')">{{ getOperationIcon('VENTA') }}</mat-icon>
+                    <span>Vender Activo</span>
+                </button>
             </mat-menu>
             }
         </div>

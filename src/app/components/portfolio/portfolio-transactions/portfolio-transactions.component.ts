@@ -1,10 +1,18 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { HttpContext } from '@angular/common/http';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { MaterialImports } from '../../../shared/imports/material-imports';
-import { Transaction } from '../../../models/portfolio.interface';
+import { PortfolioAsset, Transaction, TransactionFormResult, TransactionModalData } from '../../../models/portfolio.interface';
 import { AuthService } from '../../../shared/services/auth.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import { OPERATION_COLORS, OPERATION_ICONS, OPERATIONS_TYPES } from '../../../data/portfolio.data';
+import { PortfolioTransactionsModalComponent } from './portfolio-transactions-modal/portfolio-transactions-modal.component';
+import { PortfolioService } from '../../../services/portfolio.service';
+import { LOADER_MESSAGE } from '../../../shared/interceptors/loader-context.interceptor';
 
 @Component({
     selector: 'app-portfolio-transactions',
@@ -19,14 +27,21 @@ import { OPERATION_COLORS, OPERATION_ICONS, OPERATIONS_TYPES } from '../../../da
 })
 export class PortfolioTransactionsComponent {
     private authService = inject(AuthService);
+    private portfolioService = inject(PortfolioService);
+    private toastService = inject(ToastService);
+    private dialog = inject(MatDialog);
+    private destroy$ = new Subject<void>();
 
     // Inputs
     transactions = input.required<Transaction[]>();
     hideAmounts = input.required<boolean>();
     isLoading = input.required<boolean>();
+    // portfolioAssets = input<PortfolioAsset[]>([]);
+    portfolioId = input.required<string>(); // ID del portafolio actual
 
     // Outputs
     backClicked = output<void>();
+    transactionCompleted = output<void>(); // Emitir cuando se complete una transacción para recargar datos
 
     // Signals internos
     selectedFilter = signal<string>('APORTE');
@@ -45,7 +60,7 @@ export class PortfolioTransactionsComponent {
     assetTypes = computed(() => {
         const types = new Set(
             this.transactions()
-                .filter(t => t.activoTipo) // Usar campo desnormalizado
+                .filter(t => t.activoTipo)
                 .map(t => t.activoTipo!)
         );
         return Array.from(types).sort();
@@ -88,7 +103,7 @@ export class PortfolioTransactionsComponent {
                         : (valueA > valueB ? -1 : valueA < valueB ? 1 : 0);
                 }
 
-                // Para activo (prefijo) - usar campo desnormalizado
+                // Para activo (prefijo)
                 if (column === 'activo') {
                     const valueA = (a.activoPrefijo || '').toLowerCase();
                     const valueB = (b.activoPrefijo || '').toLowerCase();
@@ -138,6 +153,11 @@ export class PortfolioTransactionsComponent {
         };
     });
 
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     // Cambiar filtro
     onFilterChange(type: string) {
         this.selectedFilter.set(type);
@@ -182,14 +202,14 @@ export class PortfolioTransactionsComponent {
         return OPERATION_ICONS[tipo] ?? 'help_outline';
     }
 
-    // Obtener color del tipo de activo - ACTUALIZADO
+    // Obtener color del tipo de activo
     getAssetTypeColor(tipo: string | null | undefined): string {
         if (!tipo) return '#999999';
         const config = OPERATIONS_TYPES[tipo as keyof typeof OPERATIONS_TYPES];
         return config?.color || '#999999';
     }
 
-    // Obtener ícono del tipo de activo - ACTUALIZADO
+    // Obtener ícono del tipo de activo
     getAssetTypeIcon(tipo: string | null | undefined): string {
         if (!tipo) return 'help_outline';
         const config = OPERATIONS_TYPES[tipo as keyof typeof OPERATIONS_TYPES];
@@ -253,5 +273,111 @@ export class PortfolioTransactionsComponent {
     // Volver al portafolio
     onBack() {
         this.backClicked.emit();
+    }
+
+    // Registrar operación - Abrir modal
+    onRegisterOperation(tipo: string) {
+        const dialogData: TransactionModalData = {
+            operationType: tipo as 'APORTE' | 'RETIRO' | 'COMPRA' | 'VENTA',
+            // portfolioAssets: tipo === 'VENTA' ? this.portfolioAssets() : undefined
+        };
+
+        const dialogRef = this.dialog.open(PortfolioTransactionsModalComponent, {
+            width: '600px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            disableClose: true,
+            data: dialogData
+        });
+
+        dialogRef.afterClosed().subscribe((result: TransactionFormResult | null) => {
+            if (result) {
+                this.processTransaction(result);
+            }
+        });
+    }
+
+    /**
+     * Procesa la transacción según el tipo de operación
+     */
+    private processTransaction(result: TransactionFormResult): void {
+        const portafolioId = this.portfolioId();
+
+        switch (result.operationType) {
+            case 'APORTE':
+                this.registrarAporte(portafolioId, result);
+                break;
+            case 'RETIRO':
+                this.registrarRetiro(portafolioId, result);
+                break;
+        }
+    }
+
+    /**
+     * Registrar un aporte al portafolio
+     */
+    private registrarAporte(portafolioId: string, data: TransactionFormResult): void {
+        this.portfolioService.registrarAporte(
+            portafolioId,
+            {
+                montoUSD: parseFloat(data.montoUSD!),
+                notas: data.notas
+            },
+            {
+                context: new HttpContext().set(LOADER_MESSAGE, '💰 Registrando aporte...')
+            }
+        )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.toastService.success(
+                            response.mensaje || 'Aporte registrado exitosamente'
+                        );
+
+                        // Emitir evento para recargar datos en el componente padre
+                        this.transactionCompleted.emit();
+                    }
+                },
+                error: (error) => {
+                    this.toastService.error(
+                        error.error?.message || 'Error al registrar el aporte'
+                    );
+                }
+            });
+    }
+
+    /**
+     * Registrar un retiro del portafolio
+     */
+    private registrarRetiro(portafolioId: string, data: TransactionFormResult): void {
+        this.portfolioService.registrarRetiro(
+            portafolioId,
+            {
+                montoUSD: parseFloat(data.montoUSD!),
+                notas: data.notas
+            },
+            {
+                context: new HttpContext().set(LOADER_MESSAGE, '💰 Registrando retiro...')
+            }
+        )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.toastService.success(
+                            response.mensaje || 'Retiro registrado exitosamente'
+                        );
+
+                        // Emitir evento para recargar datos en el componente padre
+                        this.transactionCompleted.emit();
+                    }
+                },
+                error: (error) => {
+                    this.toastService.error(
+                        error.error?.message || 'Error al registrar el retiro'
+                    );
+                }
+            });
     }
 }

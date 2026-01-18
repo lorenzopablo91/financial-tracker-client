@@ -99,3 +99,42 @@ export interface Transaction {
     // Opcional
     notas?: string;
 }
+
+// Agregar estas interfaces a tu archivo portfolio.interface.ts
+
+export interface TransactionModalData {
+    operationType: 'APORTE' | 'RETIRO' | 'COMPRA' | 'VENTA';
+    portfolioAssets?: PortfolioAsset[]; // Para VENTA
+}
+
+export interface PortfolioAsset {
+    id: string;
+    prefijo: string;
+    nombre: string;
+    tipo: string;
+    cantidad: string;
+    costoPromedio: string;
+}
+
+export interface TransactionFormResult {
+    operationType: string;
+    montoUSD?: string;
+    activoId?: string;
+    activoPrefijo?: string;
+    activoNombre?: string;
+    activoTipo?: string;
+    cantidad?: string;
+    precioUSD?: string;
+    precioARS?: string;
+    tipoCambio?: string;
+    notas?: string;
+}
+
+export interface PortfolioAsset {
+    id: string;
+    prefijo: string;
+    nombre: string;
+    tipo: string;
+    cantidad: string;
+    costoPromedio: string;
+}

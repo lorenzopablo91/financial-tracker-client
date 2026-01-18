@@ -1,0 +1,120 @@
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--accent-500);
+    background: var(--accent-500);
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        mat-icon {
+            font-size: 28px;
+            width: 28px;
+            height: 28px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--neutral-900);
+        }
+    }
+
+    button {
+        mat-icon {
+            color: var(--neutral-900);
+        }
+    }
+}
+
+.modal-content {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--accent-500);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--neutral-900);
+        border-radius: 4px;
+
+        &:hover {
+            background: var(--primary-600);
+        }
+    }
+}
+
+.transaction-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .full-width {
+        width: 100%;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+
+        @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    // Estilos para mat-form-field
+    mat-form-field {
+        ::ng-deep {
+            .mat-mdc-text-field-wrapper {
+                background: var(--accent-500);
+            }
+
+            .mat-mdc-form-field-focus-overlay {
+                background: transparent;
+            }
+        }
+    }
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--accent-500);
+    background: var(--accent-500);
+
+    button {
+        min-width: 100px;
+
+        &[mat-raised-button] {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            mat-spinner {
+                display: inline-block;
+            }
+        }
+    }
+}
+
+// Estilos para opciones de mat-select con iconos
+::ng-deep .mat-mdc-option {
+    .mat-icon {
+        margin-right: 12px;
+        vertical-align: middle;
+    }
+}

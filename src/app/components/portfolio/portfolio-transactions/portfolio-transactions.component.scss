@@ -72,6 +72,9 @@
 
     .header-actions {
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
 
         button {
             mat-icon {
@@ -502,14 +505,29 @@
     user-select: none;
 }
 
-// ============ MENU ACTIVO ============
+// ============ MENU ACTIVO Y ACCIONES ============
 ::ng-deep .mat-mdc-menu-panel {
-    .mat-mdc-menu-item.active {
-        background: var(--primary-500);
-        color: var(--primary-50);
+    .mat-mdc-menu-item {
+        &.active {
+            background: var(--primary-500);
+            color: var(--primary-50);
 
-        mat-icon {
-            color: var(--primary-50) !important;
+            mat-icon {
+                color: var(--primary-50) !important;
+            }
         }
+
+        // Estilos para items del menú de acciones
+        mat-icon {
+            margin-right: 12px;
+        }
+
+        span {
+            font-size: 0.95rem;
+        }
+    }
+
+    mat-divider {
+        margin: 8px 0;
     }
 }

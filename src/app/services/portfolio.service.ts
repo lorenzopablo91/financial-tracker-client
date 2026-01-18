@@ -76,4 +76,40 @@ export class PortfolioService {
     getTransactions(portfolioId: string, options?: any): Observable<any> {
         return this.http.get<any>(`${this.baseURL}/${portfolioId}/operaciones`, options);
     }
+
+    /**
+     * Registra un aporte al portafolio
+     * @param portafolioId ID del portafolio
+     * @param data monto en USD y notas opcionales
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    registrarAporte(
+        portafolioId: string,
+        data: { montoUSD: number; notas?: string },
+        options?: any
+    ): Observable<any> {
+        return this.http.post<any>(
+            `${this.baseURL}/${portafolioId}/aporte`,
+            data,
+            options
+        );
+    }
+
+    /**
+     * Registra un retiro al portafolio
+     * @param portafolioId ID del portafolio
+     * @param data monto en USD y notas opcionales
+     * @param options Opciones HTTP adicionales (incluye context para loader)
+     */
+    registrarRetiro(
+        portafolioId: string,
+        data: { montoUSD: number; notas?: string },
+        options?: any
+    ): Observable<any> {
+        return this.http.post<any>(
+            `${this.baseURL}/${portafolioId}/retiro`,
+            data,
+            options
+        );
+    }
 }

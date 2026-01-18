@@ -5,7 +5,7 @@ import { HttpContext } from '@angular/common/http';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { Subject, forkJoin } from 'rxjs';
 import { finalize, retry, takeUntil } from 'rxjs/operators';
-import { Asset, PortfolioHistoryData, Transaction } from '../../models/portfolio.interface';
+import { Asset, PortfolioHistoryData, Transaction, PortfolioAsset } from '../../models/portfolio.interface';
 import { PortfolioCategoriesChartComponent } from './portfolio-categories-chart/portfolio-categories-chart.component';
 import { PortfolioEvolutionChartComponent } from './portfolio-evolution-chart/portfolio-evolution-chart.component';
 import { PortfolioPerformanceCardComponent } from './portfolio-performance-card/portfolio-performance-card.component';
@@ -145,7 +145,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
      * Carga todos los datos del portafolio usando forkJoin para ejecutar en paralelo
      * Usa control manual del loader para un mensaje único
      */
-    private loadPortfolioData(portfolioId: string): void {
+    loadPortfolioData(portfolioId: string): void {
         this.isLoadingPortfolios.set(true);
         const context = new HttpContext().set(LOADER_MESSAGE, '📊 Cargando datos del portafolio...');
 
@@ -405,7 +405,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Vuelve al portafolio desde el detalle de activos
+     * Vuelve al portafolio desde el detalle de activos o transacciones
      */
     onBackToPortfolio(): void {
         this.showAssetsDetail.set(false);
@@ -413,5 +413,43 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         this.isLoadingTransactions.set(false);
         this.selectedCategoryType.set(null); // Limpiar filtro al volver
         this.refreshTrigger.update(current => current + 1);
+    }
+
+    /**
+     * Maneja la finalización de una transacción (aporte, retiro, compra, venta)
+     * Recarga todos los datos del portafolio
+     */
+    onTransactionCompleted(): void {
+        const portfolioId = this.selectedPortfolioId();
+        if (portfolioId) {
+            // Recargar datos del portafolio
+            this.loadPortfolioData(portfolioId);
+            
+            // Recargar transacciones si estamos en esa vista
+            if (this.showTransactions()) {
+                this.reloadTransactions(portfolioId);
+            }
+        }
+    }
+
+    /**
+     * Recarga las transacciones del portafolio
+     */
+    private reloadTransactions(portfolioId: string): void {
+        this.isLoadingTransactions.set(true);
+
+        this.portfolioService.getTransactions(portfolioId)
+            .pipe(
+                retry(1),
+                takeUntil(this.destroy$),
+                finalize(() => {
+                    this.isLoadingTransactions.set(false);
+                })
+            )
+            .subscribe({
+                next: (response) => {
+                    this.transactions.set(response.data);
+                }
+            });
     }
 }
