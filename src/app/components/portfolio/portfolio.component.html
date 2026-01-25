@@ -106,7 +106,8 @@
   <app-portfolio-transactions 
     [transactions]="transactions()" 
     [hideAmounts]="hideAmounts()"
-    [isLoading]="isLoadingTransactions()" 
+    [isLoading]="isLoadingTransactions()"
+    [portfolioAssets]="convertActivosToPortfolioAssets()"
     [portfolioId]="selectedPortfolioId()!"
     (backClicked)="onBackToPortfolio()"
     (transactionCompleted)="onTransactionCompleted()">

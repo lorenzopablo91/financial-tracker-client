@@ -452,4 +452,31 @@ export class PortfolioComponent implements OnInit, OnDestroy {
                 }
             });
     }
+
+    /**
+     * Convierte los activos del servicio valorizar al formato PortfolioAsset
+     * Obtiene los activos desde la data de valorización ya cargada
+     */
+    convertActivosToPortfolioAssets(): PortfolioAsset[] {
+        const assets = this.assets();
+        if (!assets || assets.length === 0) return [];
+
+        // Obtener el portafolio actual para mapear IDs
+        const portfolioId = this.selectedPortfolioId();
+        const portfolio = this.portfolios().find(p => p.id === portfolioId);
+
+        return assets.map(asset => {
+            // Buscar el ID del activo en el portafolio
+            const activoEnPortafolio = portfolio?.activos?.find(a => a.prefijo === asset.prefijo);
+            
+            return {
+                id: activoEnPortafolio?.id || asset.prefijo, // Usar prefijo como fallback
+                prefijo: asset.prefijo,
+                nombre: asset.nombre,
+                tipo: asset.tipo,
+                cantidad: asset.cantidad.toString(),
+                costoPromedio: asset.costoPromedioUSD.toString()
+            };
+        });
+    }
 }

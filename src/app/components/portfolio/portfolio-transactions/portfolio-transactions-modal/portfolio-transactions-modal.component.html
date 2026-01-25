@@ -1,52 +1,276 @@
-<div class="modal-header">
-    <div class="header-content">
+<div class="app-dialog transaction-modal-dialog">
+
+    <mat-toolbar class="dialog-title" color="accent">
         <mat-icon [style.color]="getOperationColor()">{{ getOperationIcon() }}</mat-icon>
-        <h2>{{ getOperationTitle() }}</h2>
-    </div>
-    <button mat-icon-button (click)="onCancel()" matTooltip="Cerrar">
-        <mat-icon>close</mat-icon>
-    </button>
+        <span>{{ getOperationTitle() }}</span>
+    </mat-toolbar>
+
+    <mat-dialog-content class="dialog-content">
+        <form [formGroup]="transactionForm" class="transaction-form">
+            <!-- APORTE / RETIRO: Solo campo de monto -->
+            @if (data.operationType === 'APORTE' || data.operationType === 'RETIRO') {
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Monto (USD)</mat-label>
+                <input matInput type="number" formControlName="montoUSD" placeholder="0.00" step="0.01">
+                <mat-icon matIconPrefix>attach_money</mat-icon>
+                @if (transactionForm.get('montoUSD')?.hasError('required')) {
+                <mat-error>El monto es requerido</mat-error>
+                }
+                @if (transactionForm.get('montoUSD')?.hasError('min')) {
+                <mat-error>El monto debe ser mayor a $0.01</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notas (opcional)</mat-label>
+                <textarea matInput formControlName="notas" rows="3"
+                    placeholder="Agregar notas sobre esta operación..."></textarea>
+                <mat-icon matIconPrefix>notes</mat-icon>
+            </mat-form-field>
+            }
+
+            <!-- VENTA: Selector de activo del portafolio -->
+            @if (data.operationType === 'VENTA') {
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Activo a vender</mat-label>
+                <mat-select formControlName="activoId" (selectionChange)="onAssetSelected($event.value)">
+                    @for (asset of data.portfolioAssets; track asset.id) {
+                    <mat-option [value]="asset.id">
+                        <mat-icon [style.color]="getAssetTypeColor(asset.tipo)">
+                            {{ getAssetTypeIcon(asset.tipo) }}
+                        </mat-icon>
+                        <span>{{ asset.prefijo + ' - ' + asset.nombre }}</span>
+                    </mat-option>
+                    }
+                </mat-select>
+                <mat-icon matIconPrefix>inventory_2</mat-icon>
+                @if (transactionForm.get('activoId')?.hasError('required')) {
+                <mat-error>Debe seleccionar un activo</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Info del activo seleccionado -->
+            @if (selectedAsset()) {
+            <div class="asset-selected-info">
+                <div class="info-row">
+                    <span class="label">Cantidad disponible:</span>
+                    <span class="value">{{ selectedAsset()!.cantidad }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Costo promedio:</span>
+                    <span class="value">{{ +selectedAsset()!.costoPromedio | currencyFormat:'USD' }}</span>
+                </div>
+            </div>
+            }
+
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>Cantidad a vender</mat-label>
+                    <input matInput type="number" formControlName="cantidad" placeholder="0" step="0.00000001">
+                    <mat-icon matIconPrefix>tag</mat-icon>
+                    @if (transactionForm.get('cantidad')?.hasError('required')) {
+                    <mat-error>La cantidad es requerida</mat-error>
+                    }
+                    @if (transactionForm.get('cantidad')?.hasError('min')) {
+                    <mat-error>La cantidad debe ser mayor a 0</mat-error>
+                    }
+                    @if (transactionForm.get('cantidad')?.hasError('max')) {
+                    <mat-error>No puede vender más de lo disponible</mat-error>
+                    }
+                </mat-form-field>
+
+                @if (selectedAssetType() !== 'Accion') {
+                <mat-form-field appearance="outline">
+                    <mat-label>Precio unitario USD</mat-label>
+                    <input matInput type="number" formControlName="precioUSD" placeholder="0.00" step="0.01">
+                    <mat-icon matIconPrefix>attach_money</mat-icon>
+                    @if (transactionForm.get('precioUSD')?.hasError('required')) {
+                    <mat-error>El precio es requerido</mat-error>
+                    }
+                </mat-form-field>
+                }
+            </div>
+
+            <!-- Campos para Acciones (ARS + Tipo de cambio) -->
+            @if (selectedAssetType() === 'Accion') {
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>Precio unitario ARS</mat-label>
+                    <input matInput type="number" formControlName="precioARS" placeholder="0.00" step="0.01">
+                    <mat-icon matIconPrefix>attach_money</mat-icon>
+                    @if (transactionForm.get('precioARS')?.hasError('required')) {
+                    <mat-error>El precio es requerido</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Tipo de cambio</mat-label>
+                    <input matInput type="number" formControlName="tipoCambio" placeholder="0.00" step="0.01">
+                    <mat-icon matIconPrefix>attach_money</mat-icon>
+                    @if (transactionForm.get('tipoCambio')?.hasError('required')) {
+                    <mat-error>El tipo de cambio es requerido</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Cálculo automático del precio en USD -->
+            @if (transactionForm.get('precioARS')?.value && transactionForm.get('tipoCambio')?.value) {
+            <div class="calculated-price">
+                <span class="label">Precio en USD:</span>
+                <span class="value">{{ calculatePriceUSD() | currencyFormat:'USD' }}</span>
+            </div>
+            }
+            }
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notas (opcional)</mat-label>
+                <textarea matInput formControlName="notas" rows="3"
+                    placeholder="Agregar notas sobre esta venta..."></textarea>
+                <mat-icon matIconPrefix>notes</mat-icon>
+            </mat-form-field>
+            }
+
+            <!-- COMPRA: Campos completos para nuevo activo -->
+            @if (data.operationType === 'COMPRA') {
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>Símbolo del activo</mat-label>
+                    <input matInput formControlName="activoPrefijo" placeholder="Ej: AAPL, BTC" [maxlength]="10">
+                    <mat-icon matIconPrefix>sell</mat-icon>
+                    @if (transactionForm.get('activoPrefijo')?.hasError('required')) {
+                    <mat-error>El símbolo es requerido</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Tipo de activo</mat-label>
+                    <mat-select formControlName="activoTipo" (selectionChange)="onAssetTypeChange($event.value)">
+                        <mat-option value="Cedear">
+                            <mat-icon [style.color]="getAssetTypeColor('Cedear')">{{ getAssetTypeIcon('Cedear')
+                                }}</mat-icon>
+                            Cedear
+                        </mat-option>
+                        <mat-option value="Accion">
+                            <mat-icon [style.color]="getAssetTypeColor('Accion')">{{ getAssetTypeIcon('Accion')
+                                }}</mat-icon>
+                            Acción
+                        </mat-option>
+                        <mat-option value="Criptomoneda">
+                            <mat-icon [style.color]="getAssetTypeColor('Criptomoneda')">{{
+                                getAssetTypeIcon('Criptomoneda') }}</mat-icon>
+                            Criptomoneda
+                        </mat-option>
+                        <mat-option value="FCI">
+                            <mat-icon [style.color]="getAssetTypeColor('FCI')">{{ getAssetTypeIcon('FCI') }}</mat-icon>
+                            FCI
+                        </mat-option>
+                    </mat-select>
+                    <mat-icon matIconPrefix>category</mat-icon>
+                    @if (transactionForm.get('activoTipo')?.hasError('required')) {
+                    <mat-error>El tipo es requerido</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombre del activo</mat-label>
+                <input matInput formControlName="activoNombre" placeholder="Ej: Apple Inc., Bitcoin">
+                <mat-icon matIconPrefix>business</mat-icon>
+                @if (transactionForm.get('activoNombre')?.hasError('required')) {
+                <mat-error>El nombre es requerido</mat-error>
+                }
+            </mat-form-field>
+
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>Cantidad</mat-label>
+                    <input matInput type="number" formControlName="cantidad" placeholder="0" step="0.00000001">
+                    <mat-icon matIconPrefix>tag</mat-icon>
+                    @if (transactionForm.get('cantidad')?.hasError('required')) {
+                    <mat-error>La cantidad es requerida</mat-error>
+                    }
+                    @if (transactionForm.get('cantidad')?.hasError('min')) {
+                    <mat-error>La cantidad debe ser mayor a 0</mat-error>
+                    }
+                </mat-form-field>
+
+                @if (selectedAssetType() !== 'Accion') {
+                <mat-form-field appearance="outline">
+                    <mat-label>Precio unitario USD</mat-label>
+                    <input matInput type="number" formControlName="precioUSD" placeholder="0.00" step="0.01">
+                    <mat-icon matIconPrefix>attach_money</mat-icon>
+                    @if (transactionForm.get('precioUSD')?.hasError('required')) {
+                    <mat-error>El precio es requerido</mat-error>
+                    }
+                </mat-form-field>
+                }
+            </div>
+
+            <!-- Campos para Acciones (ARS + Tipo de cambio) -->
+            @if (selectedAssetType() === 'Accion') {
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>Precio unitario ARS</mat-label>
+                    <input matInput type="number" formControlName="precioARS" placeholder="0.00" step="0.01">
+                    <mat-icon matIconPrefix>attach_money</mat-icon>
+                    @if (transactionForm.get('precioARS')?.hasError('required')) {
+                    <mat-error>El precio es requerido</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Tipo de cambio</mat-label>
+                    <input matInput type="number" formControlName="tipoCambio" placeholder="0.00" step="0.01">
+                    <mat-icon matIconPrefix>attach_money</mat-icon>
+                    @if (transactionForm.get('tipoCambio')?.hasError('required')) {
+                    <mat-error>El tipo de cambio es requerido</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Cálculo automático del precio en USD -->
+            @if (transactionForm.get('precioARS')?.value && transactionForm.get('tipoCambio')?.value) {
+            <div class="calculated-price">
+                <span class="label">Precio en USD:</span>
+                <span class="value">{{ calculatePriceUSD() | currencyFormat:'USD' }}</span>
+            </div>
+            }
+            }
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notas (opcional)</mat-label>
+                <textarea matInput formControlName="notas" rows="3"
+                    placeholder="Agregar notas sobre esta compra..."></textarea>
+                <mat-icon matIconPrefix>notes</mat-icon>
+            </mat-form-field>
+            }
+
+            <!-- Resumen del monto total (para COMPRA y VENTA) -->
+            @if (data.operationType === 'COMPRA' || data.operationType === 'VENTA') {
+            @if (transactionForm.get('cantidad')?.value && (transactionForm.get('precioUSD')?.value ||
+            calculatePriceUSD())) {
+            <div class="total-summary" [class.sale]="data.operationType === 'VENTA'">
+                <span class="label">Monto total:</span>
+                <span class="value">{{ calculateTotal() | currencyFormat:'USD' }}</span>
+            </div>
+            }
+            }
+        </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button type="button" (click)="onCancel()">
+            Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="button" (click)="onSubmit()"
+            [disabled]="transactionForm.invalid || isSubmitting()">
+            @if (isSubmitting()) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Procesando...</span>
+            } @else {
+            {{ getSubmitButtonText() }}
+            }
+        </button>
+    </mat-dialog-actions>
+
 </div>
-
-<mat-dialog-content class="modal-content">
-    <form [formGroup]="transactionForm" class="transaction-form">
-
-        <!-- APORTE / RETIRO: Solo monto -->
-        @if (data.operationType === 'APORTE' || data.operationType === 'RETIRO') {
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Monto en USD</mat-label>
-            <input matInput type="number" formControlName="montoUSD" placeholder="0.00" step="0.01">
-            <mat-icon matSuffix>attach_money</mat-icon>
-            @if (transactionForm.get('montoUSD')?.hasError('required')) {
-            <mat-error>El monto es requerido</mat-error>
-            }
-            @if (transactionForm.get('montoUSD')?.hasError('min')) {
-            <mat-error>El monto debe ser mayor a 0</mat-error>
-            }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Notas (opcional)</mat-label>
-            <textarea matInput formControlName="notas" rows="3"
-                placeholder="Agregar notas sobre esta operación..."></textarea>
-            <mat-icon matSuffix>notes</mat-icon>
-        </mat-form-field>
-        }
-
-    </form>
-</mat-dialog-content>
-
-<mat-dialog-actions class="modal-actions">
-    <button mat-button (click)="onCancel()">
-        Cancelar
-    </button>
-    <button mat-raised-button color="primary" (click)="onSubmit()"
-        [disabled]="!transactionForm.valid || isSubmitting()">
-        @if (isSubmitting()) {
-        <mat-spinner diameter="20"></mat-spinner>
-        <span>Procesando...</span>
-        } @else {
-        <span>{{ getSubmitButtonText() }}</span>
-        }
-    </button>
-</mat-dialog-actions>

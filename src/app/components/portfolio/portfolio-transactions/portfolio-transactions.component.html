@@ -212,7 +212,7 @@
                         </th>
                         <td mat-cell *matCellDef="let transaction">
                             <span [class.hidden-amount]="hideAmounts()">
-                                {{ hideAmounts() ? '••••' : formatQuantity(transaction.cantidad) }}
+                                {{ hideAmounts() ? '••••' : transaction.cantidad }}
                             </span>
                         </td>
                     </ng-container>

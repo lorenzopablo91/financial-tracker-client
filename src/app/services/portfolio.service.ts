@@ -112,4 +112,49 @@ export class PortfolioService {
             options
         );
     }
+
+    /**
+     * Registrar una compra de activo en el portafolio
+     */
+    registrarCompra(
+        portafolioId: string,
+        data: {
+            prefijo: string;
+            nombre?: string;
+            tipo: string;
+            cantidad: number;
+            precioUSD?: number;
+            precioARS?: number;
+            tipoCambio?: number;
+            notas?: string;
+        },
+        options?: any
+    ): Observable<any> {
+        return this.http.post<any>(
+            `${this.baseURL}/${portafolioId}/compra`,
+            data,
+            options
+        );
+    }
+
+    /**
+     * Registrar una venta de activo del portafolio
+     */
+    registrarVenta(
+        activoId: string,
+        data: {
+            cantidad: number;
+            precioUSD?: number;
+            precioARS?: number;
+            tipoCambio?: number;
+            notas?: string;
+        },
+        options?: any
+    ): Observable<any> {
+        return this.http.post<any>(
+            `${this.baseURL}/activos/${activoId}/venta`,
+            data,
+            options
+        );
+    }
 }

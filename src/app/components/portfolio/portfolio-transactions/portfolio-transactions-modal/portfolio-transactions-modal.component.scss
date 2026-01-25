@@ -1,114 +1,112 @@
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--accent-500);
-    background: var(--accent-500);
+.app-dialog {
 
-    .header-content {
+    .transaction-form {
         display: flex;
-        align-items: center;
-        gap: 12px;
+        flex-direction: column;
+        gap: 20px;
 
-        mat-icon {
-            font-size: 28px;
-            width: 28px;
-            height: 28px;
+        .full-width {
+            width: 100%;
         }
 
-        h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--neutral-900);
-        }
-    }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
 
-    button {
-        mat-icon {
-            color: var(--neutral-900);
-        }
-    }
-}
-
-.modal-content {
-    padding: 24px;
-    max-height: 70vh;
-    overflow-y: auto;
-
-    &::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: var(--accent-500);
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: var(--neutral-900);
-        border-radius: 4px;
-
-        &:hover {
-            background: var(--primary-600);
-        }
-    }
-}
-
-.transaction-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-
-    .full-width {
-        width: 100%;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-
-        @media (max-width: 600px) {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    // Estilos para mat-form-field
-    mat-form-field {
-        ::ng-deep {
-            .mat-mdc-text-field-wrapper {
-                background: var(--accent-500);
-            }
-
-            .mat-mdc-form-field-focus-overlay {
-                background: transparent;
+            @media (max-width: 600px) {
+                grid-template-columns: 1fr;
             }
         }
-    }
-}
 
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 16px 24px;
-    border-top: 1px solid var(--accent-500);
-    background: var(--accent-500);
+        // Info del activo seleccionado
+        .asset-selected-info {
+            padding: 16px;
+            background: var(--accent-500);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-500);
 
-    button {
-        min-width: 100px;
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 6px 0;
 
-        &[mat-raised-button] {
+                &:not(:last-child) {
+                    border-bottom: 1px solid var(--accent-500);
+                }
+
+                .label {
+                    font-size: 0.9rem;
+                    color: var(--neutral-900);
+                    opacity: 0.8;
+                }
+
+                .value {
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: var(--neutral-900);
+                }
+            }
+        }
+
+        // Precio calculado
+        .calculated-price {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            padding: 12px 16px;
+            background: var(--primary-50);
+            border-radius: 8px;
+            border: 1px solid var(--primary-200);
 
-            mat-spinner {
-                display: inline-block;
+            .label {
+                font-size: 0.95rem;
+                color: var(--primary-700);
+                font-weight: 500;
+            }
+
+            .value {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--primary-700);
+            }
+        }
+
+        // Resumen del total
+        .total-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--success-50);
+            border-radius: 8px;
+            border: 2px solid var(--success-500);
+            margin-top: 8px;
+
+            &.sale {
+                background: var(--primary-50);
+                border-color: var(--primary-500);
+
+                .value {
+                    color: var(--primary-700);
+                }
+            }
+
+            .label {
+                font-size: 1.1rem;
+                color: var(--success-700);
+                font-weight: 600;
+            }
+
+            .value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--success-700);
             }
         }
     }
+
 }
 
 // Estilos para opciones de mat-select con iconos

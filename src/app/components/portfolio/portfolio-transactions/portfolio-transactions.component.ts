@@ -36,7 +36,7 @@ export class PortfolioTransactionsComponent {
     transactions = input.required<Transaction[]>();
     hideAmounts = input.required<boolean>();
     isLoading = input.required<boolean>();
-    // portfolioAssets = input<PortfolioAsset[]>([]);
+    portfolioAssets = input<PortfolioAsset[]>([]);
     portfolioId = input.required<string>(); // ID del portafolio actual
 
     // Outputs
@@ -228,16 +228,6 @@ export class PortfolioTransactionsComponent {
         });
     }
 
-    // Formatear cantidad
-    formatQuantity(cantidad: string | undefined): string {
-        if (!cantidad) return '-';
-        const num = parseFloat(cantidad);
-        return num.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 8
-        }).replace(/\.?0+$/, '');
-    }
-
     // Calcular ganancia porcentual
     getGananciaPorc(transaction: Transaction): number {
         if (!transaction.gananciaRealizada || !transaction.costoBaseVendido) {
@@ -279,7 +269,7 @@ export class PortfolioTransactionsComponent {
     onRegisterOperation(tipo: string) {
         const dialogData: TransactionModalData = {
             operationType: tipo as 'APORTE' | 'RETIRO' | 'COMPRA' | 'VENTA',
-            // portfolioAssets: tipo === 'VENTA' ? this.portfolioAssets() : undefined
+            portfolioAssets: tipo === 'VENTA' ? this.portfolioAssets() : undefined
         };
 
         const dialogRef = this.dialog.open(PortfolioTransactionsModalComponent, {
@@ -309,6 +299,12 @@ export class PortfolioTransactionsComponent {
                 break;
             case 'RETIRO':
                 this.registrarRetiro(portafolioId, result);
+                break;
+            case 'COMPRA':
+                this.registrarCompra(portafolioId, result);
+                break;
+            case 'VENTA':
+                this.registrarVenta(result);
                 break;
         }
     }
@@ -380,4 +376,101 @@ export class PortfolioTransactionsComponent {
                 }
             });
     }
+
+    /**
+     * Registrar una compra de activo
+     */
+    private registrarCompra(portafolioId: string, data: TransactionFormResult): void {
+        // Preparar datos para el endpoint
+        const compraData: any = {
+            prefijo: data.activoPrefijo!,
+            nombre: data.activoNombre,
+            tipo: data.activoTipo!,
+            cantidad: parseFloat(data.cantidad!),
+            notas: data.notas
+        };
+
+        // Agregar campos de precio según el tipo de activo
+        if (data.activoTipo === 'Accion') {
+            compraData.precioARS = parseFloat(data.precioARS!);
+            compraData.tipoCambio = parseFloat(data.tipoCambio!);
+        } else {
+            compraData.precioUSD = parseFloat(data.precioUSD!);
+        }
+
+        this.portfolioService.registrarCompra(
+            portafolioId,
+            compraData,
+            {
+                context: new HttpContext().set(LOADER_MESSAGE, '🛒 Registrando compra de activo...')
+            }
+        )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.toastService.success(
+                            response.mensaje || 'Compra registrada exitosamente'
+                        );
+
+                        // Emitir evento para recargar datos
+                        this.transactionCompleted.emit();
+                    }
+                },
+                error: (error) => {
+                    this.toastService.error(
+                        error.error?.message || 'Error al registrar la compra'
+                    );
+                }
+            });
+    }
+
+    /**
+     * Registrar una venta de activo
+     */
+    private registrarVenta(data: TransactionFormResult): void {
+        // El activoId viene del formulario
+        const activoId = data.activoId!;
+
+        // Preparar datos para el endpoint
+        const ventaData: any = {
+            cantidad: parseFloat(data.cantidad!),
+            notas: data.notas
+        };
+
+        // Agregar campos de precio según el tipo de activo
+        if (data.activoTipo === 'Accion') {
+            ventaData.precioARS = parseFloat(data.precioARS!);
+            ventaData.tipoCambio = parseFloat(data.tipoCambio!);
+        } else {
+            ventaData.precioUSD = parseFloat(data.precioUSD!);
+        }
+
+        this.portfolioService.registrarVenta(
+            activoId,
+            ventaData,
+            {
+                context: new HttpContext().set(LOADER_MESSAGE, '💵 Registrando venta de activo...')
+            }
+        )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.toastService.success(
+                            response.mensaje || 'Venta registrada exitosamente'
+                        );
+
+                        // Emitir evento para recargar datos
+                        this.transactionCompleted.emit();
+                    }
+                },
+                error: (error) => {
+                    this.toastService.error(
+                        error.error?.message || 'Error al registrar la venta'
+                    );
+                }
+            });
+    }
+
 }

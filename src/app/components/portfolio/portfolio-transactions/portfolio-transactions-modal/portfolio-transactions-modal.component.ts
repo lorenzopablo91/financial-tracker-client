@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MaterialImports } from '../../../../shared/imports/material-imports';
+import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { OPERATION_COLORS, OPERATION_ICONS, OPERATIONS_TYPES } from '../../../../data/portfolio.data';
 import { TransactionModalData, PortfolioAsset, TransactionFormResult } from '../../../../models/portfolio.interface';
 
@@ -12,7 +13,8 @@ import { TransactionModalData, PortfolioAsset, TransactionFormResult } from '../
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        MaterialImports
+        MaterialImports,
+        CurrencyFormatPipe
     ],
     templateUrl: './portfolio-transactions-modal.component.html',
     styleUrl: './portfolio-transactions-modal.component.scss'
@@ -42,6 +44,24 @@ export class PortfolioTransactionsModalComponent implements OnInit {
         // Configuración según tipo de operación
         if (operationType === 'APORTE' || operationType === 'RETIRO') {
             formConfig.montoUSD = ['', [Validators.required, Validators.min(0.01)]];
+        }
+
+        if (operationType === 'VENTA') {
+            formConfig.activoId = ['', Validators.required];
+            formConfig.cantidad = ['', [Validators.required, Validators.min(0.00000001)]];
+            formConfig.precioUSD = [''];
+            formConfig.precioARS = [''];
+            formConfig.tipoCambio = [''];
+        }
+
+        if (operationType === 'COMPRA') {
+            formConfig.activoPrefijo = ['', [Validators.required, Validators.maxLength(10)]];
+            formConfig.activoNombre = ['', Validators.required];
+            formConfig.activoTipo = ['', Validators.required];
+            formConfig.cantidad = ['', [Validators.required, Validators.min(0.00000001)]];
+            formConfig.precioUSD = [''];
+            formConfig.precioARS = [''];
+            formConfig.tipoCambio = [''];
         }
 
         this.transactionForm = this.fb.group(formConfig);
@@ -82,7 +102,7 @@ export class PortfolioTransactionsModalComponent implements OnInit {
         const precioARSControl = this.transactionForm.get('precioARS');
         const tipoCambioControl = this.transactionForm.get('tipoCambio');
 
-        if (tipo === 'ACCION') {
+        if (tipo === 'Accion') {
             // Para acciones: ARS + Tipo de cambio
             precioUSDControl?.clearValidators();
             precioARSControl?.setValidators([Validators.required, Validators.min(0.01)]);
@@ -117,7 +137,7 @@ export class PortfolioTransactionsModalComponent implements OnInit {
         let precioUSD = this.transactionForm.get('precioUSD')?.value;
 
         // Si es ACCION, usar el precio calculado
-        if (this.selectedAssetType() === 'ACCION') {
+        if (this.selectedAssetType() === 'Accion') {
             precioUSD = this.calculatePriceUSD();
         }
 
@@ -126,15 +146,6 @@ export class PortfolioTransactionsModalComponent implements OnInit {
         }
 
         return 0;
-    }
-
-    // Formatear cantidad
-    formatQuantity(cantidad: string): string {
-        const num = parseFloat(cantidad);
-        return num.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 8
-        }).replace(/\.?0+$/, '');
     }
 
     // Obtener color de operación
@@ -193,8 +204,15 @@ export class PortfolioTransactionsModalComponent implements OnInit {
             };
 
             // Si es ACCION, calcular precioUSD automáticamente
-            if (this.selectedAssetType() === 'ACCION') {
+            if (this.selectedAssetType() === 'Accion') {
                 result.precioUSD = this.calculatePriceUSD().toString();
+            }
+
+            // Si es VENTA, agregar info del activo seleccionado
+            if (this.data.operationType === 'VENTA' && this.selectedAsset()) {
+                result.activoPrefijo = this.selectedAsset()!.prefijo;
+                result.activoNombre = this.selectedAsset()!.nombre;
+                result.activoTipo = this.selectedAsset()!.tipo;
             }
 
             // Cerrar el modal y devolver los datos
