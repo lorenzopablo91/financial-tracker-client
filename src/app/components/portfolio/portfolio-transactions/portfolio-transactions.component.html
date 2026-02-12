@@ -1,37 +1,37 @@
 <div class="transactions-container">
     <!-- Header con botón de regreso -->
     <div class="detail-header">
-        <button mat-icon-button (click)="onBack()" class="back-button" matTooltip="Volver al portafolio">
-            <mat-icon>arrow_back</mat-icon>
-        </button>
-        <div class="header-title">
-            <h2>Detalle de operaciones</h2>
-            <span class="transactions-count">
-                ({{ stats().transactionsCount }})
-                @if (selectedFilter() !== 'all' && selectedFilter() !== 'APORTE') {
-                <span class="filter-badge" [style.background-color]="getOperationColor(selectedFilter()) + '20'"
-                    [style.color]="getOperationColor(selectedFilter())">
-                    {{ selectedFilter() }}
-                </span>
-                }
-            </span>
-        </div>
-        <div class="header-actions">
-            @if (isAdmin()) {
-            <!-- Botón de Filtro -->
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" matTooltip="Filtrar por operación">
-                <mat-icon>filter_list</mat-icon>
+        <!-- Izquierda: Título -->
+        <div class="header-left">
+            <button mat-icon-button (click)="onBack()" class="back-button" matTooltip="Volver al portafolio">
+                <mat-icon>arrow_back</mat-icon>
             </button>
-            <mat-menu #filterMenu="matMenu">
-                @for (type of transactionTypes(); track type) {
-                <button mat-menu-item (click)="onFilterChange(type)" [class.active]="selectedFilter() === type">
-                    <mat-icon [style.color]="getOperationColor(type)">{{ getOperationIcon(type) }}</mat-icon>
-                    <span>{{ type }}</span>
-                </button>
-                }
-            </mat-menu>
+            <div class="header-title">
+                <h2>Detalle de operaciones
+                    <span class="transactions-count">
+                        ({{ stats().transactionsCount }})
+                    </span>
+                </h2>
 
-            <!-- Botón de Registrar Operación -->
+            </div>
+        </div>
+
+        <!-- Centro: Selector de Fechas -->
+        <div class="header-center">
+            <mat-form-field appearance="outline" class="date-range-field">
+                <mat-label>Seleccionar período</mat-label>
+                <mat-date-range-input [rangePicker]="picker">
+                    <input matStartDate [formControl]="startDateControl" placeholder="Desde">
+                    <input matEndDate [formControl]="endDateControl" placeholder="Hasta">
+                </mat-date-range-input>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+            </mat-form-field>
+        </div>
+
+        <!-- Derecha: Botón Registrar Operación -->
+        <div class="header-right">
+            @if (isAdmin()) {
             <button mat-icon-button [matMenuTriggerFor]="actionsMenu" matTooltip="Registrar operación">
                 <mat-icon>more_vert</mat-icon>
             </button>

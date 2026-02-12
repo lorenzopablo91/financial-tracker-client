@@ -1,9 +1,11 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpContext } from '@angular/common/http';
 import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { Subject, combineLatest } from 'rxjs';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { MaterialImports } from '../../../shared/imports/material-imports';
 import { PortfolioAsset, Transaction, TransactionFormResult, TransactionModalData } from '../../../models/portfolio.interface';
@@ -13,19 +15,27 @@ import { OPERATION_COLORS, OPERATION_ICONS, OPERATIONS_TYPES } from '../../../da
 import { PortfolioTransactionsModalComponent } from './portfolio-transactions-modal/portfolio-transactions-modal.component';
 import { PortfolioService } from '../../../services/portfolio.service';
 import { LOADER_MESSAGE } from '../../../shared/interceptors/loader-context.interceptor';
+import { esDateController } from '../../../shared/controllers/es-date.controller';
+import { DATE_FORMATS } from '../../../data/date-formats';
 
 @Component({
     selector: 'app-portfolio-transactions',
     standalone: true,
     imports: [
         CommonModule,
-        MaterialImports,
-        CurrencyFormatPipe
+        ...MaterialImports,
+        CurrencyFormatPipe,
+        ReactiveFormsModule
+    ],
+    providers: [
+        { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+        { provide: DateAdapter, useClass: esDateController },
+        { provide: MAT_DATE_FORMATS, useValue: DATE_FORMATS }
     ],
     templateUrl: './portfolio-transactions.component.html',
     styleUrl: './portfolio-transactions.component.scss'
 })
-export class PortfolioTransactionsComponent {
+export class PortfolioTransactionsComponent implements OnDestroy, OnInit {
     private authService = inject(AuthService);
     private portfolioService = inject(PortfolioService);
     private toastService = inject(ToastService);
@@ -47,6 +57,11 @@ export class PortfolioTransactionsComponent {
     selectedFilter = signal<string>('APORTE');
     sortColumn = signal<string>('fecha');
     sortDirection = signal<'asc' | 'desc' | null>('desc');
+    dateRangeValue = signal<any>({});
+
+    // FormControls separados para start y end date
+    startDateControl: FormControl<Date | null>;
+    endDateControl: FormControl<Date | null>;
 
     // Computed - Tipos únicos de transacciones (filtrado por rol)
     transactionTypes = computed(() => {
@@ -70,18 +85,21 @@ export class PortfolioTransactionsComponent {
     filteredTransactions = computed(() => {
         let txs = this.transactions();
 
-        // 1. Si no es admin, solo mostrar APORTES
-        if (!this.isAdmin()) {
-            txs = txs.filter(t => t.tipo === 'APORTE');
-        } else {
-            // 2. Filtrar por tipo de operación (solo si es admin)
-            const filter = this.selectedFilter();
-            if (filter !== 'all') {
-                txs = txs.filter(t => t.tipo === filter);
-            }
+        // Filtrar por rango de fechas
+        const dateRangeValue = this.dateRangeValue();
+        if (dateRangeValue?.start && dateRangeValue?.end) {
+            const startDate = new Date(dateRangeValue.start);
+            const endDate = new Date(dateRangeValue.end);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+
+            txs = txs.filter(t => {
+                const txDate = new Date(t.fecha);
+                return txDate >= startDate && txDate <= endDate;
+            });
         }
 
-        // 2. Ordenar
+        // Ordenar
         const column = this.sortColumn();
         const direction = this.sortDirection();
 
@@ -153,9 +171,67 @@ export class PortfolioTransactionsComponent {
         };
     });
 
+    constructor() {
+        // Inicializar FormControls con el rango de fechas por defecto
+        const startDate = this.getLastMonthStart();
+        const endDate = this.getLastMonthEnd();
+
+        this.startDateControl = new FormControl<Date | null>(startDate);
+        this.endDateControl = new FormControl<Date | null>(endDate);
+
+        // Establecer el valor inicial del rango
+        this.dateRangeValue.set({ start: startDate, end: endDate });
+    }
+
+    ngOnInit() {
+        // Escuchar cambios en ambos FormControls usando combineLatest
+        combineLatest([
+            this.startDateControl.valueChanges,
+            this.endDateControl.valueChanges
+        ])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(([start, end]) => {
+                // Solo actualizar si ambas fechas están definidas
+                if (start && end) {
+                    this.dateRangeValue.set({ start, end });
+                }
+            });
+    }
+
     ngOnDestroy() {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    /**
+     * Obtiene la fecha de inicio del último mes (hace 30 días)
+     */
+    private getLastMonthStart(): Date {
+        const date = new Date();
+        date.setDate(1); // Primer día del mes
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+
+    /**
+     * Obtiene la fecha de fin del último mes (hoy)
+     */
+    private getLastMonthEnd(): Date {
+        const date = new Date();
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+
+    /**
+     * Formatea una fecha para mostrar en el input del rango
+     */
+    formatDisplayDate(date: any): string {
+        if (!date) return '';
+        const d = new Date(date);
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${month}/${day}/${year}`;
     }
 
     // Cambiar filtro
