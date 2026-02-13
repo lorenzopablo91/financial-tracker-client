@@ -5,12 +5,12 @@ import { FinancialData } from '../../models/balance.interface';
 // import { BALANCE_DATA } from '../../data/balance.data';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
-import { esDateCotroller } from '../../shared/controllers/es-date.controller';
 import { DATE_FORMATS } from '../../data/date-formats';
-import { MONTHS_ES } from '../../data/months';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { BalanceCardComponent } from './balance-card/balance-card.component';
 import { BalanceGridComponent } from './balance-grid/balance-grid.component';
+import { esDateController } from '../../shared/controllers/es-date.controller';
+import { MONTHS_ES } from '../../data/date-values';
 
 @Component({
   selector: 'app-balance',
@@ -25,7 +25,7 @@ import { BalanceGridComponent } from './balance-grid/balance-grid.component';
   templateUrl: './balance.component.html',
   styleUrls: ['./balance.component.scss'],
   providers: [
-    { provide: DateAdapter, useClass: esDateCotroller },
+    { provide: DateAdapter, useClass: esDateController },
     { provide: MAT_DATE_FORMATS, useValue: DATE_FORMATS },
   ],
 })
