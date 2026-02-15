@@ -24,7 +24,7 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
     readonly selectedPeriodSignal = signal<'3M' | '6M' | '1A' | 'TODO'>('TODO');
     readonly chartDataSignal = signal<PortfolioHistoryData[]>([]);
     readonly loading = signal(false);
-    readonly error = signal<string | null>(null);
+    readonly errorSignal = signal<string | null>(null);
     readonly refreshTriggerSignal = signal(0);
     readonly canvasKey = signal(0);
 
@@ -43,7 +43,7 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
         this.loading.set(value);
 
         // Si cambió de loading=true a loading=false, intentar crear el gráfico
-        if (wasLoading && !value && this.chartCanvas?.nativeElement) {
+        if (wasLoading && !value && this.chartCanvas?.nativeElement && !this.errorSignal()) {
             setTimeout(() => {
                 if (this.hasData()) {
                     this.createChart();
@@ -63,6 +63,19 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
     }
     get hideAmounts() {
         return this.hideAmountsSignal();
+    }
+
+    @Input()
+    set error(value: string | null) {
+        this.errorSignal.set(value);
+
+        // Si hay un error, destruir el gráfico
+        if (value) {
+            this.destroyChart();
+        }
+    }
+    get error() {
+        return this.errorSignal();
     }
 
     // Input para recibir señal de actualización desde el componente padre
@@ -128,8 +141,8 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
             const hideAmounts = this.hideAmountsSignal();
             const period = this.selectedPeriodSignal();
 
-            // Solo actualizar si el chart ya existe, está inicializado y NO está en loading
-            if (this.chart && this.chartInitialized() && !this.loading()) {
+            // Solo actualizar si el chart ya existe, está inicializado y NO está en loading ni error
+            if (this.chart && this.chartInitialized() && !this.loading() && !this.errorSignal()) {
                 this.updateExistingChart();
             }
         });
@@ -139,8 +152,8 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
             const data = this.chartDataSignal();
             const hasDataValue = this.hasData();
 
-            // Solo proceder si no está en loading y el canvas está disponible
-            if (!this.loading() && this.chartCanvas?.nativeElement) {
+            // Solo proceder si no está en loading, no hay error y el canvas está disponible
+            if (!this.loading() && !this.errorSignal() && this.chartCanvas?.nativeElement) {
                 if (hasDataValue) {
                     // Si hay datos, recrear el gráfico
                     setTimeout(() => this.createChart(), 0);
@@ -155,7 +168,7 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
         effect(() => {
             const trigger = this.refreshTriggerSignal();
 
-            if (trigger > 0 && !this.loading()) {
+            if (trigger > 0 && !this.loading() && !this.errorSignal()) {
                 // Destruir el gráfico
                 this.destroyChart();
 
@@ -164,7 +177,6 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
 
                 // Recrear el gráfico
                 if (this.chartCanvas?.nativeElement && this.hasData()) {
-
                     this.createChart();
 
                     requestAnimationFrame(() => {
@@ -178,8 +190,8 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
     }
 
     ngAfterViewInit(): void {
-        // Solo crear el gráfico si no está en loading y hay datos
-        if (!this.loading() && this.hasData()) {
+        // Solo crear el gráfico si no está en loading, no hay error y hay datos
+        if (!this.loading() && !this.errorSignal() && this.hasData()) {
             this.createChart();
         }
     }
@@ -189,20 +201,18 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
     }
 
     private createChart(): void {
-        // No crear el gráfico si está en loading
-        if (this.loading()) {
+        // No crear el gráfico si está en loading o hay error
+        if (this.loading() || this.errorSignal()) {
             return;
         }
 
         if (!this.chartCanvas?.nativeElement) {
             console.warn('Canvas element not available');
-            this.error.set('Canvas no disponible para el gráfico');
             return;
         }
 
         if (!this.hasData()) {
             console.warn('No chart data available');
-            this.error.set('No hay datos disponibles para mostrar');
             return;
         }
 
@@ -226,7 +236,6 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
         const ctx = canvas.getContext('2d');
         if (!ctx) {
             console.error('Could not get 2D context from canvas');
-            this.error.set('No se pudo obtener el contexto 2D del canvas');
             return;
         }
 
@@ -317,17 +326,15 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
 
             this.chart = new Chart(ctx, config);
             this.chartInitialized.set(true);
-            this.error.set(null);
 
         } catch (error) {
             console.error('Error creating chart:', error);
-            this.error.set(`Error al crear el gráfico: ${error instanceof Error ? error.message : 'Error desconocido'}`);
             this.chartInitialized.set(false);
         }
     }
 
     private updateExistingChart(): void {
-        if (!this.chart || !this.chartInitialized() || this.loading()) {
+        if (!this.chart || !this.chartInitialized() || this.loading() || this.errorSignal()) {
             return;
         }
 
@@ -347,7 +354,6 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
 
         } catch (error) {
             console.error('Error updating chart:', error);
-            this.error.set(`Error al actualizar el gráfico: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         }
     }
 
@@ -362,8 +368,8 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
     // Métodos públicos
     setPeriod(period: '3M' | '6M' | '1A' | 'TODO'): void {
         this.selectedPeriodSignal.set(period);
-        // Recrear el chart cuando cambian los datos filtrados (solo si no está en loading)
-        if (!this.loading() && this.hasData()) {
+        // Recrear el chart cuando cambian los datos filtrados (solo si no está en loading ni error)
+        if (!this.loading() && !this.errorSignal() && this.hasData()) {
             this.createChart();
         } else {
             this.destroyChart();
@@ -377,10 +383,8 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
 
     // Método para actualizar desde el componente padre
     public refreshChart(): void {
-        this.error.set(null);
-
-        // No hacer nada si está en loading
-        if (this.loading()) {
+        // No hacer nada si está en loading o hay error
+        if (this.loading() || this.errorSignal()) {
             return;
         }
 
@@ -388,7 +392,6 @@ export class PortfolioEvolutionChartComponent implements AfterViewInit, OnDestro
             this.createChart();
         } else {
             this.destroyChart();
-            this.error.set('No hay datos disponibles para mostrar');
         }
     }
 }

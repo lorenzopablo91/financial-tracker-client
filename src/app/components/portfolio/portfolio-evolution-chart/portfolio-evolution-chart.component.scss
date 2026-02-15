@@ -32,6 +32,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    place-content: center;
 
     &:hover {
         transform: translateY(-2px);
@@ -66,27 +67,42 @@
         }
     }
 
-    .error-chart-container {
+    .error-content {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        height: 100%;
-        gap: 16px;
+        gap: 24px;
+        padding: 48px 24px;
         color: var(--text-secondary);
-        padding: 20px;
 
-        .error-icon-small {
+        .error-icon {
+            font-size: 72px;
+            width: 72px;
+            height: 72px;
             color: #f44336;
+            opacity: 0.8;
+
+            @media (max-width: 768px) {
+                font-size: 56px;
+                width: 56px;
+                height: 56px;
+            }
         }
 
-        span {
-            font-weight: 600;
+        .error-message {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-weight: 500;
             opacity: 0.8;
-            max-width: 280px;
-            line-height: 1.4;
+            max-width: 300px;
+            line-height: 1.5;
+
+            @media (max-width: 768px) {
+                font-size: 0.95rem;
+                max-width: 250px;
+            }
         }
     }
 

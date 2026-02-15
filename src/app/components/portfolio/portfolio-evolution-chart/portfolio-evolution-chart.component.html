@@ -5,11 +5,11 @@
         <div class="skeleton-chart-title"></div>
         <div class="skeleton-chart"></div>
     </div>
-    } @else if (error()) {
+    } @else if (errorSignal()) {
     <!-- Mensaje de error -->
-    <div class="error-chart-container">
-        <mat-icon class="error-icon-small">error_outline</mat-icon>
-        <span>{{ error() }}</span>
+    <div class="error-content">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <span class="error-message">{{ errorSignal() }}</span>
     </div>
     } @else if (!hasData()) {
     <!-- Sin datos -->

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpContext } from '@angular/common/http';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { Subject, forkJoin } from 'rxjs';
-import { finalize, retry, takeUntil } from 'rxjs/operators';
+import { finalize, retry, takeUntil, catchError } from 'rxjs/operators';
 import { Asset, PortfolioHistoryData, Transaction, PortfolioAsset } from '../../models/portfolio.interface';
 import { PortfolioCategoriesChartComponent } from './portfolio-categories-chart/portfolio-categories-chart.component';
 import { PortfolioEvolutionChartComponent } from './portfolio-evolution-chart/portfolio-evolution-chart.component';
@@ -21,6 +21,7 @@ import { LoaderService } from '../../shared/services/loader.service';
 import { LOADER_MESSAGE } from '../../shared/interceptors/loader-context.interceptor';
 import { PortfolioAssetsDetailComponent } from './portfolio-assets-detail/portfolio-assets-detail.component';
 import { PortfolioTransactionsComponent } from './portfolio-transactions/portfolio-transactions.component';
+import { of } from 'rxjs';
 
 @Component({
     selector: 'app-portfolio',
@@ -47,6 +48,12 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     readonly selectedPortfolioId = signal<string | null>(null);
     readonly isLoadingPortfolios = signal<boolean>(false);
     readonly isLoadingTransactions = signal<boolean>(false);
+
+    // Señales de estado de carga separadas para cada servicio
+    readonly isLoadingValuation = signal<boolean>(false);
+    readonly isLoadingSnapshots = signal<boolean>(false);
+    readonly valuationError = signal<string | null>(null);
+    readonly snapshotsError = signal<string | null>(null);
 
     // Señales de estado
     readonly lastUpdated = signal<Date | null>(null);
@@ -142,11 +149,19 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Carga todos los datos del portafolio usando forkJoin para ejecutar en paralelo
-     * Usa control manual del loader para un mensaje único
+     * Carga todos los datos del portafolio ejecutando llamadas en paralelo
+     * Maneja errores independientemente para cada servicio
      */
     loadPortfolioData(portfolioId: string): void {
+        // Resetear errores previos
+        this.valuationError.set(null);
+        this.snapshotsError.set(null);
+
+        // Establecer estados de carga
+        this.isLoadingValuation.set(true);
+        this.isLoadingSnapshots.set(true);
         this.isLoadingPortfolios.set(true);
+
         const context = new HttpContext().set(LOADER_MESSAGE, '📊 Cargando datos del portafolio...');
 
         // Mostrar el mensaje inicial
@@ -157,12 +172,27 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             this.loaderService.updateMessage('📈 Calculando rendimientos...');
         }, 2000);
 
-        // Ejecutar ambas llamadas en paralelo
+        // Ejecutar ambas llamadas en paralelo con manejo de errores independiente
         forkJoin({
-            valuation: this.portfolioService.getPortfolioValuation(portfolioId, { context }),
-            snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId, 30, { context })
+            valuation: this.portfolioService.getPortfolioValuation(portfolioId, { context }).pipe(
+                catchError(error => {
+                    console.error('Error cargando valuación:', error);
+                    this.valuationError.set('Error al cargar la valuación del portafolio');
+                    this.toastService.error('Error al cargar la valuación del portafolio');
+                    return of(null); // Retornar null en caso de error
+                }),
+                finalize(() => this.isLoadingValuation.set(false))
+            ),
+            snapshots: this.portfolioService.getPortfolioSnapshots(portfolioId, 30, { context }).pipe(
+                catchError(error => {
+                    console.error('Error cargando snapshots:', error);
+                    this.snapshotsError.set('Error al cargar el historial del portafolio');
+                    this.toastService.error('Error al cargar el historial del portafolio');
+                    return of(null); // Retornar null en caso de error
+                }),
+                finalize(() => this.isLoadingSnapshots.set(false))
+            )
         }).pipe(
-            retry(1),
             takeUntil(this.destroy$),
             finalize(() => {
                 clearTimeout(timer);
@@ -171,7 +201,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
             })
         ).subscribe({
             next: (results) => {
-                // Procesar datos de valuación
+                // Procesar datos de valuación si no hubo error
                 if (results.valuation) {
                     this.categories.set(results.valuation.data.categorias);
                     this.totalPortfolio.set(
@@ -183,17 +213,30 @@ export class PortfolioComponent implements OnInit, OnDestroy {
                     if (results.valuation.data.activos) {
                         this.assets.set(results.valuation.data.activos);
                     }
+                } else {
+                    // Si hubo error en valuación, limpiar datos
+                    this.categories.set([]);
+                    this.totalPortfolio.set(0);
+                    this.assets.set([]);
                 }
 
-                // Procesar datos históricos
+                // Procesar datos históricos si no hubo error
                 if (results.snapshots) {
                     this.portfolioHistoryData.set(results.snapshots.data || []);
+                } else {
+                    // Si hubo error en snapshots, limpiar datos
+                    this.portfolioHistoryData.set([]);
                 }
 
-                // Actualizar timestamp
-                this.lastUpdated.set(new Date());
+                // Actualizar timestamp solo si al menos uno fue exitoso
+                if (results.valuation || results.snapshots) {
+                    this.lastUpdated.set(new Date());
 
-                this.toastService.success('Datos actualizados correctamente');
+                    // Solo mostrar mensaje de éxito si ambos fueron exitosos
+                    if (results.valuation && results.snapshots) {
+                        this.toastService.success('Datos actualizados correctamente');
+                    }
+                }
             }
         });
     }
@@ -206,32 +249,37 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         // Resetear vista al cambiar portafolio
         this.showAssetsDetail.set(false);
         this.showTransactions.set(false);
+
+        // Limpiar datos anteriores inmediatamente para evitar mostrar datos del portafolio previo
+        this.categories.set([]);
+        this.totalPortfolio.set(0);
+        this.assets.set([]);
+        this.portfolioHistoryData.set([]);
+
+        // Cargar datos del nuevo portafolio
         this.loadPortfolioData(portfolioId);
     }
 
     /**
-     * Refresca los datos del portafolio actual
+     * Refresca los datos del portafolio seleccionado
      */
     refreshData(): void {
         const portfolioId = this.selectedPortfolioId();
         if (portfolioId) {
             this.loadPortfolioData(portfolioId);
-            this.refreshTrigger.update(current => current + 1);
-        } else {
-            this.toastService.warning('Debes seleccionar un portafolio primero');
         }
     }
 
     /**
-     * Toggle para mostrar/ocultar saldos
+     * Alterna la visibilidad de los montos
      */
     toggleAmountVisibility(): void {
-        this.hideAmounts.update(value => !value);
+        this.hideAmounts.update(current => !current);
     }
 
     /**
-     * Abre el modal para crear un nuevo portafolio
-     */
+      * Abre el modal para crear un nuevo portafolio
+      */
     onNewPortfolio(): void {
         const dialogRef = this.dialog.open(PortfolioRegisterModalComponent, {
             width: '500px',
@@ -424,7 +472,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         if (portfolioId) {
             // Recargar datos del portafolio
             this.loadPortfolioData(portfolioId);
-            
+
             // Recargar transacciones si estamos en esa vista
             if (this.showTransactions()) {
                 this.reloadTransactions(portfolioId);
@@ -468,7 +516,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
         return assets.map(asset => {
             // Buscar el ID del activo en el portafolio
             const activoEnPortafolio = portfolio?.activos?.find(a => a.prefijo === asset.prefijo);
-            
+
             return {
                 id: activoEnPortafolio?.id || asset.prefijo, // Usar prefijo como fallback
                 prefijo: asset.prefijo,

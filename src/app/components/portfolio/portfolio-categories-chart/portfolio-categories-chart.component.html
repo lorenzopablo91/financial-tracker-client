@@ -1,6 +1,22 @@
 <div class="chart-container">
+  @if (isLoadingSignal()) {
+  <!-- Skeleton de carga -->
+  <div class="skeleton-container">
+    <div class="skeleton-chart-circle"></div>
+    <div class="skeleton-legend">
+      <div class="skeleton-legend-item"></div>
+      <div class="skeleton-legend-item"></div>
+      <div class="skeleton-legend-item"></div>
+    </div>
+  </div>
+  } @else if (errorSignal()) {
+  <!-- Estado de error -->
+  <div class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <p class="error-message">{{ errorSignal() }}</p>
+  </div>
+  } @else if (hasData()) {
   <!-- Gráfico Doughnut centrado -->
-  @if (hasData()) {
   <div class="chart-wrapper">
     <canvas #chartCanvas></canvas>
   </div>
@@ -24,10 +40,8 @@
     </div>
     }
   </div>
-  }
-
+  } @else {
   <!-- Sin datos -->
-  @if (!hasData()) {
   <div class="no-data">
     <mat-icon>pie_chart</mat-icon>
     <p>No hay datos de categorías disponibles</p>

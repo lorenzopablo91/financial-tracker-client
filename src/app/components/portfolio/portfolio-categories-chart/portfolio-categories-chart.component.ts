@@ -24,6 +24,8 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
   readonly categoriesSignal = signal<PortfolioCategory[]>([]);
   readonly hideAmountsSignal = signal(false);
   readonly totalAmountSignal = signal(0);
+  readonly isLoadingSignal = signal(false);
+  readonly errorSignal = signal<string | null>(null);
   private readonly chartInitialized = signal(false);
 
   @Output() categoryClicked = new EventEmitter<PortfolioCategory>();
@@ -87,6 +89,22 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
     return this.hideAmountsSignal();
   }
 
+  @Input()
+  set isLoading(value: boolean) {
+    this.isLoadingSignal.set(value);
+  }
+  get isLoading() {
+    return this.isLoadingSignal();
+  }
+
+  @Input()
+  set error(value: string | null) {
+    this.errorSignal.set(value);
+  }
+  get error() {
+    return this.errorSignal();
+  }
+
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
 
   private chart: Chart<'doughnut'> | null = null;
@@ -106,6 +124,12 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
 
   constructor() {
     effect(() => {
+      // No crear chart si está en loading o hay error
+      if (this.isLoadingSignal() || this.errorSignal()) {
+        this.destroyChart();
+        return;
+      }
+
       // Si hay datos pero el chart no está inicializado, crear el chart
       if (this.hasData() && !this.chartInitialized()) {
         // Esperar un tick para asegurar que el canvas esté disponible
@@ -125,7 +149,7 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
   ngAfterViewInit(): void {
     // Usar setTimeout para asegurar que el canvas esté disponible
     setTimeout(() => {
-      if (this.hasData()) {
+      if (this.hasData() && !this.isLoadingSignal() && !this.errorSignal()) {
         this.createChart();
       }
     }, 0);
@@ -143,6 +167,10 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
 
     if (!this.hasData()) {
       console.warn('No chart data available');
+      return;
+    }
+
+    if (this.isLoadingSignal() || this.errorSignal()) {
       return;
     }
 
@@ -245,6 +273,11 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
       return;
     }
 
+    if (this.isLoadingSignal() || this.errorSignal()) {
+      this.destroyChart();
+      return;
+    }
+
     const data = this.chartData();
 
     // Actualizar datos del chart
@@ -273,7 +306,7 @@ export class PortfolioCategoriesChartComponent implements AfterViewInit, OnDestr
 
   // Método público para recrear el chart completamente
   public refreshChart(): void {
-    if (this.hasData()) {
+    if (this.hasData() && !this.isLoadingSignal() && !this.errorSignal()) {
       this.createChart();
     } else {
       this.destroyChart();

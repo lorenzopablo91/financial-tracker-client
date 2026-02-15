@@ -465,6 +465,7 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     min-height: 400px;
+    place-content: center;
 
     @media (min-width: 768px) {
       padding: 24px;
@@ -545,37 +546,39 @@
     // Error
     .error-content {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      height: 100%;
-      gap: 12px;
+      gap: 24px;
+      padding: 48px 24px;
       color: var(--text-secondary);
-      padding: 20px;
-      flex-direction: column;
 
-      @media (min-width: 768px) {
-        flex-direction: row;
-        gap: 16px;
-      }
-
-      .error-icon-small {
+      .error-icon {
+        font-size: 72px;
+        width: 72px;
+        height: 72px;
         color: #f44336;
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
+        opacity: 0.8;
+
+        @media (max-width: 768px) {
+          font-size: 56px;
+          width: 56px;
+          height: 56px;
+        }
       }
 
-      span {
-        font-weight: 600;
+      .error-message {
         margin: 0;
-        font-size: 0.85rem;
+        font-size: 1rem;
+        font-weight: 500;
         opacity: 0.8;
-        max-width: 280px;
-        line-height: 1.4;
+        max-width: 300px;
+        line-height: 1.5;
 
-        @media (min-width: 768px) {
-          font-size: 0.9rem;
+        @media (max-width: 768px) {
+          font-size: 0.95rem;
+          max-width: 250px;
         }
       }
     }
