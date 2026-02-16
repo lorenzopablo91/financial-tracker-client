@@ -45,5 +45,5 @@ Thumbs.db
 /src/app/data/balance.data.ts
 
 # Environment files
-/src/app/environments/environment.ts
-/src/app/environments/environment.prod.ts
+src/environments/environment.ts
+src/environments/environment.prod.ts
