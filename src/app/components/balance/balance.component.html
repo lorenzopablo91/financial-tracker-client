@@ -1,3 +1,4 @@
+<!-- balance.component.html -->
 <section class="balance-container">
     <div class="month-picker-container">
         <button mat-icon-button (click)="previousMonth()" matTooltip="Mes anterior">
@@ -9,8 +10,8 @@
             <input matInput readonly [matDatepicker]="picker" [formControl]="monthYearControl" class="month-picker"
                 placeholder="Selecciona un mes y año">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker startView="multi-year" (monthSelected)="chosenMonthHandler($event, picker)"
-                (yearSelected)="chosenYearHandler($event)" panelClass="custom-datepicker">
+            <mat-datepicker #picker startView="year" (monthSelected)="chosenMonthHandler($event, picker)"
+                (yearSelected)="chosenYearHandler($event)">
             </mat-datepicker>
         </mat-form-field>
 
@@ -19,32 +20,26 @@
         </button>
     </div>
 
-    @if (currentMonthData(); as data) {
+    @if (currentMonthFinancialData(); as data) {
     <app-balance-card [monthlyData]="data"></app-balance-card>
     <app-balance-grid [monthlyData]="data" (toggleSelection)="onToggleSelection($event)"></app-balance-grid>
     } @else if (!monthYearConfirmed()) {
-    <div class="no-data-message">
-        <div class="app-card warning">
-            <div class="app-card-content">
-                <div class="flex align-center">
-                    <mat-icon class="text-warning mr-md">warning</mat-icon>
-                    <p class="app-badge app-badge-warning">Selecciona un mes y año para ver la información financiera
-                    </p>
-                </div>
-            </div>
-        </div>
+    <!-- Estado inicial: sin confirmar mes/año -->
+    <div class="empty-state">
+        <mat-icon>calendar_today</mat-icon>
+        <h3>Selecciona un período</h3>
+        <p>Elige un mes y año para ver la información financiera</p>
     </div>
     } @else {
-    <div class="no-data-message">
-        <div class="app-card info">
-            <div class="app-card-content">
-                <div class="flex align-center">
-                    <mat-icon class="text-info mr-md">info</mat-icon>
-                    <p class="app-badge app-badge-info">No hay datos disponibles para {{ selectedMonthName() }} {{
-                        selectedYear() }}</p>
-                </div>
-            </div>
-        </div>
+    <!-- Estado vacío: sin datos para el mes seleccionado -->
+    <div class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <h3>No hay datos disponibles</h3>
+        <p>No se encontraron datos para {{ selectedMonthName() }} {{ selectedYear() }}</p>
+        <button mat-raised-button color="primary" (click)="onCreateBalance()" class="create-balance-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear balance para este mes</span>
+        </button>
     </div>
     }
 </section>
