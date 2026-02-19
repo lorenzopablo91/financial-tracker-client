@@ -1,0 +1,72 @@
+<mat-toolbar class="dialog-title" color="accent">
+    <mat-icon>{{ isEditMode ? 'edit' : 'add' }}</mat-icon>
+    <span>{{ isEditMode ? 'Editar Balance' : 'Crear Balance' }}</span>
+</mat-toolbar>
+
+<mat-dialog-content>
+    <form [formGroup]="form" class="form-container">
+        <div class="info-card">
+            <mat-icon class="info-icon">info</mat-icon>
+            <p class="info-text">
+                {{ isEditMode ? 'Edita los valores del balance de' : 'Crea el balance base para' }}
+                <strong>{{ monthName }} {{ data.year }}</strong>.
+                <ng-container *ngIf="!isEditMode">
+                    Luego podrás agregar los detalles de ingresos y gastos.
+                </ng-container>
+            </p>
+        </div>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Salario Bruto (ARS)</mat-label>
+            <input matInput type="number" formControlName="grossSalary" step="0.1" min="0" placeholder="0.00" />
+            <mat-icon matIconPrefix>attach_money</mat-icon>
+            <mat-hint>Tu salario mensual bruto en pesos</mat-hint>
+            <mat-error *ngIf="form.get('grossSalary')?.hasError('required')">
+                El salario bruto es requerido
+            </mat-error>
+            <mat-error *ngIf="form.get('grossSalary')?.hasError('min')">
+                Debe ser mayor a 0
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Cotización del Dólar (ARS)</mat-label>
+            <input matInput type="number" formControlName="dollarAmount" step="0.1" min="0" placeholder="0.00" />
+            <mat-icon matIconPrefix>attach_money</mat-icon>
+            <mat-hint>Valor del dólar para este mes</mat-hint>
+            <mat-error *ngIf="form.get('dollarAmount')?.hasError('required')">
+                La cotización del dólar es requerida
+            </mat-error>
+            <mat-error *ngIf="form.get('dollarAmount')?.hasError('min')">
+                Debe ser mayor a 0
+            </mat-error>
+        </mat-form-field>
+
+        <div class="preview-card">
+            <h4>Vista Previa</h4>
+            <div class="preview-row">
+                <span class="preview-label">Salario Bruto (ARS):</span>
+                <span class="preview-value">{{ form.get('grossSalary')?.value | currency:'ARS':'symbol-narrow':'1.0-0'
+                    }}</span>
+            </div>
+            <div class="preview-row">
+                <span class="preview-label">Salario Neto (ARS):</span>
+                <span class="preview-value">{{ calculateNetSalary() | currency:'ARS':'symbol-narrow':'1.0-0'
+                    }}</span>
+            </div>
+            <div class="preview-row">
+                <span class="preview-label">Salario Neto (USD):</span>
+                <span class="preview-value success">{{ calculateNetSalaryUSD() | currency:'USD':'symbol-narrow':'1.2-2'
+                    }}</span>
+            </div>
+        </div>
+
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="onCreate()" [disabled]="form.invalid">
+        <span>{{ isEditMode ? 'Guardar Cambios' : 'Crear Balance' }}</span>
+    </button>
+</mat-dialog-actions>
