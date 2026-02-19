@@ -9,8 +9,8 @@
             <input matInput readonly [matDatepicker]="picker" [formControl]="monthYearControl" class="month-picker"
                 placeholder="Selecciona un mes y año">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker startView="year" (monthSelected)="chosenMonthHandler($event, picker)"
-                (yearSelected)="chosenYearHandler($event)">
+            <mat-datepicker #picker startView="multi-year" (yearSelected)="chosenYearHandler($event)"
+                (monthSelected)="chosenMonthHandler($event, picker)" panelClass="month-picker-panel">
             </mat-datepicker>
         </mat-form-field>
 
@@ -20,7 +20,8 @@
     </div>
 
     @if (currentMonthFinancialData(); as data) {
-    <app-balance-card [monthlyData]="data"></app-balance-card>
+    <app-balance-card [monthlyData]="data" (balanceUpdated)="onEditBalance($event)">
+    </app-balance-card>
     <app-balance-grid [monthlyData]="data" [balanceId]="currentMonthData()?.id || ''"
         (toggleSelection)="onToggleSelection($event)" (addDetail)="onAddDetail($event)"
         (editDetail)="onEditDetail($event)" (deleteDetail)="onDeleteDetail($event)">

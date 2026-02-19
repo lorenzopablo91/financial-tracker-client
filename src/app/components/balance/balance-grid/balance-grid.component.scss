@@ -156,12 +156,10 @@
     }
 }
 
-// Estilo para la opción de eliminar en el menú
-.delete-option {
-    color: var(--error-color) !important;
-
+// Estilo para los iconos del menú
+.option-icon {
     mat-icon {
-        color: var(--error-color) !important;
+        color: var(--primary-500) !important;
     }
 }
 

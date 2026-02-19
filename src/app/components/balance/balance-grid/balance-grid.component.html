@@ -1,7 +1,7 @@
 <div class="gastos-card expenses-table-card">
     <div class="card-header">
         <span class="title">GASTOS FIJOS MENSUALES</span>
-        <button mat-icon-button color="primary" (click)="onAdd()" matTooltip="Agregar detalle">
+        <button mat-icon-button color="primary" (click)="onAdd()" matTooltip="Agregar Gasto Fijo">
             <mat-icon>add</mat-icon>
         </button>
     </div>
@@ -66,16 +66,16 @@
             <ng-container matColumnDef="actions">
                 <mat-header-cell *matHeaderCellDef></mat-header-cell>
                 <mat-cell *matCellDef="let element; let i = index" class="actions-cell">
-                    <button mat-icon-button [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()"
-                        class="action-button">
+                    <button mat-icon-button color="primary" [matMenuTriggerFor]="menu"
+                        (click)="$event.stopPropagation()" class="action-button">
                         <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #menu="matMenu">
-                        <button mat-menu-item (click)="onEdit(element, i)">
+                        <button mat-menu-item (click)="onEdit(element, i)" class="option-icon">
                             <mat-icon>edit</mat-icon>
                             <span>Editar</span>
                         </button>
-                        <button mat-menu-item (click)="onDelete(element, i)" class="delete-option">
+                        <button mat-menu-item (click)="onDelete(element, i)" class="option-icon">
                             <mat-icon>delete</mat-icon>
                             <span>Eliminar</span>
                         </button>

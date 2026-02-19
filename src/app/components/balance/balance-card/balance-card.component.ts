@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { FinancialData } from '../../../models/balance.interface';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 import { MaterialImports } from '../../../shared/imports/material-imports';
+import { BalanceModalComponent } from '../balance-modal/balance-modal.component';
+import { MONTHS_ES } from '../../../data/date-values';
+
+export interface BalanceUpdatePayload {
+    grossSalary: number;
+    dollarAmount: number;
+}
 
 @Component({
     selector: 'app-balance-card',
@@ -19,6 +26,9 @@ import { MaterialImports } from '../../../shared/imports/material-imports';
 })
 export class BalanceCardComponent implements OnChanges {
     @Input({ required: true }) monthlyData!: FinancialData;
+
+    /** Emite cuando el usuario guarda cambios en el modal de edición */
+    @Output() balanceUpdated = new EventEmitter<BalanceUpdatePayload>();
 
     // Signal interno para manejar los cambios
     private monthlyDataSignal = signal<FinancialData>({} as FinancialData);
@@ -114,5 +124,38 @@ export class BalanceCardComponent implements OnChanges {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }).format(amount);
+    }
+
+    onEdit(): void {
+        const data = this.monthlyDataSignal();
+        const monthIndex = Object.values(MONTHS_ES).indexOf(data.month);
+
+        const dialogRef = this.dialog.open(BalanceModalComponent, {
+            width: '600px',
+            data: {
+                mode: 'edit',
+                year: Number(data.year),
+                month: monthIndex,
+                currentGrossSalary: data.grossSalary,
+                currentDollarAmount: data.dollarAmount
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (!result) return;
+
+            // Actualizar signal local para reflejo inmediato en la UI
+            this.monthlyDataSignal.update(current => ({
+                ...current,
+                grossSalary: result.grossSalary,
+                dollarAmount: result.dollarAmount
+            }));
+
+            // Emitir al padre para que persista el cambio en el backend
+            this.balanceUpdated.emit({
+                grossSalary: result.grossSalary,
+                dollarAmount: result.dollarAmount
+            });
+        });
     }
 }

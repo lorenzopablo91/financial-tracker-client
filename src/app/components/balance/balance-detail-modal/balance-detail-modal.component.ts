@@ -3,13 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { MaterialImports } from '../../../shared/imports/material-imports';
-import { ExpenseDetail } from '../../../models/balance.interface';
-
-export interface BalanceDetailModalData {
-    mode: 'create' | 'edit';
-    detail?: ExpenseDetail;
-    balanceId?: string;
-}
+import { BalanceDetailModalData } from '../../../models/balance.interface';
 
 @Component({
     selector: 'app-balance-detail-modal',

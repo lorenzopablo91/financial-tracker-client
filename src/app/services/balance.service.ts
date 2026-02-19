@@ -20,7 +20,6 @@ export class BalanceService {
 
   constructor(private http: HttpClient) { }
 
-
   getAllBalances(): Observable<ApiResponse<BackendMonthlyBalance[]>> {
     return this.http.get<ApiResponse<BackendMonthlyBalance[]>>(this.baseURL, {
       context: new HttpContext().set(LOADER_MESSAGE, '📊 Cargando balances...')
@@ -48,20 +47,7 @@ export class BalanceService {
     });
   }
 
-  bulkCreateBalances(balances: CreateMonthlyBalancePayload[]): Observable<ApiResponse<BackendMonthlyBalance[]>> {
-    return this.http.post<ApiResponse<BackendMonthlyBalance[]>>(
-      `${this.baseURL}/bulk`,
-      { balances },
-      {
-        context: new HttpContext().set(LOADER_MESSAGE, '📦 Importando balances...')
-      }
-    );
-  }
-
-  updateBalance(
-    balanceId: string,
-    payload: Partial<CreateMonthlyBalancePayload>
-  ): Observable<ApiResponse<BackendMonthlyBalance>> {
+  updateBalance(balanceId: string, payload: Partial<CreateMonthlyBalancePayload>): Observable<ApiResponse<BackendMonthlyBalance>> {
     return this.http.put<ApiResponse<BackendMonthlyBalance>>(
       `${this.baseURL}/${balanceId}`,
       payload,
@@ -86,10 +72,7 @@ export class BalanceService {
     );
   }
 
-  updateExpenseDetail(
-    detailId: string,
-    payload: Partial<CreateExpenseDetailPayload>
-  ): Observable<ApiResponse<BackendExpenseDetail>> {
+  updateExpenseDetail(detailId: string, payload: Partial<CreateExpenseDetailPayload>): Observable<ApiResponse<BackendExpenseDetail>> {
     return this.http.put<ApiResponse<BackendExpenseDetail>>(
       `${this.baseURL}/expense-detail/${detailId}`,
       payload,
@@ -103,7 +86,7 @@ export class BalanceService {
     return this.http.delete(
       `${this.baseURL}/expense-detail/${detailId}`,
       {
-        context: new HttpContext().set(LOADER_MESSAGE, '🗑️ Eliminando detalle...')
+        context: new HttpContext().set(LOADER_MESSAGE, '🗑️ Eliminando gasto fijo...')
       }
     );
   }
@@ -113,15 +96,12 @@ export class BalanceService {
    * @param balanceId ID del balance
    * @param payload Datos del detalle
    */
-  addExpenseDetail(
-    balanceId: string,
-    payload: CreateExpenseDetailPayload
-  ): Observable<ApiResponse<BackendExpenseDetail>> {
+  addExpenseDetail(balanceId: string, payload: CreateExpenseDetailPayload): Observable<ApiResponse<BackendExpenseDetail>> {
     return this.http.post<ApiResponse<BackendExpenseDetail>>(
       `${this.baseURL}/${balanceId}/expense-detail`,
       payload,
       {
-        context: new HttpContext().set(LOADER_MESSAGE, '💾 Agregando detalle...')
+        context: new HttpContext().set(LOADER_MESSAGE, '💾 Agregando gasto fijo...')
       }
     );
   }

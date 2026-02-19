@@ -20,6 +20,20 @@ export interface FinancialData {
   maxSalaryLastSixMonths?: number;
 }
 
+export interface BalanceDetailModalData {
+  mode: 'create' | 'edit';
+  detail?: ExpenseDetail;
+  balanceId?: string;
+}
+
+export interface BalanceModalData {
+  mode: 'create' | 'edit';
+  year: number;
+  month: number;             // 0-11
+  currentGrossSalary?: number;
+  currentDollarAmount?: number;
+}
+
 // ========== INTERFACES DEL BACKEND (snake_case) ==========
 export interface BackendExpenseDetail {
   id: string;

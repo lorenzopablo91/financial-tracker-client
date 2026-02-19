@@ -26,7 +26,10 @@ export class BalanceGridComponent {
     constructor(private dialog: MatDialog) { }
 
     get tableDataSource(): ExpenseDetail[] {
-        return this.monthlyData.expenseDetails;
+        return [...this.monthlyData.expenseDetails].sort((a, b) => {
+            if (a.type === b.type) return 0;
+            return a.type === 'income' ? -1 : 1;
+        });
     }
 
     get totalARS(): number {
@@ -64,6 +67,9 @@ export class BalanceGridComponent {
     }
 
     onEdit(detail: ExpenseDetail, index: number): void {
+        // Obtener el índice real en el array original (sin ordenar)
+        const originalIndex = this.monthlyData.expenseDetails.indexOf(detail);
+
         const dialogRef = this.dialog.open(BalanceDetailModalComponent, {
             width: '600px',
             data: { mode: 'edit', detail, balanceId: this.balanceId }
@@ -71,12 +77,14 @@ export class BalanceGridComponent {
 
         dialogRef.afterClosed().subscribe(payload => {
             if (payload) {
-                this.editDetail.emit({ index, detail: payload });
+                this.editDetail.emit({ index: originalIndex, detail: payload });
             }
         });
     }
 
     onDelete(detail: ExpenseDetail, index: number): void {
-        this.deleteDetail.emit({ detail, index });
+        // Obtener el índice real en el array original (sin ordenar)
+        const originalIndex = this.monthlyData.expenseDetails.indexOf(detail);
+        this.deleteDetail.emit({ detail, index: originalIndex });
     }
 }

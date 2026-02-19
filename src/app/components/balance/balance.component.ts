@@ -7,13 +7,15 @@ import { MaterialImports } from '../../shared/imports/material-imports';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MONTHS_ES } from '../../data/date-values';
 import { MatDatepicker } from '@angular/material/datepicker';
-import { BalanceCardComponent } from './balance-card/balance-card.component';
+import { BalanceCardComponent, BalanceUpdatePayload } from './balance-card/balance-card.component';
 import { BalanceGridComponent } from './balance-grid/balance-grid.component';
 import { BalanceService } from '../../services/balance.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { MonthYearDateAdapter } from '../../shared/controllers/month-year-date.controller';
 import { MONTH_YEAR_FORMATS } from '../../data/month-year-formats';
 import { AuthService } from '../../shared/services/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { BalanceModalComponent } from './balance-modal/balance-modal.component';
 
 @Component({
   selector: 'app-balance',
@@ -74,7 +76,6 @@ export class BalanceComponent implements OnInit, OnDestroy {
 
     if (!balance) return null;
 
-    // Convertir el número de mes a nombre
     const monthName = MONTHS_ES[balance.month - 1];
 
     const financialData: FinancialData = {
@@ -111,7 +112,8 @@ export class BalanceComponent implements OnInit, OnDestroy {
   constructor(
     private balanceService: BalanceService,
     private toastService: ToastService,
-    private authService: AuthService
+    private authService: AuthService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -143,22 +145,7 @@ export class BalanceComponent implements OnInit, OnDestroy {
             this.toastService.success('Balances cargados correctamente');
           }
         },
-        complete: () => {
-          this.initializeWithCurrentDate();
-        }
       });
-  }
-
-  private initializeWithCurrentDate(): void {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const dateValue = new Date(currentYear, currentMonth, 1);
-
-    this.monthYearControl.setValue(dateValue);
-    this._selectedMonth.set(currentMonth);
-    this._selectedYear.set(currentYear);
-    this._monthYearConfirmed.set(true);
   }
 
   previousMonth(): void {
@@ -195,14 +182,16 @@ export class BalanceComponent implements OnInit, OnDestroy {
   }
 
   chosenMonthHandler(normalizedMonth: Date, datepicker: MatDatepicker<Date>): void {
-    const year = this._selectedYear();
-    if (year === null) return;
+    const selectedYear = this._selectedYear();
+
+    if (selectedYear === null) return;
 
     const month = normalizedMonth.getMonth();
-    const date = new Date(year, month, 1);
+    const date = new Date(selectedYear, month, 1);
 
     this.monthYearControl.setValue(date);
     this._selectedMonth.set(month);
+    this._selectedYear.set(selectedYear);
     this._monthYearConfirmed.set(true);
 
     datepicker.close();
@@ -264,37 +253,80 @@ export class BalanceComponent implements OnInit, OnDestroy {
     this.loadAllBalances();
   }
 
+  /**
+   * Abre el modal para crear un nuevo balance
+   */
   onCreateBalance(): void {
     const month = this._selectedMonth();
     const year = this._selectedYear();
 
     if (month === null || year === null) return;
 
-    // TODO: Abrir modal para cargar grossSalary y dollarAmount
-    const payload = {
-      year,
-      month: month + 1,
-      grossSalary: 0,
-      dollarAmount: 0,
-      expenseDetails: []
-    };
+    const dialogRef = this.dialog.open(BalanceModalComponent, {
+      width: '600px',
+      data: { mode: 'create', month, year }
+    });
 
-    // Descomentar cuando tengas el modal
-    // this.balanceService.createBalance(payload)
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe({
-    //     next: (response) => {
-    //       if (response.success) {
-    //         this.toastService.success('Balance creado exitosamente');
-    //         this.loadAllBalances();
-    //       }
-    //     }
-    //   });
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((payload) => {
+        if (payload) {
+          this.balanceService.createBalance(payload)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (response) => {
+                if (response.success) {
+                  this.toastService.success('Balance creado exitosamente');
+                  this.loadAllBalances();
+                }
+              },
+              error: (error) => {
+                console.error('Error creating balance:', error);
+              }
+            });
+        }
+      });
   }
 
   /**
- * Agrega un nuevo detalle
- */
+   * Recibe el evento del balance-card y persiste los cambios en el backend.
+   * El signal local ya fue actualizado optimistamente dentro del card.
+   */
+  onEditBalance(payload: BalanceUpdatePayload): void {
+    const currentBalance = this.currentMonthData();
+    if (!currentBalance) return;
+
+    this.balanceService.updateBalance(currentBalance.id, {
+      grossSalary: payload.grossSalary,
+      dollarAmount: payload.dollarAmount
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.toastService.success('Balance actualizado exitosamente');
+            // Actualizar el signal central para mantener consistencia
+            this._balances.update(balances =>
+              balances.map(b =>
+                b.id === currentBalance.id
+                  ? { ...b, gross_salary: payload.grossSalary, dollar_amount: payload.dollarAmount }
+                  : b
+              )
+            );
+          }
+        },
+        error: (error) => {
+          console.error('Error updating balance:', error);
+          this.toastService.success('Error al actualizar el balance');
+          // Recargar para revertir el cambio optimista del card
+          this.loadAllBalances();
+        }
+      });
+  }
+
+  /**
+   * Agrega un nuevo detalle
+   */
   onAddDetail(payload: any): void {
     const currentBalance = this.currentMonthData();
     if (!currentBalance) return;
@@ -304,7 +336,7 @@ export class BalanceComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.success) {
-            this.toastService.success('Detalle agregado exitosamente');
+            this.toastService.success('Gasto fijo agregado exitosamente');
             this.loadAllBalances();
           }
         }
@@ -326,7 +358,7 @@ export class BalanceComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.success) {
-            this.toastService.success('Detalle actualizado exitosamente');
+            this.toastService.success('Gasto fijo actualizado exitosamente');
             this.loadAllBalances();
           }
         }
@@ -337,7 +369,6 @@ export class BalanceComponent implements OnInit, OnDestroy {
    * Elimina un detalle
    */
   onDeleteDetail(event: { detail: ExpenseDetail; index: number }): void {
-    // Aquí puedes agregar confirmación si quieres
     const currentBalance = this.currentMonthData();
     if (!currentBalance || !currentBalance.expense_details) return;
 
@@ -348,7 +379,7 @@ export class BalanceComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.toastService.success('Detalle eliminado exitosamente');
+          this.toastService.success('Gasto fijo eliminado exitosamente');
           this.loadAllBalances();
         }
       });

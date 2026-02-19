@@ -1,6 +1,7 @@
-<h2 mat-dialog-title>
-    {{ data.mode === 'create' ? 'Agregar Detalle' : 'Editar Detalle' }}
-</h2>
+<mat-toolbar class="dialog-title" color="accent">
+    <mat-icon>{{ data.mode === 'create' ? 'add' : 'edit' }}</mat-icon>
+    <span>{{ data.mode === 'create' ? 'Crear Gasto Fijo' : 'Editar Gasto Fijo' }}</span>
+</mat-toolbar>
 
 <mat-dialog-content>
     <form [formGroup]="form" class="form-container">
@@ -75,6 +76,6 @@
 <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancelar</button>
     <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid">
-        {{ data.mode === 'create' ? 'Crear' : 'Guardar' }}
+        {{ data.mode === 'create' ? 'Crear Gasto Fijo' : 'Guardar Cambios' }}
     </button>
 </mat-dialog-actions>
