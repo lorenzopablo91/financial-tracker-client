@@ -20,7 +20,7 @@ export class BalanceService {
 
   constructor(private http: HttpClient) { }
 
-  
+
   getAllBalances(): Observable<ApiResponse<BackendMonthlyBalance[]>> {
     return this.http.get<ApiResponse<BackendMonthlyBalance[]>>(this.baseURL, {
       context: new HttpContext().set(LOADER_MESSAGE, '📊 Cargando balances...')
@@ -104,6 +104,24 @@ export class BalanceService {
       `${this.baseURL}/expense-detail/${detailId}`,
       {
         context: new HttpContext().set(LOADER_MESSAGE, '🗑️ Eliminando detalle...')
+      }
+    );
+  }
+
+  /**
+   * Agrega un nuevo detalle de ingreso/gasto a un balance
+   * @param balanceId ID del balance
+   * @param payload Datos del detalle
+   */
+  addExpenseDetail(
+    balanceId: string,
+    payload: CreateExpenseDetailPayload
+  ): Observable<ApiResponse<BackendExpenseDetail>> {
+    return this.http.post<ApiResponse<BackendExpenseDetail>>(
+      `${this.baseURL}/${balanceId}/expense-detail`,
+      payload,
+      {
+        context: new HttpContext().set(LOADER_MESSAGE, '💾 Agregando detalle...')
       }
     );
   }

@@ -1,4 +1,3 @@
-<!-- balance.component.html -->
 <section class="balance-container">
     <div class="month-picker-container">
         <button mat-icon-button (click)="previousMonth()" matTooltip="Mes anterior">
@@ -22,7 +21,10 @@
 
     @if (currentMonthFinancialData(); as data) {
     <app-balance-card [monthlyData]="data"></app-balance-card>
-    <app-balance-grid [monthlyData]="data" (toggleSelection)="onToggleSelection($event)"></app-balance-grid>
+    <app-balance-grid [monthlyData]="data" [balanceId]="currentMonthData()?.id || ''"
+        (toggleSelection)="onToggleSelection($event)" (addDetail)="onAddDetail($event)"
+        (editDetail)="onEditDetail($event)" (deleteDetail)="onDeleteDetail($event)">
+    </app-balance-grid>
     } @else if (!monthYearConfirmed()) {
     <!-- Estado inicial: sin confirmar mes/año -->
     <div class="empty-state">

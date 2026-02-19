@@ -1,0 +1,80 @@
+<h2 mat-dialog-title>
+    {{ data.mode === 'create' ? 'Agregar Detalle' : 'Editar Detalle' }}
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="form" class="form-container">
+
+        <mat-form-field appearance="outline">
+            <mat-label>Tipo</mat-label>
+            <mat-select formControlName="type">
+                <mat-option value="income">Ingreso</mat-option>
+                <mat-option value="expense">Gasto</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('type')?.hasError('required')">
+                El tipo es requerido
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Concepto</mat-label>
+            <input matInput formControlName="concept" placeholder="Ej: Netflix, Salario, etc.">
+            <mat-error *ngIf="form.get('concept')?.hasError('required')">
+                El concepto es requerido
+            </mat-error>
+        </mat-form-field>
+
+        <div class="amount-row">
+            <mat-form-field appearance="outline">
+                <mat-label>Monto (ARS)</mat-label>
+                <input matInput type="number" formControlName="amountARS" placeholder="0">
+                <mat-icon matIconPrefix>attach_money</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Monto (USD)</mat-label>
+                <input matInput type="number" formControlName="amountUSD" placeholder="0">
+                <mat-icon matIconPrefix>attach_money</mat-icon>
+            </mat-form-field>
+        </div>
+
+        <mat-checkbox formControlName="hasFee" class="checkbox-field">
+            ¿Tiene cuotas?
+        </mat-checkbox>
+
+        <div class="fee-row" *ngIf="form.get('hasFee')?.value">
+            <mat-form-field appearance="outline">
+                <mat-label>Cuota actual</mat-label>
+                <input matInput type="number" formControlName="feeCurrent" placeholder="1">
+                <mat-error *ngIf="form.get('feeCurrent')?.hasError('required')">
+                    Requerido
+                </mat-error>
+                <mat-error *ngIf="form.get('feeCurrent')?.hasError('min')">
+                    Mínimo 1
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Total cuotas</mat-label>
+                <input matInput type="number" formControlName="feeTotal" placeholder="12">
+                <mat-error *ngIf="form.get('feeTotal')?.hasError('required')">
+                    Requerido
+                </mat-error>
+                <mat-error *ngIf="form.get('feeTotal')?.hasError('min')">
+                    Mínimo 1
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <mat-checkbox formControlName="selected" class="checkbox-field">
+            Seleccionado (incluir en totales)
+        </mat-checkbox>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid">
+        {{ data.mode === 'create' ? 'Crear' : 'Guardar' }}
+    </button>
+</mat-dialog-actions>

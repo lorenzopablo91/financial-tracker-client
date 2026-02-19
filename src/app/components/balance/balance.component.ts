@@ -2,7 +2,7 @@ import { Component, computed, OnInit, signal, OnDestroy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject, finalize, retry, takeUntil } from 'rxjs';
-import { FinancialData, BackendMonthlyBalance } from '../../models/balance.interface';
+import { FinancialData, BackendMonthlyBalance, ExpenseDetail } from '../../models/balance.interface';
 import { MaterialImports } from '../../shared/imports/material-imports';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MONTHS_ES } from '../../data/date-values';
@@ -111,7 +111,7 @@ export class BalanceComponent implements OnInit, OnDestroy {
   constructor(
     private balanceService: BalanceService,
     private toastService: ToastService,
-    private authService: AuthService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -290,5 +290,67 @@ export class BalanceComponent implements OnInit, OnDestroy {
     //       }
     //     }
     //   });
+  }
+
+  /**
+ * Agrega un nuevo detalle
+ */
+  onAddDetail(payload: any): void {
+    const currentBalance = this.currentMonthData();
+    if (!currentBalance) return;
+
+    this.balanceService.addExpenseDetail(currentBalance.id, payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.toastService.success('Detalle agregado exitosamente');
+            this.loadAllBalances();
+          }
+        }
+      });
+  }
+
+  /**
+   * Edita un detalle existente
+   */
+  onEditDetail(event: { index: number; detail: any }): void {
+    const currentBalance = this.currentMonthData();
+    if (!currentBalance || !currentBalance.expense_details) return;
+
+    const detail = currentBalance.expense_details[event.index];
+    if (!detail) return;
+
+    this.balanceService.updateExpenseDetail(detail.id, event.detail)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.toastService.success('Detalle actualizado exitosamente');
+            this.loadAllBalances();
+          }
+        }
+      });
+  }
+
+  /**
+   * Elimina un detalle
+   */
+  onDeleteDetail(event: { detail: ExpenseDetail; index: number }): void {
+    // Aquí puedes agregar confirmación si quieres
+    const currentBalance = this.currentMonthData();
+    if (!currentBalance || !currentBalance.expense_details) return;
+
+    const backendDetail = currentBalance.expense_details[event.index];
+    if (!backendDetail) return;
+
+    this.balanceService.deleteExpenseDetail(backendDetail.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.success('Detalle eliminado exitosamente');
+          this.loadAllBalances();
+        }
+      });
   }
 }

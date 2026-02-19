@@ -1,6 +1,9 @@
 <div class="gastos-card expenses-table-card">
     <div class="card-header">
         <span class="title">GASTOS FIJOS MENSUALES</span>
+        <button mat-icon-button color="primary" (click)="onAdd()" matTooltip="Agregar detalle">
+            <mat-icon>add</mat-icon>
+        </button>
     </div>
     <div class="content-spacing">
         <mat-table [dataSource]="tableDataSource" class="expense-table">
@@ -9,8 +12,8 @@
             <ng-container matColumnDef="selected">
                 <mat-header-cell *matHeaderCellDef></mat-header-cell>
                 <mat-cell *matCellDef="let element; let i = index">
-                    <mat-checkbox [checked]="element.selected" [disabled]="true"
-                        (change)="onToggleSelection(i)"></mat-checkbox>
+                    <mat-checkbox [checked]="element.selected" [disabled]="true">
+                    </mat-checkbox>
                 </mat-cell>
                 <mat-footer-cell *matFooterCellDef></mat-footer-cell>
             </ng-container>
@@ -59,12 +62,33 @@
                 </mat-footer-cell>
             </ng-container>
 
+            <!-- Acciones Column -->
+            <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let element; let i = index" class="actions-cell">
+                    <button mat-icon-button [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()"
+                        class="action-button">
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item (click)="onEdit(element, i)">
+                            <mat-icon>edit</mat-icon>
+                            <span>Editar</span>
+                        </button>
+                        <button mat-menu-item (click)="onDelete(element, i)" class="delete-option">
+                            <mat-icon>delete</mat-icon>
+                            <span>Eliminar</span>
+                        </button>
+                    </mat-menu>
+                </mat-cell>
+                <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+            </ng-container>
+
             <!-- Header Row -->
             <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
 
             <!-- Data Rows -->
-            <mat-row *matRowDef="let row; columns: displayedColumns;" [class.selected]="row.selected">
-            </mat-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;" [class.selected]="row.selected"></mat-row>
 
             <!-- Footer Row -->
             <mat-footer-row *matFooterRowDef="displayedColumns" class="totals-row"></mat-footer-row>

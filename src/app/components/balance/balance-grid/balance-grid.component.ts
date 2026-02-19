@@ -1,8 +1,10 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
 import { MaterialImports } from '../../../shared/imports/material-imports';
 import { ExpenseDetail, FinancialData } from '../../../models/balance.interface';
 import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
+import { BalanceDetailModalComponent } from '../balance-detail-modal/balance-detail-modal.component';
 
 @Component({
     selector: 'app-balance-grid',
@@ -11,12 +13,17 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
     templateUrl: './balance-grid.component.html',
     styleUrls: ['./balance-grid.component.scss']
 })
-
 export class BalanceGridComponent {
     @Input() monthlyData!: FinancialData;
+    @Input() balanceId!: string;
     @Output() toggleSelection = new EventEmitter<number>();
+    @Output() addDetail = new EventEmitter<any>();
+    @Output() editDetail = new EventEmitter<{ index: number; detail: any }>();
+    @Output() deleteDetail = new EventEmitter<{ detail: ExpenseDetail; index: number }>();
 
-    displayedColumns: string[] = ['selected', 'concept', 'fee', 'amountARS', 'amountUSD'];
+    displayedColumns: string[] = ['selected', 'concept', 'fee', 'amountARS', 'amountUSD', 'actions'];
+
+    constructor(private dialog: MatDialog) { }
 
     get tableDataSource(): ExpenseDetail[] {
         return this.monthlyData.expenseDetails;
@@ -41,5 +48,35 @@ export class BalanceGridComponent {
 
     onToggleSelection(index: number): void {
         this.toggleSelection.emit(index);
+    }
+
+    onAdd(): void {
+        const dialogRef = this.dialog.open(BalanceDetailModalComponent, {
+            width: '600px',
+            data: { mode: 'create', balanceId: this.balanceId }
+        });
+
+        dialogRef.afterClosed().subscribe(payload => {
+            if (payload) {
+                this.addDetail.emit(payload);
+            }
+        });
+    }
+
+    onEdit(detail: ExpenseDetail, index: number): void {
+        const dialogRef = this.dialog.open(BalanceDetailModalComponent, {
+            width: '600px',
+            data: { mode: 'edit', detail, balanceId: this.balanceId }
+        });
+
+        dialogRef.afterClosed().subscribe(payload => {
+            if (payload) {
+                this.editDetail.emit({ index, detail: payload });
+            }
+        });
+    }
+
+    onDelete(detail: ExpenseDetail, index: number): void {
+        this.deleteDetail.emit({ detail, index });
     }
 }

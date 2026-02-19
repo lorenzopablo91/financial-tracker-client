@@ -8,14 +8,10 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-sm);
 
-    &:hover {
-        transform: translate3d(0, -4px, 0);
-        box-shadow: var(--shadow-lg);
-    }
-
     .card-header {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: var(--spacing-sm);
         margin-bottom: var(--spacing-md);
 
@@ -90,40 +86,287 @@
     color: var(--error-color) !important;
 }
 
-
 // Espaciado del contenido
 .content-spacing {
     padding: 0px var(--spacing-md) var(--spacing-md) var(--spacing-md);
+    overflow-x: auto;
 }
 
-/* Ajustar el ancho de las columnas */
+/* ========== ANCHOS DE COLUMNAS - DESKTOP ========== */
 .mat-column-selected {
-    width: 60px !important;
-    max-width: 60px !important;
-    flex: 0 0 60px !important;
+    width: 50px !important;
+    max-width: 50px !important;
+    flex: 0 0 50px !important;
     text-align: center;
 }
 
 .mat-column-concept {
-    width: 35% !important;
-    max-width: 35% !important;
-    flex: 0 0 35% !important;
+    width: 28% !important;
+    max-width: 28% !important;
+    flex: 0 0 28% !important;
 }
 
 .mat-column-fee {
-    width: 15% !important;
-    max-width: 15% !important;
-    flex: 0 0 15% !important;
+    width: 12% !important;
+    max-width: 12% !important;
+    flex: 0 0 12% !important;
+    text-align: center;
 }
 
 .mat-column-amountARS {
-    width: 25% !important;
-    max-width: 25% !important;
-    flex: 0 0 25% !important;
+    width: 22% !important;
+    max-width: 22% !important;
+    flex: 0 0 22% !important;
+    text-align: right;
 }
 
 .mat-column-amountUSD {
-    width: 25% !important;
-    max-width: 25% !important;
-    flex: 0 0 25% !important;
+    width: 22% !important;
+    max-width: 22% !important;
+    flex: 0 0 22% !important;
+    text-align: right;
+}
+
+.mat-column-actions {
+    width: 60px !important;
+    max-width: 60px !important;
+    flex: 0 0 60px !important;
+    text-align: center;
+    padding-right: var(--spacing-sm) !important;
+}
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .action-button {
+        opacity: 0.7;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+// Estilo para la opción de eliminar en el menú
+.delete-option {
+    color: var(--error-color) !important;
+
+    mat-icon {
+        color: var(--error-color) !important;
+    }
+}
+
+// Hacer que los botones de acción sean más visibles en hover de la fila
+.mat-mdc-row:hover {
+    .action-button {
+        opacity: 1;
+    }
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+// Tablets (< 1024px)
+@media (max-width: 1024px) {
+    .mat-column-concept {
+        width: 25% !important;
+        max-width: 25% !important;
+        flex: 0 0 25% !important;
+    }
+
+    .mat-column-fee {
+        width: 10% !important;
+        max-width: 10% !important;
+        flex: 0 0 10% !important;
+    }
+
+    .mat-column-amountARS {
+        width: 22% !important;
+        max-width: 22% !important;
+        flex: 0 0 22% !important;
+    }
+
+    .mat-column-amountUSD {
+        width: 22% !important;
+        max-width: 22% !important;
+        flex: 0 0 22% !important;
+    }
+
+    .mat-column-actions {
+        width: 50px !important;
+        max-width: 50px !important;
+        flex: 0 0 50px !important;
+    }
+}
+
+// Mobile (< 768px)
+@media (max-width: 768px) {
+    .gastos-card.expenses-table-card {
+        padding: var(--spacing-sm);
+    }
+
+    .card-header {
+        .title {
+            font-size: 14px;
+        }
+
+        button {
+            width: 36px;
+            height: 36px;
+
+            mat-icon {
+                font-size: 20px;
+            }
+        }
+    }
+
+    .content-spacing {
+        padding: 0px var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
+        overflow-x: auto;
+
+        // Estilo del scrollbar
+        &::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.3);
+            }
+        }
+    }
+
+    .expense-table {
+        min-width: 600px;
+    }
+
+    .mat-column-selected {
+        width: 40px !important;
+        max-width: 40px !important;
+        flex: 0 0 40px !important;
+    }
+
+    .mat-column-concept {
+        width: 150px !important;
+        max-width: 150px !important;
+        flex: 0 0 150px !important;
+    }
+
+    .mat-column-fee {
+        width: 60px !important;
+        max-width: 60px !important;
+        flex: 0 0 60px !important;
+    }
+
+    .mat-column-amountARS {
+        width: 120px !important;
+        max-width: 120px !important;
+        flex: 0 0 120px !important;
+    }
+
+    .mat-column-amountUSD {
+        width: 120px !important;
+        max-width: 120px !important;
+        flex: 0 0 120px !important;
+    }
+
+    .mat-column-actions {
+        width: 48px !important;
+        max-width: 48px !important;
+        flex: 0 0 48px !important;
+    }
+
+    // Hacer los botones más grandes en móvil
+    .actions-cell {
+        .action-button {
+            width: 40px;
+            height: 40px;
+            opacity: 1; // Siempre visible en móvil
+
+            mat-icon {
+                font-size: 22px;
+                width: 22px;
+                height: 22px;
+            }
+        }
+    }
+
+    // Reducir padding de celdas
+    .mat-mdc-cell,
+    .mat-mdc-header-cell,
+    .mat-mdc-footer-cell {
+        padding-right: var(--spacing-sm);
+        font-size: 13px;
+
+        &:first-child {
+            padding-left: var(--spacing-sm);
+        }
+    }
+
+    .mat-mdc-header-cell {
+        font-size: 11px !important;
+    }
+}
+
+// Small Mobile (< 480px)
+@media (max-width: 480px) {
+    .card-header {
+        .title {
+            font-size: 13px;
+        }
+    }
+
+    .expense-table {
+        min-width: 550px;
+    }
+
+    .mat-column-concept {
+        width: 130px !important;
+        max-width: 130px !important;
+        flex: 0 0 130px !important;
+    }
+
+    .mat-column-fee {
+        width: 50px !important;
+        max-width: 50px !important;
+        flex: 0 0 50px !important;
+    }
+
+    .mat-column-amountARS {
+        width: 110px !important;
+        max-width: 110px !important;
+        flex: 0 0 110px !important;
+    }
+
+    .mat-column-amountUSD {
+        width: 110px !important;
+        max-width: 110px !important;
+        flex: 0 0 110px !important;
+    }
+
+    .mat-mdc-cell,
+    .mat-mdc-header-cell,
+    .mat-mdc-footer-cell {
+        font-size: 12px;
+    }
+
+    .mat-mdc-header-cell {
+        font-size: 10px !important;
+    }
 }
