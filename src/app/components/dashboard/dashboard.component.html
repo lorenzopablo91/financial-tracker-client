@@ -34,11 +34,17 @@
     <div class="cards-carousel">
       <mat-card class="dashboard-card dolar-venta" (click)="selectCard('dolar-mep')">
         <mat-card-content>
-          <div class="card-icon">
-            <mat-icon>trending_flat</mat-icon>
+          <div class="card-header">
+            <div class="card-icon">
+              <mat-icon>attach_money</mat-icon>
+            </div>
+            <div>
+              <div class="card-symbol">{{ dolar.tipo }}</div>
+              <div class="card-name">Venta</div>
+            </div>
           </div>
-          <div class="card-title">MEP</div>
           <div class="card-value">${{ dolar.venta | number: '1.2-2' }}</div>
+          <div class="card-footer"></div>
         </mat-card-content>
       </mat-card>
     </div>
@@ -61,7 +67,7 @@
               <mat-icon>{{ getCryptoIcon(crypto.symbol) }}</mat-icon>
             </div>
             <div>
-              <div class="card-symbol">{{ getCryptoSymbol(crypto.symbol) }}</div>
+              <div class="card-symbol">{{ crypto.symbol }}</div>
               <div class="card-name">{{ crypto.name }}</div>
             </div>
           </div>

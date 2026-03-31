@@ -102,6 +102,12 @@
     .update-progress-section {
       max-width: 150px;
       margin-left: 4px;
+      flex: 1 1 auto;
+    }
+
+    .refresh-btn {
+      flex: 0 0 auto;
+      margin-left: auto;
     }
   }
 }
@@ -160,7 +166,7 @@
     gap: 16px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 4px 0 12px 0;
+    padding: 4px 16px 12px 16px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 

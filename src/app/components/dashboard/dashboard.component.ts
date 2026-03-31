@@ -123,13 +123,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
      * Retorna el icono según el símbolo de la criptomoneda
      */
     getCryptoIcon(symbol: string): string {
-        const iconMap: { [key: string]: string } = {
-            'BTC': 'currency_bitcoin',
-            'ETH': 'toll',
-            'XRP': 'waterfall_chart',
-            'ADA': 'trending_up'
-        };
-        return iconMap[symbol] || 'currency_bitcoin';
+        return 'currency_bitcoin';
     }
 
     /**
@@ -167,17 +161,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
      */
     getSortedAcciones(): StockDashboardItem[] {
         return this.getAcciones().sort((a, b) => b.variacionPorc - a.variacionPorc);
-    }
-
-    /**
-     * Obtiene el símbolo de la criptomoneda (especial para Bitcoin que usa $)
-     */
-    getCryptoSymbol(symbol: string): string {
-        // Bitcoin y otras criptos usan $ como símbolo
-        if (symbol === 'BTC' || symbol === 'B') {
-            return '$';
-        }
-        return symbol;
     }
 
     /**
