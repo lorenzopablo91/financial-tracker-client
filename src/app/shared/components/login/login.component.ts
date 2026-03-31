@@ -2,8 +2,11 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpContext } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { MaterialImports } from '../../imports/material-imports';
+import { LOADER_MESSAGE } from '../../interceptors/loader-context.interceptor';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -35,15 +38,19 @@ export class LoginComponent {
     this.loading = true;
     this.error = '';
 
-    this.authService.login(this.credentials.email, this.credentials.password)
+    const context = new HttpContext().set(LOADER_MESSAGE, '🔐 Ingresando a la sesión..');
+
+    this.authService.login(this.credentials.email, this.credentials.password, { context })
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        })
+      )
       .subscribe({
         next: (response) => {
-          // TODO: cuando este el dashboard, redirigir ahi
-          this.router.navigate(['/portfolio']);
+          this.router.navigate(['/dashboard']);
         },
         error: (error) => {
-          this.loading = false;
-
           if (error.status === 401) {
             this.error = 'Email o contraseña incorrectos';
           } else if (error.status === 0) {

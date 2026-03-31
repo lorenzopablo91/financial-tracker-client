@@ -1,8 +1,9 @@
-import { HttpInterceptorFn, HttpErrorResponse, HttpHandlerFn, HttpRequest, HttpEvent } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpHandlerFn, HttpRequest, HttpEvent, HttpContext } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, BehaviorSubject, filter, take, Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { SKIP_LOADER } from './loader-context.interceptor';
 
 let isRefreshing = false;
 let refreshTokenSubject = new BehaviorSubject<string | null>(null);
@@ -52,7 +53,8 @@ function handle401Error(request: HttpRequest<unknown>, next: HttpHandlerFn, auth
             }),
             catchError(err => {
                 isRefreshing = false;
-                authService.logout().subscribe();
+                const context = new HttpContext().set(SKIP_LOADER, true);
+                authService.logout({ context }).subscribe();
                 router.navigate(['/login']);
                 return throwError(() => err);
             })

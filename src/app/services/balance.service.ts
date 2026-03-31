@@ -22,7 +22,7 @@ export class BalanceService {
 
   getAllBalances(): Observable<ApiResponse<BackendMonthlyBalance[]>> {
     return this.http.get<ApiResponse<BackendMonthlyBalance[]>>(this.baseURL, {
-      context: new HttpContext().set(LOADER_MESSAGE, '📊 Cargando balances...')
+      context: new HttpContext().set(LOADER_MESSAGE, '⚖️ Cargando balances...')
     });
   }
 

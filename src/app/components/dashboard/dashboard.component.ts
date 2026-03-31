@@ -6,6 +6,7 @@ import { DashboardService } from '../../services/dashboard.service';
 import { CryptoDashboardItem, DolarItem, StockDashboardItem } from '../../models/dashboard.interface';
 import { LoaderService } from '../../shared/services/loader.service';
 import { Subscription } from 'rxjs';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
     selector: 'app-dashboard',
@@ -36,7 +37,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     constructor(
         private dashboardService: DashboardService,
-        private loaderService: LoaderService
+        private loaderService: LoaderService,
+        private toastService: ToastService,
     ) { }
 
     ngOnInit() {
@@ -49,6 +51,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 this.stocks = stocks;
                 this.lastUpdate = timestamp;
                 this.resetCountdown();
+                this.toastService.success('Datos cargados correctamente');
                 this.loaderService.hide();
             },
             error: (err) => {
@@ -85,6 +88,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
      * Reinicia el contador a 5 minutos
      */
     private resetCountdown(): void {
+        this.toastService.success('Datos actualizados correctamente');
         this.nextUpdateIn = 300;
         this.progressPercentageValue = 0;
     }
@@ -94,7 +98,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
      */
     refreshDashboard(): void {
         this.isRefreshing = true;
-        console.log('Dashboard refresh triggered');
         // Simular carga por 1 segundo
         setTimeout(() => {
             this.isRefreshing = false;

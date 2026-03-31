@@ -134,16 +134,21 @@ export class PortfolioComponent implements OnInit, OnDestroy {
      */
     private getPortfolios(): void {
         this.isLoadingPortfolios.set(true);
+        const context = new HttpContext().set(LOADER_MESSAGE, '💼 Cargando portafolios..');
 
-        this.portfolioService.getPortfolios()
+        this.portfolioService.getPortfolios({context})
             .pipe(
                 retry(1),
                 takeUntil(this.destroy$),
-                finalize(() => this.isLoadingPortfolios.set(false))
+                finalize(() => {
+                    this.isLoadingPortfolios.set(false);
+                    this.isLoadingValuation.set(false);
+                })
             )
             .subscribe({
                 next: (response: PortfolioResponse) => {
                     this.portfolios.set(response.data);
+                    this.toastService.success('Portafolios cargados correctamente');
                 }
             });
     }

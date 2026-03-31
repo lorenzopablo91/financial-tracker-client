@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -17,14 +17,14 @@ export class AuthService {
         this.loadStoredSession();
     }
 
-    login(email: string, password: string): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${this.API_URL}/login`, { email, password })
+    login(email: string, password: string, options?: { context?: HttpContext }): Observable<AuthResponse> {
+        return this.http.post<AuthResponse>(`${this.API_URL}/login`, { email, password }, options)
             .pipe(
                 tap(response => this.storeSession(response))
             );
     }
 
-    refreshToken(): Observable<AuthResponse> {
+    refreshToken(options?: { context?: HttpContext }): Observable<AuthResponse> {
         const refreshToken = localStorage.getItem('refresh_token');
 
         if (!refreshToken) {
@@ -33,15 +33,15 @@ export class AuthService {
 
         return this.http.post<AuthResponse>(`${this.API_URL}/refresh`, {
             refresh_token: refreshToken
-        }).pipe(
+        }, options).pipe(
             tap(response => this.storeSession(response))
         );
     }
 
-    logout(): Observable<any> {
+    logout(options?: { context?: HttpContext }): Observable<any> {
         const accessToken = localStorage.getItem('access_token');
 
-        return this.http.post(`${this.API_URL}/logout`, { access_token: accessToken })
+        return this.http.post(`${this.API_URL}/logout`, { access_token: accessToken }, options)
             .pipe(
                 tap(() => this.clearSession())
             );
