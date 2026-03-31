@@ -1,0 +1,151 @@
+<div class="dashboard-container">
+  <!-- Próxima actualización, barra de progreso y botón de refresh -->
+  <div class="last-update" *ngIf="lastUpdate">
+    <span class="last-update-text">Última actualización: {{ lastUpdate | date:'M/d/yy, h:mm a' }}</span>
+    
+    <!-- Centro: Próxima actualización con barra de progreso -->
+    <div class="update-progress-section">
+      <span class="next-update-label">Próxima actualización:</span>
+      <mat-progress-bar 
+        mode="determinate" 
+        [value]="progressPercentage()" 
+        class="refresh-progress"
+        [ngClass]="{ 'almost-ready': progressPercentage() > 80 }">
+      </mat-progress-bar>
+      <span class="countdown">{{ formatCountdown(nextUpdateCountdown()) }}</span>
+    </div>
+    
+    <!-- Botón refresh a la derecha -->
+    <button 
+      mat-icon-button 
+      (click)="refreshDashboard()" 
+      matTooltip="Actualizar datos" 
+      class="refresh-btn">
+      <mat-icon [class.spinning]="isRefreshing">refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- Sección Dólar -->
+  <div class="section" *ngIf="dolar">
+    <h2 class="section-title">
+      <mat-icon class="section-icon">attach_money</mat-icon>
+      Dólar
+    </h2>
+    <div class="cards-carousel">
+      <mat-card class="dashboard-card dolar-venta" (click)="selectCard('dolar-mep')">
+        <mat-card-content>
+          <div class="card-icon">
+            <mat-icon>trending_flat</mat-icon>
+          </div>
+          <div class="card-title">MEP</div>
+          <div class="card-value">${{ dolar.venta | number: '1.2-2' }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Sección Criptomonedas -->
+  <div class="section" *ngIf="cryptos.length > 0">
+    <h2 class="section-title">
+      <mat-icon class="section-icon">currency_bitcoin</mat-icon>
+      Criptomonedas
+    </h2>
+    <div class="cards-carousel">
+      <mat-card *ngFor="let crypto of getSortedCryptos()" 
+                class="dashboard-card crypto-card" 
+                [ngClass]="{ 'positive': crypto.priceChangePercent >= 0, 'negative': crypto.priceChangePercent < 0 }"
+                (click)="selectCard(crypto.symbol)">
+        <mat-card-content>
+          <div class="card-header">
+            <div class="card-icon">
+              <mat-icon>{{ getCryptoIcon(crypto.symbol) }}</mat-icon>
+            </div>
+            <div>
+              <div class="card-symbol">{{ getCryptoSymbol(crypto.symbol) }}</div>
+              <div class="card-name">{{ crypto.name }}</div>
+            </div>
+          </div>
+          <div class="card-value">${{ crypto.price | number: '1.2-8' }}</div>
+          <div class="card-footer">
+            <div class="card-change" [ngClass]="{ 'positive': crypto.priceChangePercent >= 0, 'negative': crypto.priceChangePercent < 0 }">
+              {{ crypto.priceChangePercent >= 0 ? '+' : '' }}{{ crypto.priceChangePercent | number: '1.2-2' }}%
+            </div>
+            <mat-icon class="trend-icon" [ngClass]="{ 'positive': crypto.priceChangePercent >= 0, 'negative': crypto.priceChangePercent < 0 }">
+              {{ crypto.priceChangePercent >= 0 ? 'trending_up' : 'trending_down' }}
+            </mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Sección Cedears -->
+  <div class="section" *ngIf="getCedears().length > 0">
+    <h2 class="section-title">
+      <mat-icon class="section-icon">apartment</mat-icon>
+      Cedears
+    </h2>
+    <div class="cards-carousel">
+      <mat-card *ngFor="let stock of getSortedCedears()" 
+                class="dashboard-card stock-card" 
+                [ngClass]="{ 'positive': stock.variacionPorc >= 0, 'negative': stock.variacionPorc < 0 }"
+                (click)="selectCard(stock.symbol)">
+        <mat-card-content>
+          <div class="card-header">
+            <div class="card-icon">
+              <mat-icon>apartment</mat-icon>
+            </div>
+            <div>
+              <div class="card-symbol">{{ stock.symbol }}</div>
+              <div class="card-name">{{ stock.name }}</div>
+            </div>
+          </div>
+          <div class="card-value">${{ stock.precioUSD | number: '1.2-2' }}</div>
+          <div class="card-footer">
+            <div class="card-change" [ngClass]="{ 'positive': stock.variacionPorc >= 0, 'negative': stock.variacionPorc < 0 }">
+              {{ stock.variacionPorc >= 0 ? '+' : '' }}{{ stock.variacionPorc | number: '1.2-2' }}%
+            </div>
+            <mat-icon class="trend-icon" [ngClass]="{ 'positive': stock.variacionPorc >= 0, 'negative': stock.variacionPorc < 0 }">
+              {{ stock.variacionPorc >= 0 ? 'trending_up' : 'trending_down' }}
+            </mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Sección Acciones -->
+  <div class="section" *ngIf="getAcciones().length > 0">
+    <h2 class="section-title">
+      <mat-icon class="section-icon">show_chart</mat-icon>
+      Acciones
+    </h2>
+    <div class="cards-carousel">
+      <mat-card *ngFor="let stock of getSortedAcciones()" 
+                class="dashboard-card stock-card" 
+                [ngClass]="{ 'positive': stock.variacionPorc >= 0, 'negative': stock.variacionPorc < 0 }"
+                (click)="selectCard(stock.symbol)">
+        <mat-card-content>
+          <div class="card-header">
+            <div class="card-icon">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <div>
+              <div class="card-symbol">{{ stock.symbol }}</div>
+              <div class="card-name">{{ stock.name }}</div>
+            </div>
+          </div>
+          <div class="card-value">${{ stock.precioUSD | number: '1.2-2' }}</div>
+          <div class="card-footer">
+            <div class="card-change" [ngClass]="{ 'positive': stock.variacionPorc >= 0, 'negative': stock.variacionPorc < 0 }">
+              {{ stock.variacionPorc >= 0 ? '+' : '' }}{{ stock.variacionPorc | number: '1.2-2' }}%
+            </div>
+            <mat-icon class="trend-icon" [ngClass]="{ 'positive': stock.variacionPorc >= 0, 'negative': stock.variacionPorc < 0 }">
+              {{ stock.variacionPorc >= 0 ? 'trending_up' : 'trending_down' }}
+            </mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
